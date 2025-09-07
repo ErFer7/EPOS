@@ -1,0 +1,28 @@
+# Gitignore personalizado
+# Binários
+app/*/*
+!app/*/*.h
+!app/*/*.cc
+!app/*/makefile
+
+src/init/init_sifive_u
+src/setup/setup_sifive_u
+src/system/system_sifive_u
+
+# Configurações
+*.cfg
+# include/system/config.h
+
+# Imagem
+img/*
+!img/makefile
+
+# Arquivos temporários
+*.o
+
+# Ferramentas
+eposcfg
+eposmkbi
+
+# VSCode
+.vscode
