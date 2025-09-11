@@ -26,3 +26,8 @@ eposmkbi
 
 # VSCode
 .vscode
+
+# Bear
+.cache
+compile_commands.json
+debug
