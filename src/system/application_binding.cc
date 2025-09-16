@@ -17,16 +17,17 @@ __BEGIN_SYS
 OStream kerr;
 __END_SYS
 
-// Utility methods that differ from kernel and user space.
-// Heap
-__BEGIN_UTIL
-Simple_Spin _heap_lock;
-__END_UTIL
 
 // Bindings
 extern "C" {
     void _panic() { _API::Thread::exit(-1); }
     void _exit(int s) { _API::Thread::exit(s); for(;;); }
+
+    // Utility methods that differ from kernel and user space.
+    // Heap
+    static _UTIL::Simple_Spin _heap_spin;
+    void _lock_heap() { _heap_spin.acquire(); }
+    void _unlock_heap() { _heap_spin.release();}
 }
 
 __USING_SYS;

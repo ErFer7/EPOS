@@ -24,6 +24,13 @@ void Machine::init()
 
     if(Traits<Timer>::enabled)
         Timer::init();
+
+#ifdef __NIC_H
+#ifdef __ethernet__
+    if(Traits<Ethernet>::enabled)
+        Initializer<Ethernet>::init();
+#endif
+#endif
 }
 
 __END_SYS

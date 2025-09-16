@@ -21,7 +21,7 @@ class Timer: private Timer_Common, private CLINT
 protected:
     static const bool multicore = Traits<System>::multicore;
     static const unsigned int CHANNELS = 2;
-    static const Hertz FREQUENCY = Traits<Timer>::FREQUENCY;
+    static const unsigned int FREQUENCY = Traits<Timer>::FREQUENCY;
 
     typedef IC_Common::Interrupt_Id Interrupt_Id;
 
@@ -38,7 +38,7 @@ public:
     static const Hertz CLOCK = Traits<Timer>::CLOCK;
 
 protected:
-    Timer(unsigned int channel, Hertz frequency, Handler handler, bool retrigger = true)
+    Timer(unsigned int channel, const Hertz & frequency, const Handler & handler, bool retrigger = true)
     : _channel(channel), _initial(FREQUENCY / frequency), _retrigger(retrigger), _handler(handler) {
         db<Timer>(TRC) << "Timer(f=" << frequency << ",h=" << reinterpret_cast<void*>(handler) << ",ch=" << channel << ") => {count=" << _initial << "}" << endl;
 
@@ -76,10 +76,10 @@ public:
     Hertz frequency() const { return (FREQUENCY / _initial); }
     void frequency(Hertz f) { _initial = FREQUENCY / f; reset(); }
 
-    void handler(Handler handler) { _handler = handler; }
+    void handler(const Handler & handler) { _handler = handler; }
 
 private:
-    static void config(Hertz frequency) { mtimecmp(mtime() + (CLOCK / frequency)); }
+    static void config(const Hertz & frequency) { mtimecmp(mtime() + (CLOCK / frequency)); }
 
     static void int_handler(Interrupt_Id i);
 
@@ -99,14 +99,14 @@ protected:
 class Scheduler_Timer: public Timer
 {
 public:
-    Scheduler_Timer(Microsecond quantum, Handler handler): Timer(SCHEDULER, 1000000 / quantum, handler) {}
+    Scheduler_Timer(const Microsecond & quantum, const Handler & handler): Timer(SCHEDULER, 1000000 / quantum, handler) {}
 };
 
 // Timer used by Alarm
 class Alarm_Timer: public Timer
 {
 public:
-    Alarm_Timer(Handler handler): Timer(ALARM, FREQUENCY, handler) {}
+    Alarm_Timer(const Handler & handler): Timer(ALARM, FREQUENCY, handler) {}
 };
 
 __END_SYS

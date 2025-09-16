@@ -32,8 +32,12 @@ public:
 class Alarm
 {
     friend class System;                        // for init()
+    template<typename> friend class Clerk;      // for elapsed()
     friend class Alarm_Chronometer;             // for elapsed()
-    friend class FCFS;                          // for elapsed()
+    friend class Periodic_Thread;               // for ticks() and elapsed()
+    friend class RT_Thread;                     // for ticks() and elapsed()
+    friend class FCFS;                          // for ticks() and elapsed()
+    friend class EDF;                           // for ticks() and elapsed()
 
 private:
     static const bool multitask = Traits<System>::multitask;
@@ -42,29 +46,28 @@ private:
     typedef Relative_Queue<Alarm, Tick> Queue;
 
 public:
-    Alarm(Microsecond time, Handler * handler, unsigned int times = 1);
+    Alarm(const Microsecond & time, Handler * handler, unsigned int times = 1);
     ~Alarm();
 
     const Microsecond & period() const { return _time; }
-    void period(Microsecond p);
+    void period(const Microsecond & p);
 
     void reset();
 
     static Hertz frequency() { return _timer->frequency(); }
 
-    static void delay(Microsecond time);
+    static void delay(const Microsecond & time);
 
 private:
     unsigned int times() const { return _times; }
 
     static volatile Tick & elapsed() { return _elapsed; }
 
-    static Alarm_Timer * timer() { return _timer; }
+    static Microsecond timer_period() { return 1000000 / frequency(); }
+    static Tick ticks(const Microsecond & time) { return (time + timer_period() / 2) / timer_period(); }
 
-    static Tick ticks(Microsecond time) { return Timer_Common::ticks(time, frequency()); }
-
-    static void lock() { Thread::lock(); }
-    static void unlock() { Thread::unlock(); }
+    static void lock() { Thread::lock(&_lock); }
+    static void unlock() { Thread::unlock(&_lock); }
 
     static void handler(IC::Interrupt_Id i);
 
@@ -80,13 +83,14 @@ private:
     static Alarm_Timer * _timer;
     static volatile Tick _elapsed;
     static Queue _request;
+    static Spin _lock;
 };
 
 
 class Delay
 {
 public:
-    Delay(Microsecond time): _time(time)  { Alarm::delay(_time); }
+    Delay(const Microsecond & time): _time(time)  { Alarm::delay(_time); }
 
 private:
     Microsecond _time;

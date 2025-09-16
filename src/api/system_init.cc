@@ -10,6 +10,8 @@ void System::init()
 {
     // These abstractions are initialized only once (by the bootstrap CPU)
     if(CPU::id() == CPU::BSP) {
+        if(Traits<MMU>::colorful)
+            Page_Coloring::init();
         if(Traits<Alarm>::enabled)
             Alarm::init();
     }

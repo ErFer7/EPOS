@@ -3,10 +3,11 @@
 #include <machine.h>
 #include <system.h>
 #include <process.h>
+#include <clerk.h>
+
+extern "C" { volatile unsigned long _running() __attribute__ ((alias ("_ZN4EPOS1S6Thread4selfEv"))); }
 
 __BEGIN_SYS
-
-extern OStream kout;
 
 bool Thread::_not_booting;
 volatile unsigned int Thread::_thread_count;
@@ -15,14 +16,17 @@ Scheduler<Thread> Thread::_scheduler;
 Spin Thread::_lock;
 
 
-void Thread::constructor_prologue(unsigned int stack_size)
+void Thread::constructor_prologue(Color color, unsigned int stack_size)
 {
     lock();
 
     _thread_count++;
     _scheduler.insert(this);
 
-    _stack = new (SYSTEM) char[stack_size];
+    if(Traits<MMU>::colorful && color != WHITE)
+        _stack = new (color) char[stack_size];
+    else
+        _stack = new (SYSTEM) char[stack_size];
 }
 
 
@@ -103,7 +107,7 @@ Thread::~Thread()
 }
 
 
-void Thread::priority(Criterion c)
+void Thread::priority(const Criterion & c)
 {
     lock();
 
@@ -113,9 +117,9 @@ void Thread::priority(Criterion c)
     unsigned long new_cpu = c.queue();
 
     if(_state != RUNNING) { // reorder the scheduling queue
-        _scheduler.suspend(this);
+        _scheduler.remove(this);
         _link.rank(c);
-        _scheduler.resume(this);
+        _scheduler.insert(this);
     } else
         _link.rank(c);
 
@@ -370,8 +374,47 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 {
     // "next" is not in the scheduler's queue anymore. It's already "chosen"
 
-    if(charge && Criterion::timed)
-        _timer->restart();
+    if(charge) {
+        if(Criterion::timed)
+            _timer->restart();
+
+        if(Criterion::collecting) {
+            prev->criterion().collect();
+            next->criterion().collect();
+            if(Criterion::task_wide)
+                for_all_threads_in_task(prev->task(), &collector, prev);
+            if(Criterion::cpu_wide)
+                for_all_threads_in_cpu(CPU::id(), &collector, prev);
+            if(Criterion::system_wide)
+                for_all_threads(&collector, prev);
+            prev->criterion().collect(true);
+        }
+
+        if(Criterion::charging) {
+            prev->criterion().charge();
+            if(Criterion::cpu_wide)
+                for_all_threads(&charger, prev);
+            prev->criterion().charge(true);
+        }
+
+        if(Criterion::awarding) {
+            next->criterion().award();
+            if(Criterion::cpu_wide)
+                for_all_threads(&charger);
+            next->criterion().award(true);
+        }
+
+        if(Criterion::migrating && (next->criterion().statistics().destination_cpu != Criterion::ANY)) {
+            next->criterion().statistics().destination_cpu = Criterion::ANY;
+            Criterion c = next->priority();
+            c.queue((next->criterion().statistics().destination_cpu));
+            next->priority(c); // reorder queues for migration
+            next = _scheduler.choose_another();
+        }
+
+        if(monitored)
+            Monitor::run();
+    }
 
     if(prev != next) {
         if(prev->_state == RUNNING)
@@ -392,7 +435,7 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         }
 
         if(smp)
-        _lock.release();
+            _lock.release();
 
         // The non-volatile pointer to volatile pointer to a non-volatile context is correct
         // and necessary because of context switches, but here, we are locked() and
@@ -422,13 +465,22 @@ int Thread::idle()
             yield();
     }
 
+    CPU::int_disable();
     if(CPU::id() == CPU::BSP) {
-        kout << "\n\n*** The last thread under control of EPOS has finished." << endl;
-        kout << "*** EPOS is shutting down!" << endl;
+        if(monitored)
+            Monitor::process_batch();
+        db<Thread>(WRN) << "The last thread has exited!" << endl;
+        if(reboot) {
+            db<Thread>(WRN) << "Rebooting the machine ..." << endl;
+            Machine::reboot();
+        } else {
+            db<Thread>(WRN) << "Halting the machine ..." << endl;
+            CPU::halt();
+        }
     }
 
-    CPU::smp_barrier();
-    Machine::reboot();
+    // Some machines will need a little time to actually reboot
+    for(;;);
 
     return 0;
 }

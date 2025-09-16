@@ -7,6 +7,8 @@
 // Framework class attributes
 __BEGIN_SYS
 
+IPC::Observed IPC::_observed;
+
 // The order of components in Agent::_handlers must match the respective Type<Component>::ID
 Agent::Member Agent::_handlers[] = {&Agent::handle_thread,
                                     &Agent::handle_task,
@@ -19,6 +21,7 @@ Agent::Member Agent::_handlers[] = {&Agent::handle_thread,
                                     &Agent::handle_clock,
                                     &Agent::handle_alarm,
                                     &Agent::handle_chronometer,
+                                    &Agent::handle_ipc,
                                     &Agent::handle_utility};
 
 __END_SYS

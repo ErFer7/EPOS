@@ -11,7 +11,7 @@ src/system/system_sifive_u
 
 # Configurações
 *.cfg
-include/system/config.h
+# include/system/config.h
 
 # Imagem
 img/*

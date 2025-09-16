@@ -22,6 +22,7 @@ class Random;
 class Spin;
 class SREC;
 class Vectors;
+class FANN;
 template<typename> class Scheduler;
 
 typedef unsigned long Hertz;
@@ -109,9 +110,7 @@ class FCFS;
 class RR;
 class RM;
 class DM;
-class LM;
 class EDF;
-class LLF;
 class GRR;
 class Fixed_CPU;
 class CPU_Affinity;
@@ -185,7 +184,7 @@ struct Traits_Tokens
     enum {eMote1, eMote2, STK500, RCX, Cortex, PC, Leon, Virtex, RISCV};
 
     // Machine models
-    enum {Unique, Legacy_PC, eMote3, LM3S811, Zynq, Realview_PBX, Raspberry_Pi3, FZ3, SiFive_E, SiFive_U};
+    enum {Unique, Legacy_PC, eMote3, FZ3, LM3S811, Zynq, Realview_PBX, Raspberry_Pi3, SiFive_E, SiFive_U};
 
     // Networking models
     enum {STANDALONE = 1, PAN = 10, LAN = 100, MAN = 1000, WAN = 10000, UNROUTED = 0}; // UNROUTED means all nodes are in a single collision domain, but it doesn't assume anything about the number of nodes
@@ -204,9 +203,6 @@ struct Traits_Tokens
 
     // SmartData predictors
     enum :unsigned char {NONE, LVP, DBP};
-
-    // Priority inversion protocols
-    enum {CEILING = NONE + 1, INHERITANCE};
 
     // Default aspects
     typedef ALIST<> ASPECTS;

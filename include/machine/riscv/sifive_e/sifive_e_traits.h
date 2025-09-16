@@ -38,24 +38,24 @@ public:
 
     // Physical Memory at Boot
     static const unsigned long BOOT             = NOT_USED;
-    static const unsigned long SETUP            = NOT_USED;
-    static const unsigned long IMAGE            = NOT_USED;
+    static const unsigned long SETUP            = library ? NOT_USED : RAM_BASE;        // RAM_BASE (will be part of the free memory at INIT, using a logical address identical to physical eliminate SETUP relocation)
+    static const unsigned long IMAGE            = library ? NOT_USED : 0x80100000;      // RAM_BASE + 1 MB (will be part of the free memory at INIT, defines the maximum image size; if larger than 3 MB then adjust at SETUP)
 
     // Logical Memory
-    static const unsigned long APP_LOW          = RAM_BASE;
-    static const unsigned long APP_HIGH         = RAM_TOP;
+    static const unsigned long APP_LOW          = library ? RAM_BASE : 0x80400000;      // 2 GB + 4 MB
+    static const unsigned long APP_HIGH         = library ? RAM_TOP  : 0xff7fffff;      // SYS - 1
 
-    static const unsigned long APP_CODE         = ROM_BASE;
-    static const unsigned long APP_DATA         = RAM_BASE;
+    static const unsigned long APP_CODE         = library ? ROM_BASE : APP_LOW;
+    static const unsigned long APP_DATA         = library ? RAM_BASE : APP_CODE + 64 * 1024;
 
-    static const unsigned long PHY_MEM          = NOT_USED;
-    static const unsigned long IO               = NOT_USED;
-    static const unsigned long SYS              = NOT_USED;
+    static const unsigned long PHY_MEM          = library ? NOT_USED : 0x20000000;      // 512 MB (max 1536 MB of RAM)
+    static const unsigned long IO               = library ? NOT_USED : 0x00000000;      // 0 (max 512 MB of IO = MIO_TOP - MIO_BASE)
+    static const unsigned long SYS              = library ? NOT_USED : 0xff800000;      // 4 GB - 8 MB
 
     // Default Sizes and Quantities
-    static const unsigned int MAX_THREADS       = 8;
+    static const unsigned int MAX_THREADS       = 5;
     static const unsigned int STACK_SIZE        = 1024;
-    static const unsigned int HEAP_SIZE         = 2048;
+    static const unsigned int HEAP_SIZE         = 4096;
 };
 
 template <> struct Traits<IC>: public Traits<Machine_Common>
@@ -90,7 +90,7 @@ template <> struct Traits<Timer>: public Traits<Machine_Common>
     // Meaningful values for the timer frequency range from 100 to 10000 Hz. The
     // choice must respect the scheduler time-slice, i. e., it must be higher
     // than the scheduler invocation frequency.
-    static const int FREQUENCY = 100; // Hz
+    static const int FREQUENCY = 1000; // Hz
 };
 
 template <> struct Traits<UART>: public Traits<Machine_Common>

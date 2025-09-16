@@ -156,6 +156,7 @@ namespace EPOS {
 #define __cortex_a__
 #define __cortex_a53__
 #define __TSC_H                 __HEADER_ARCH(tsc)
+
 #define __PMU_H                 __HEADER_ARCH(pmu)
 
 #define __UART_H                __HEADER_MACH(uart)
@@ -187,8 +188,9 @@ namespace EPOS {
 #define __cortex_a__
 #define __cortex_a53__
 #define __TSC_H                 __HEADER_ARCH(tsc)
+#ifdef __armv7__
 #define __PMU_H                 __HEADER_ARCH(pmu)
-
+#endif
 #define __UART_H                __HEADER_MACH(uart)
 #endif
 

@@ -37,8 +37,9 @@ public:
                 if(!heap)
                     db<Init>(ERR) << "Failed to initialize the system's heap!" << endl;
                 System::_heap = new (&System::_preheap[sizeof(Segment)]) Heap(heap, System::_heap_segment->size());
-            } else
+            } else{
                 System::_heap = new (&System::_preheap[0]) Heap(MMU::alloc(MMU::pages(HEAP_SIZE)), HEAP_SIZE);
+            }
 
             db<Init>(INF) << "Initializing the machine: " << endl;
             Machine::init();
@@ -67,8 +68,22 @@ public:
                 if(Traits<TSC>::enabled)
                     Random::seed(TSC::time_stamp());
 
+#ifdef __ipv4__
+                // An ordinary IP network should produce decent entropy
+                if(Traits<Ethernet>::enabled) {
+                    NIC<Ethernet> * nic = Traits<Ethernet>::DEVICES::Get<0>::Result::get(0);
+                    Random::seed(Random::random() ^ nic->statistics().rx_packets);
+                }
+#endif
+#ifdef __ADC_H
+                if(Traits<ADC>::enabled) {
+                    ADC adc;
+                    Random::seed(Random::random() ^ adc.read());
+                }
+#endif
+
                 if(!Traits<TSC>::enabled)
-                    db<Init>(INF) << "Due to lack of entropy, Random is a pseudo random numbers generator!" << endl;
+                    db<Init>(WRN) << "Due to lack of entropy, Random is a pseudo random numbers generator!" << endl;
             }
         }
 

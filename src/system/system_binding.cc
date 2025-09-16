@@ -8,6 +8,7 @@ extern "C" {
     __USING_SYS;
 
     // Libc legacy
+    void _panic() { Machine::panic(); }
     void _exit(int s) { Thread::exit(s); for(;;); }
     void __exit() { _exit(CPU::fr()); }  // must be handled by the Page Fault handler for user-level tasks
     void __cxa_pure_virtual() { db<void>(ERR) << "Pure Virtual method called!" << endl; }
@@ -41,9 +42,11 @@ extern "C" {
             }
         }
         if(error)
-            Machine::panic();
+            _panic();
     }
 
     // Heap
-    Simple_Spin _heap_lock;
+    static Spin _heap_lock;
+    void _lock_heap() { Thread::lock(&_heap_lock); }
+    void _unlock_heap() { Thread::unlock(&_heap_lock); }
 }

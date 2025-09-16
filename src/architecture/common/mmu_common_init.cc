@@ -17,7 +17,11 @@ void No_MMU::init()
 
     // For machines that do not feature a real MMU, frame size = 1 byte
     // Allocations (using Grouping_List<Frame>::search_decrementing() start from the end
-    free(&_end, pages(Memory_Map::FREE_TOP + 1 - reinterpret_cast<unsigned long>(&_end)));
+    // For multiheap on non-multitasking configurations (see Init_Application), the application's heap is at "_end" and we must skip it while initializing the MMU's free frame list.
+    char * free_base = &_end;
+    if(!Traits<System>::multitask) // heap in data segment
+        free_base += Traits<Application>::STACK_SIZE;
+    free(free_base, pages(Memory_Map::FREE_TOP - reinterpret_cast<unsigned long>(free_base)));
 }
 
 __END_SYS

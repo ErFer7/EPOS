@@ -8,8 +8,10 @@
 #include <memory.h>
 #include <time.h>
 #include <synchronizer.h>
+#include <communicator.h>
 
 #include "message.h"
+#include "ipc.h"
 
 __BEGIN_SYS
 
@@ -25,15 +27,22 @@ public:
 
         if(method() == SHARE)
             result(0); // TODO: result(get(id()) with get() checking if the object exists; sharing itself is handled by the framework's client side
-        else
+        else {
             if(id().type() < LAST_TYPE_ID) // in-kernel services
                 (this->*_handlers[id().type()])();
-
-        if(result() == UNDEFINED) {
-            if((id().type() == UTILITY_ID) && !Traits<Framework>::hysterically_debugged)
-                db<Framework>(TRC) << ":=>" << *reinterpret_cast<Message *>(this) << endl;
-            db<Framework>(WRN) << ":=: unsupported system call!" << endl;
+            else { // out-of-kernel (i.e. Dom0 or server) services
+                Message msg(*this); // copy message from user space to kernel
+                msg.id(Id(IPC_COMMUNICATOR_ID, id().unit()));
+                if(IPC::send(&msg)) { // 0 => no one listening
+                    Port<IPC> * comm = reinterpret_cast<Port<IPC> *>(IPC::observer(id().type())); // recall the Port<IPC> that got us here
+                    comm->receive(this); // copy from kernel to user
+                } else
+                    result(UNDEFINED);
+            }
         }
+
+        if(result() == UNDEFINED)
+            db<Framework>(WRN) << ":=: unsupported system call!" << endl;
 
         if((id().type() != UTILITY_ID) || Traits<Framework>::hysterically_debugged)
             db<Framework>(TRC) << "<=:" << *reinterpret_cast<Message *>(this) << endl;
@@ -51,6 +60,7 @@ private:
     void handle_clock();
     void handle_alarm();
     void handle_chronometer();
+    void handle_ipc();
     void handle_utility();
 
 private:
@@ -67,54 +77,54 @@ void Agent::handle_thread()
     case CREATE1: {
         int (*entry)();
         in(entry);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry))));
     } break;
     case CREATE2: {
         int p1;
         int (*entry)(int);
         in(entry, p1);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1))));
     } break;
     case CREATE3: {
         int p1, p2;
         int (*entry)(int, int);
         in(entry, p1, p2);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1, p2))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1, p2))));
     } break;
     case CREATE4: {
         int p1, p2, p3;
         int (*entry)(int, int, int);
         in(entry, p1, p2, p3);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1, p2, p3))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1, p2, p3))));
     } break;
     case CREATE5: {
         int p1, p2, p3, p4;
         int (*entry)(int, int, int, int);
         in(entry, p1, p2, p3, p4);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1, p2, p3, p4))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1, p2, p3, p4))));
     } break;
     case CREATE6: {
         int p1, p2, p3, p4, p5;
         int (*entry)(int, int, int, int, int);
         in(entry, p1, p2, p3, p4, p5);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1, p2, p3, p4, p5))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1, p2, p3, p4, p5))));
     } break;
     case CREATE7: {
         int p1, p2, p3, p4, p5, p6;
         int (*entry)(int, int, int, int, int, int);
         in(entry, p1, p2, p3, p4, p5, p6);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1, p2, p3, p4, p5, p6))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1, p2, p3, p4, p5, p6))));
     } break;
     case CREATE8: {
         int p1, p2, p3, p4, p5, p6, p7;
         int (*entry)(int, int, int, int, int, int, int);
         in(entry, p1, p2, p3, p4, p5, p6, p7);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry, p1, p2, p3, p4, p5, p6, p7))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry, p1, p2, p3, p4, p5, p6, p7))));
     } break;
     case CREATE9: {
         int (*entry)();
         in(entry);
-        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, 0, 0), entry))));
+        id(Id(THREAD_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Thread>(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, 0, 0), entry))));
     } break;
     case DESTROY:
         delete thread;
@@ -495,6 +505,93 @@ void Agent::handle_chronometer()
 {
     result(UNDEFINED);
 };
+
+
+//void Agent::handle_communicator()
+//{
+//    Adapter<Port<IPC>> * comm = reinterpret_cast<Adapter<Port<IPC>> *>(id().unit());
+//    Result res = 0;
+//
+//    switch(method()) {
+//    case CREATE1: {
+//        Port<IPC>::Local_Address local;
+//        in(local);
+//        id(Id(COMMUNICATOR_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Port<IPC>>(local))));
+//
+//        if((local == DOM0_ID) && !_dom0)
+//            _dom0 = reinterpret_cast<Port<IPC> *>(id().unit());
+//    } break;
+//    case DESTROY: {
+//        delete comm;
+//    } break;
+//    case COMMUNICATOR_SEND: {
+//        IPC::Address to;
+//        void * data;
+//        unsigned int size;
+//        in(to, data, size);
+//        comm->send(to, data, size);
+//    } break;
+//    case COMMUNICATOR_RECEIVE: {
+//        IPC::Address from;
+//        void * data;
+//        unsigned int size;
+//        in(from, data, size);
+//        comm->receive(&from, data, size);
+//        out(from);
+//    } break;
+//    case COMMUNICATOR_BIND: {
+//        IPC::Address addr;
+//        Port<IPC> * comm;
+//        in(addr, comm);
+//        _dom0 = comm;
+//    } break;
+//    default:
+//        res = UNDEFINED;
+//    }
+//};
+
+
+void Agent::handle_ipc()
+{
+    Adapter<Port<IPC>> * comm = reinterpret_cast<Adapter<Port<IPC>> *>(id().unit());
+    Result res = 0;
+
+    switch(method()) {
+    case CREATE1: {
+        Port<IPC>::Address addr;
+        in(addr);
+        id(Id(IPC_COMMUNICATOR_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Port<IPC>>(addr))));
+    } break;
+    case DESTROY: {
+        delete comm;
+    } break;
+    case COMMUNICATOR_SEND: {
+        Message * usr_msg;
+        in(usr_msg);
+        Message sys_msg(*usr_msg);
+        if(id().unit() != IPC_COMMUNICATOR_ID)
+            sys_msg.id(Id(IPC_COMMUNICATOR_ID, id().unit()));
+        comm->send(&sys_msg);
+    } break;
+    case COMMUNICATOR_RECEIVE: {
+        Message * usr_msg;
+        in(usr_msg);
+        comm->receive(usr_msg);
+    } break;
+    case COMMUNICATOR_REPLY: {
+        Message * usr_msg;
+        in(usr_msg);
+        Message sys_msg(*usr_msg);
+        if(id().unit() != IPC_COMMUNICATOR_ID)
+            sys_msg.id(Id(IPC_COMMUNICATOR_ID, id().unit()));
+        comm->reply(&sys_msg);
+    } break;
+    default:
+        res = UNDEFINED;
+    }
+
+    result(res);
+}
 
 
 void Agent::handle_utility()

@@ -25,7 +25,7 @@ void CPU::Context::first_dispatch()
 {
     // a0 was properly initialized at CPU::init_stack()
     CPU::Context::pop(true);
-    CPU::iret();
+    CPU::ret(true);
 };
 
 #endif

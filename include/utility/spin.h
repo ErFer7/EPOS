@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    alignas(int) volatile bool _locked;
+    volatile bool _locked;
 };
 
 __END_UTIL

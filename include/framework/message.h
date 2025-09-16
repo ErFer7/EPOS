@@ -80,6 +80,10 @@ public:
         ALARM_SET_PERIOD,
         ALARM_FREQUENCY,
 
+        COMMUNICATOR_SEND = COMPONENT,
+        COMMUNICATOR_REPLY,
+        COMMUNICATOR_RECEIVE,
+
         PRINT = COMPONENT,
 
         UNDEFINED = (unsigned(1) << (sizeof(int) * 8 - 1)) - 1

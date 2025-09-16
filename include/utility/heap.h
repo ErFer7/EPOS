@@ -10,7 +10,7 @@
 __BEGIN_UTIL
 
 // Heap
-class Heap: private Grouping_List<char>
+class Simple_Heap: private Grouping_List<char>
 {
 protected:
     static const bool typed = Traits<System>::multiheap;
@@ -20,11 +20,11 @@ public:
     using Grouping_List<char>::size;
     using Grouping_List<char>::grouped_size;
 
-    Heap() {
+    Simple_Heap() {
         db<Init, Heaps>(TRC) << "Heap() => " << this << endl;
     }
 
-    Heap(void * addr, unsigned long bytes) {
+    Simple_Heap(void * addr, unsigned long bytes) {
         db<Init, Heaps>(TRC) << "Heap(addr=" << addr << ",bytes=" << bytes << ") => " << this << endl;
 
         free(addr, bytes);
@@ -76,11 +76,11 @@ public:
     static void typed_free(void * ptr) {
         long * addr = reinterpret_cast<long *>(ptr);
         unsigned long bytes = *--addr;
-        Heap * heap = reinterpret_cast<Heap *>(*--addr);
+        Simple_Heap * heap = reinterpret_cast<Simple_Heap *>(*--addr);
         heap->free(addr, bytes);
     }
 
-    static void untyped_free(Heap * heap, void * ptr) {
+    static void untyped_free(Simple_Heap * heap, void * ptr) {
         long * addr = reinterpret_cast<long *>(ptr);
         unsigned long bytes = *--addr;
         heap->free(addr, bytes);
@@ -102,7 +102,10 @@ public:
 
 
 // Wrapper for atomic heap
-extern Simple_Spin _heap_lock;
+extern "C" {
+    void _lock_heap();
+    void _unlock_heap();
+}
 
 template<typename T>
 class Heap_Wrapper<T, true>: public T
@@ -145,12 +148,21 @@ public:
     }
 
 private:
-    void enter() { _heap_lock.acquire(); }
-    void leave() { _heap_lock.release(); }
+    void enter() { _lock_heap(); }
+    void leave() { _unlock_heap(); }
 };
 
 
-typedef Heap_Wrapper<Heap, Traits<System>::multicore> Application_Heap;
+// Heap
+class Heap: public Heap_Wrapper<Simple_Heap, Traits<System>::multicore>
+{
+private:
+    typedef Heap_Wrapper<Simple_Heap, Traits<System>::multicore> Base;
+
+public:
+    Heap() {}
+    Heap(void * addr, unsigned long bytes): Base(addr, bytes) {}
+};
 
 __END_UTIL
 

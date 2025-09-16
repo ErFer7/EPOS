@@ -108,6 +108,14 @@ public:
     template<typename T>
     static void delay(T t) { static_invoke(ALARM_DELAY, t); }
 
+    // Communication
+    template<typename ... Tn>
+    int send(Tn ... an) { return invoke(COMMUNICATOR_SEND, an ...); }
+    template<typename ... Tn>
+    int receive(Tn ... an) { return invoke(COMMUNICATOR_RECEIVE, an ...); }
+    template<typename ... Tn>
+    int reply(Tn ... an) { return invoke(COMMUNICATOR_REPLY, an ...); }
+
     template<typename ... Tn>
     int read(Tn ... an) { return receive(an ...); }
     template<typename ... Tn>

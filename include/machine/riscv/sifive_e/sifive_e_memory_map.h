@@ -23,7 +23,7 @@ public:
         MIO_TOP         = Traits<Machine>::MIO_TOP,
         BOOT_STACK      = RAM_TOP + 1 - Traits<Machine>::STACK_SIZE * Traits<Build>::CPUS, // will be used as the stack's base, not the stack pointer
         FREE_BASE       = RAM_BASE,
-        FREE_TOP        = BOOT_STACK - 1,
+        FREE_TOP        = BOOT_STACK,
 
         // Memory-mapped devices
         BIOS_BASE       = 0x00001000,   // SiFive-E BIOS ROM

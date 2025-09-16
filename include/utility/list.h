@@ -1180,7 +1180,6 @@ public:
     using Base::end;
 
     Element * volatile & chosen() { return _chosen[R::current_head()]; }
-    Element * volatile & chosen(unsigned int head) { return _chosen[head]; }
 
     void insert(Element * e) {
         db<Lists>(TRC) << "Scheduling_List::insert(e=" << e
@@ -1282,8 +1281,6 @@ public:
     bool empty() const { return _list[R::current_queue()].empty(); }
 
     unsigned long size() const { return _list[R::current_queue()].size(); }
-    unsigned long size(unsigned int queue) const { return _list[queue].size(); }
-
     unsigned long total_size() const {
         unsigned long s = 0;
         for(unsigned int i = 0; i < Q; i++)
@@ -1300,9 +1297,6 @@ public:
 
     Element * volatile & chosen() {
         return _list[R::current_queue()].chosen();
-    }
-    Element * volatile & chosen(unsigned int queue) {
-        return _list[queue].chosen();
     }
 
     void insert(Element * e) {

@@ -161,16 +161,14 @@ Setup::Setup()
             // Print basic facts about this EPOS instance
             say_hi();
 
-            if(Traits<Machine>::supervisor) {
-                // Configure a flat memory model for the single task in the system
-                setup_flat_paging();
+            // Configure a flat memory model for the single task in the system
+            setup_flat_paging();
 
-                // Relocate the machine to supervisor interrupt forwarder
-                setup_m2s();
+            // Relocate the machine to supervisor interrupt forwarder
+            setup_m2s();
 
-                // Enable paging
-                enable_paging();
-            }
+            // Enable paging
+            enable_paging();
         }
 
         // Signalize other CPUs that paging is up
@@ -180,13 +178,11 @@ Setup::Setup()
 
         db<Setup>(TRC) << "Setup(bi=" << reinterpret_cast<void *>(bi) << ",sp=" << CPU::sp() << ")" << endl;
     
-        if(Traits<Machine>::supervisor) {
-            // Wait for the Boot CPU to setup page tables
-            while(!paging_ready);
+        // Wait for the Boot CPU to setup page tables
+        while(!paging_ready);
 
-            // Enable paging
-            enable_paging();
-        }
+        // Enable paging
+        enable_paging();
     }
 
     // SETUP ends here, so let's transfer control to the next stage (INIT or APP)
@@ -380,7 +376,7 @@ void Setup::say_hi()
     db<Setup>(TRC) << "Setup::say_hi()" << endl;
     db<Setup>(INF) << "System_Info=" << *si << endl;
 
-    kout << "\n*** This is EPOS!\n" << endl;
+    kout << "This is EPOS!\n" << endl;
     kout << "Setting up this machine as follows: " << endl;
     kout << "  Mode:         " << ((Traits<Build>::SMOD == Traits<Build>::LIBRARY) ? "library" : (Traits<Build>::SMOD == Traits<Build>::BUILTIN) ? "built-in" : "kernel") << endl;
     kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << Traits<CPU>::CLOCK / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
@@ -396,7 +392,7 @@ void Setup::say_hi()
 #endif
     kout << "  Node Id:      ";
     if(si->bm.node_id != -1)
-        kout << si->bm.node_id << endl;
+        kout << si->bm.node_id << " (" << Traits<Build>::NETWORKING << ")" << endl;
     else
         kout << "will get from the network!" << endl;
     kout << "  Position:     ";
@@ -754,7 +750,7 @@ void _entry() // machine mode
 {
     typedef IF<Traits<CPU>::WORD_SIZE == 32, SV32_MMU, SV39_MMU>::Result MMU; // architecture.h will use No_MMU if multitasking is disable, but we need the correct MMU for the Flat Memory Model.
 
-    if(CPU::mhartid() == 0)                             // SiFive-U has 5 cores, but core 0 (an E51) does not feature an MMU, so we halt it and let the other cores (U54) run in a multicore configuration
+    if(CPU::mhartid() == 0)                             // SiFive-U has 2 cores, but core 0 (an E51) does not feature an MMU, so we halt it and let core 1 (an U54) run in a single-core configuration
         CPU::halt();
 
     CPU::mstatusc(CPU::MIE);                            // disable interrupts (they will be reenabled at Init_End)
@@ -765,26 +761,20 @@ void _entry() // machine mode
     if(CPU::id() == CPU::BSP)
         Machine::clear_bss();
 
-    if(Traits<Machine>::supervisor) {
-        CPU::mtvec(CPU::INT_DIRECT, Memory_Map::INT_M2S);   // setup a machine mode interrupt handler to forward timer interrupts (which cannot be delegated via mideleg)
-        CPU::mideleg(CPU::SSI | CPU::STI | CPU::SEI);       // delegate supervisor interrupts to supervisor mode
-        CPU::medeleg(0xf1ff);                               // delegate all exceptions to supervisor mode but ecalls
-        CPU::mie(CPU::MSI | CPU::MTI | CPU::MEI);           // enable interrupt generation by at machine level before going into supervisor mode
-        CPU::mstatus(CPU::MPP_S | CPU::MPIE | CPU::MXR);    // prepare jump into supervisor mode at MRET with interrupts enabled at machine level
-        CPU::mstatusc(CPU::SIE);                            // disable interrupts (they will be reenabled at Init_End)
-        CPU::sstatuss(CPU::SUM);                            // allows User Memory access in supervisor mode
-        CPU::pmpcfg0(0b11111);                              // configure PMP region 0 as (L=unlocked [0], [00], A = NAPOT [11], X [1], W [1], R [1])
-        CPU::pmpaddr0((1ULL << MMU::LA_BITS) - 1);          // comprising the whole memory space
-    } else {
-        CPU::satp(0);
-        CPU::mie(0);                                        // disable interrupts at CLINT (each device will enable the necessary ones)
-        CPU::mstatus(CPU::MPP_M);                           // continue in machine mode at MRET
-    }
+    CPU::mtvec(CPU::INT_DIRECT, Memory_Map::INT_M2S);   // setup a machine mode interrupt handler to forward timer interrupts (which cannot be delegated via mideleg)
+    CPU::mideleg(CPU::SSI | CPU::STI | CPU::SEI);       // delegate supervisor interrupts to supervisor mode
+    CPU::medeleg(0xf1ff);                               // delegate all exceptions to supervisor mode but ecalls
+    CPU::mie(CPU::MSI | CPU::MTI | CPU::MEI);           // enable interrupt generation by at machine level before going into supervisor mode
+    CLINT::mtimecmp(-1ULL);                             // configure MTIMECMP so it won't trigger a timer interrupt before we can setup_m2s()
+    CPU::mstatus(CPU::MPP_S | CPU::MPIE | CPU::MXR);    // prepare jump into supervisor mode at MRET with interrupts enabled at machine level
+    CPU::mstatusc(CPU::SIE);                            // disable interrupts (they will be reenabled at Init_End)
+    CPU::sstatuss(CPU::SUM);                            // allows User Memory access in supervisor mode
 
-    CLINT::mtimecmp(-1ULL);                                 // configure MTIMECMP so it won't trigger a timer interrupt before we can setup_m2s()
+    CPU::pmpcfg0(0b11111); 				// configure PMP region 0 as (L=unlocked [0], [00], A = NAPOT [11], X [1], W [1], R [1])
+    CPU::pmpaddr0((1ULL << MMU::LA_BITS) - 1);          // comprising the whole memory space
 
-    CPU::mepc(CPU::Reg(&_setup));                           // entry = _setup
-    CPU::mret();                                            // enter supervisor mode at setup (mepc) with interrupts enabled (mstatus.mpie = true)
+    CPU::mepc(CPU::Reg(&_setup));                       // entry = _setup
+    CPU::mret();                                        // enter supervisor mode at setup (mepc) with interrupts enabled (mstatus.mpie = true)
 }
 
 void _setup() // supervisor mode
@@ -817,12 +807,10 @@ if(Traits<CPU>::WORD_SIZE == 32) {
     ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page))
         "       slli     gp, tp,  8             \n"
         "       sub      sp, sp, gp             \n"     // SP -= 256 * CPU::id()
-        "       sd       a0, -12(sp)            \n"
-        "       sd       a1, -20(sp)            \n"
-        "       sd       a2, -28(sp)            \n"
-        "       sd       a3, -36(sp)            \n"
-        "       sd       a4, -44(sp)            \n"
-        "       sd       a5, -52(sp)            \n");
+        "       sd       a2, -12(sp)            \n"
+        "       sd       a3, -20(sp)            \n"
+        "       sd       a4, -28(sp)            \n"
+        "       sd       a5, -36(sp)            \n");
 }
 
     CPU::Reg id = CPU::mcause();
@@ -831,14 +819,14 @@ if(Traits<CPU>::WORD_SIZE == 32) {
        IC::ipi_eoi(id & CLINT::INT_MASK);               // MIP.MSI is handled by CLINT
     } else if((id & CLINT::INT_MASK) == CLINT::IRQ_MAC_TIMER) {
         Timer::reset();                                 // MIP.MTI is a direct logic on (MTIME == MTIMECMP) and reseting the Timer (i.e. adjusting MTIMECMP) seems to be the only way to clear it
-        CPU::miec(CPU::MTI);
-        CPU::mips(CPU::STI);                            // forward desired interrupts to supervisor mode
     } else if(id == CPU::EXC_ENVS) {
         CPU::mipc(CPU::STI);                            // STI was handled in supervisor mode, so clear the corresponding pending bit
-        CPU::mies(CPU::MTI);
         CPU::mepc(CPU::mepc() + 4);
     }
 
+    CPU::mips(1 << ((id & CLINT::INT_MASK) - 2));       // forward desired interrupts to supervisor mode
+    CPU::mstatuss(CPU::SUM | CPU::MXR);                 // FIXME: SUM is being cleared somewhere else and here seams not to be the right place to handle this
+    
     // Restore context
 if(Traits<CPU>::WORD_SIZE == 32) {
     ASM("       lw       a0,  -8(sp)            \n"
@@ -850,12 +838,10 @@ if(Traits<CPU>::WORD_SIZE == 32) {
         "       lw       a6, -32(sp)            \n"
         "       lw       a7, -36(sp)            \n");
 } else {
-    ASM("       ld       a0, -12(sp)            \n"
-        "       ld       a1, -20(sp)            \n"
-        "       ld       a2, -28(sp)            \n"
-        "       ld       a3, -36(sp)            \n"
-        "       ld       a4, -44(sp)            \n"
-        "       ld       a5, -52(sp)            \n");
+    ASM("       ld       a2, -12(sp)            \n"
+        "       ld       a3, -20(sp)            \n"
+        "       ld       a4, -28(sp)            \n"
+        "       ld       a5, -36(sp)            \n");
 }
     ASM("       csrr     sp, mscratch           \n"
         "       mret                            \n");

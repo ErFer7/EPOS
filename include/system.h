@@ -21,13 +21,14 @@ private:
 
 private:
     static char _preheap[sizeof(Heap)];
-    static Application_Heap * _heap;
+    static Heap * _heap;
 };
 
 class System
 {
     friend class Init_System;                                                   // for _heap
     friend class Init_Application;                                              // for _heap with multiheap = false
+    friend class Monitor; 							// for _heap (to monitor its size)
     friend void CPU::Context::load() const volatile;
     friend void * ::malloc(size_t);						// for _heap
     friend void ::free(void *);							// for _heap
@@ -47,6 +48,31 @@ private:
     static char _preheap[(Traits<System>::multiheap ? sizeof(Segment) : 0) + sizeof(Heap)];
     static Segment * _heap_segment;
     static Heap * _heap;
+};
+
+class Page_Coloring
+{
+    friend class System;
+
+    friend void * ::operator new(size_t, const EPOS::Color &);
+    friend void * ::operator new[](size_t, const EPOS::Color &);
+
+private:
+    static const unsigned int HEAP_SIZE = Traits<Application>::HEAP_SIZE;
+    static const unsigned int COLORS = Traits<MMU>::COLORS;
+
+public:
+    static void * alloc(unsigned int bytes, const EPOS::Color & allocator) {
+        assert(static_cast<unsigned int>(allocator) <= COLORS);
+        return _heap[allocator]->alloc(bytes);
+    }
+
+private:
+    static void init();
+
+protected:
+    static Segment * _segment[COLORS];
+    static Heap * _heap[COLORS];
 };
 
 __END_SYS
@@ -92,6 +118,14 @@ inline void * operator new(size_t bytes, const EPOS::System_Allocator & allocato
 
 inline void * operator new[](size_t bytes, const EPOS::System_Allocator & allocator) {
     return _SYS::System::_heap->alloc(bytes);
+}
+
+inline void * operator new(size_t bytes, const EPOS::Color & allocator) {
+    return _SYS::Page_Coloring::alloc(bytes, allocator);
+}
+
+inline void * operator new[](size_t bytes, const EPOS::Color & allocator) {
+    return _SYS::Page_Coloring::alloc(bytes, allocator);
 }
 
 // Delete cannot be declared inline due to virtual destructors

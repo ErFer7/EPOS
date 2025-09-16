@@ -3,6 +3,7 @@
 #include <process.h>
 #include <synchronizer.h>
 #include <time.h>
+#include "architecture.h"
 
 using namespace EPOS;
 
@@ -18,15 +19,14 @@ OStream cout;
 int test(int n);
 
 int main() {
-    mutex.lock();
+    // mutex.lock();
     cout << "Basic test" << endl;
 
     for (int i = 0; i < thread_count; i++) {
         threads[i] = new Thread(&test, i);
     }
 
-    cout << "The threads are ready" << endl;
-    mutex.unlock();
+    // mutex.unlock();
 
     for (int i = 0; i < thread_count; i++) {
         int ret = threads[i]->join();
@@ -47,7 +47,7 @@ int main() {
 int test(int n) {
     for (int i = 0; i < iterations; i++) {
         mutex.lock();
-        cout << "[" << n << "B" << n << "]" << endl;
+        cout << CPU::tp() << endl;
         mutex.unlock();
     }
 

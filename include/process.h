@@ -12,24 +12,28 @@
 
 extern "C" {
     void __exit();
-    volatile unsigned long _running() __attribute__ ((alias("_ZN4EPOS1S6Thread7runningEv")));;
+    void _lock_heap();
+    void _unlock_heap();
 }
 
 __BEGIN_SYS
 
 class Thread
 {
-    friend class Init_End;                      // context->load()
-    friend class Init_System;                   // for init() on CPU != 0
-    friend class Scheduler<Thread>;             // for link()
-    friend class Synchronizer_Common;           // for lock() and sleep()
-    friend class Alarm;                         // for lock()
-    friend class System;                        // for init()
-    friend class IC;                            // for link() for priority ceiling
-    friend volatile unsigned long ::_running(); // for running()
+    friend class Init_End;              // context->load()
+    friend class Init_System;           // for init() on CPU != 0
+    friend class Scheduler<Thread>;     // for link()
+    friend class Synchronizer_Common;   // for lock() and sleep()
+    friend class Alarm;                 // for lock()
+    friend class System;                // for init()
+    friend class IC;                    // for link() for priority ceiling
+    friend class Clerk<System>;         // for _statistics
+    friend void ::_lock_heap();         // for lock()
+    friend void ::_unlock_heap();       // for unlock()
 
 protected:
     static const bool smp = Traits<Thread>::smp;
+    static const bool monitored = Traits<Thread>::monitored;
     static const bool preemptive = Traits<Thread>::Criterion::preemptive;
     static const bool multitask = Traits<System>::multitask;
     static const bool reboot = Traits<System>::reboot;
@@ -54,6 +58,7 @@ public:
     // Thread Scheduling Criterion
     typedef Traits<Thread>::Criterion Criterion;
     enum {
+        ISR     = Criterion::ISR,
         HIGH    = Criterion::HIGH,
         NORMAL  = Criterion::NORMAL,
         LOW     = Criterion::LOW,
@@ -68,11 +73,12 @@ public:
     // t = 0 => Task::self()
     // ss = 0 => user-level stack on an auto expand segment
     struct Configuration {
-        Configuration(State s = READY, Criterion c = NORMAL, Task * t = 0, unsigned int ss = STACK_SIZE)
-        : state(s), criterion(c), task(t), stack_size(ss) {}
+        Configuration(const State & s = READY, const Criterion & c = NORMAL, Color a = WHITE, Task * t = 0, unsigned int ss = STACK_SIZE)
+        : state(s), criterion(c), color(a), task(t), stack_size(ss) {}
 
         State state;
         Criterion criterion;
+        Color color;
         Task * task;
         unsigned int stack_size;
     };
@@ -82,14 +88,14 @@ public:
     template<typename ... Tn>
     Thread(int (* entry)(Tn ...), Tn ... an);
     template<typename ... Tn>
-    Thread(Configuration conf, int (* entry)(Tn ...), Tn ... an);
+    Thread(const Configuration & conf, int (* entry)(Tn ...), Tn ... an);
     ~Thread();
 
     const volatile State & state() const { return _state; }
-    Criterion & criterion() { return const_cast<Criterion &>(_link.rank()); }
+    const volatile Criterion::Statistics & statistics() { return criterion().statistics(); }
 
     const volatile Criterion & priority() const { return _link.rank(); }
-    void priority(Criterion p);
+    void priority(const Criterion & p);
 
     Task * task() const { return _task; }
 
@@ -98,27 +104,39 @@ public:
     void suspend();
     void resume();
 
-    static Thread * volatile self() { return running(); }
+    static Thread * volatile self() { return _not_booting ? running() : reinterpret_cast<Thread * volatile>(CPU::id() + 1); }
     static void yield();
     static void exit(int status = 0);
 
 protected:
-    void constructor_prologue(unsigned int stack_size);
+    void constructor_prologue(Color color, unsigned int stack_size);
     void constructor_epilogue(Log_Addr entry, unsigned int stack_size);
 
+    Criterion & criterion() { return const_cast<Criterion &>(_link.rank()); }
     Queue::Element * link() { return &_link; }
 
-    static Thread * volatile running() { return _not_booting ? _scheduler.chosen() : reinterpret_cast<Thread * volatile>(CPU::id() + 1); }
-
-    static void lock() {
-        CPU::int_disable();
-        if(smp)
-            _lock.acquire();
+    Criterion begin_isr(IC::Interrupt_Id i) {
+        assert(_state == RUNNING);
+        Criterion c = criterion();
+        _link.rank(Criterion::ISR + int(i));
+        return c;
+    }
+    void end_isr(IC::Interrupt_Id i, const Criterion & c) {
+        assert(_state == RUNNING);
+        _link.rank(c);
     }
 
-    static void unlock() {
+    static Thread * volatile running() { return _scheduler.chosen(); }
+
+    static void lock(Spin * lock = &_lock) {
+        CPU::int_disable();
         if(smp)
-            _lock.release();
+            lock->acquire();
+    }
+
+    static void unlock(Spin * lock = &_lock) {
+        if(smp)
+            lock->release();
         if(_not_booting)
             CPU::int_enable();
     }
@@ -136,6 +154,19 @@ protected:
 
     static void dispatch(Thread * prev, Thread * next, bool charge = true);
 
+    static void for_all_threads(bool (* function)(Criterion &), const Thread * exclude = 0) {
+        bool ret = true;
+        for(Queue::Iterator i = _scheduler.begin(); ret && (i != _scheduler.end()); ++i)
+            if((i->object() != exclude) && (!Criterion::track_idle && (i->object()->priority() != IDLE)))
+                ret = function(i->object()->criterion());
+    }
+    static void for_all_threads_in_task(const Task * task, bool (* function)(Criterion &), const Thread * exclude = 0);
+    static void for_all_threads_in_cpu(unsigned int cpu, bool (* function)(Criterion &), const Thread * exclude = 0);
+
+    static bool collector(Criterion & c) { return c.collect(); }
+    static bool charger(Criterion & c) { return c.charge(); }
+    static bool awarder(Criterion & c) { return c.award(); }
+
     static int idle();
 
 private:
@@ -152,7 +183,7 @@ protected:
     Thread * volatile _joining;
     Queue::Element _link;
 
-    alignas (int) static bool _not_booting;
+    static bool _not_booting;
     static volatile unsigned int _thread_count;
     static Scheduler_Timer * _timer;
     static Scheduler<Thread> _scheduler;
@@ -163,7 +194,7 @@ protected:
 // Task (only used in multitasking configurations)
 class Task
 {
-    friend class Thread;           // for Task(), enroll() and dismiss()
+    friend class Thread;        // for insert()
     friend class Alarm;            // for enroll() and dismiss()
     friend class Mutex;            // for enroll() and dismiss()
     friend class Condition;        // for enroll() and dismiss()
@@ -190,7 +221,7 @@ protected:
 
         _current = this;
         activate();
-        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::RUNNING, Thread::MAIN, this, 0), entry, an ...);
+        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::RUNNING, Thread::MAIN, WHITE, this, 0), entry, an ...);
     }
 
 public:
@@ -201,17 +232,17 @@ public:
 
         _cs->reflag(Segment::Flags::APPC);
         _ds->reflag(Segment::Flags::APPD);
-        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::NORMAL, this, 0), entry, an ...);
+        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, this, 0), entry, an ...);
     }
     
     template<typename ... Tn>
-    Task(Thread::Configuration conf, Segment * cs, Segment * ds, Log_Addr code, Log_Addr data, int (* entry)(Tn ...), Tn ... an)
+    Task(const Thread::Configuration & conf, Segment * cs, Segment * ds, Log_Addr code, Log_Addr data, int (* entry)(Tn ...), Tn ... an)
     : _as (new (SYSTEM) Address_Space), _cs(cs), _ds(ds), _code(_as->attach(_cs, code)), _data(_as->attach(_ds, data)), _entry(entry) {
         db<Task>(TRC) << "Task(as=" << _as << ",cs=" << _cs << ",ds=" << _ds << ",entry=" << _entry << ",code=" << _code << ",data=" << _data << ") => " << this << endl;
 
         _cs->reflag(Segment::Flags::APPC);
         _ds->reflag(Segment::Flags::APPD);
-        _main = new (SYSTEM) Thread(Thread::Configuration(conf.state, conf.criterion, this, 0), entry, an ...);
+        _main = new (SYSTEM) Thread(Thread::Configuration(conf.state, conf.criterion, WHITE, this, 0), entry, an ...);
     }
     
     template<typename ... Tn>
@@ -251,7 +282,7 @@ public:
         db<Task>(TRC) << "Task(as=" << _as << ",cs=" << _cs << ",ds=" << _ds << ",entry=" << _entry << ",code=" << _code << ",data=" << _data << ") => " << this << endl;
 
         // Create the task's main thread
-        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::NORMAL, this, 0), static_cast<int (*)(Tn ...)>(_entry), an ...);
+        _main = new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::NORMAL, WHITE, this, 0), static_cast<int (*)(Tn ...)>(_entry), an ...);
     }
 
     ~Task();
@@ -340,17 +371,17 @@ template<typename ... Tn>
 inline Thread::Thread(int (* entry)(Tn ...), Tn ... an)
 : _task(Task::self()), _user_stack(0), _state(READY), _waiting(0), _joining(0), _link(this, NORMAL)
 {
-    constructor_prologue(STACK_SIZE);
+    constructor_prologue(WHITE, STACK_SIZE);
     _context = CPU::init_stack(0, _stack + STACK_SIZE, &__exit, entry, an ...);
     constructor_epilogue(entry, STACK_SIZE);
 }
 
 template<typename ... Tn>
-inline Thread::Thread(Configuration conf, int (* entry)(Tn ...), Tn ... an)
+inline Thread::Thread(const Configuration & conf, int (* entry)(Tn ...), Tn ... an)
 : _task(conf.task ? conf.task : Task::self()), _state(conf.state), _waiting(0), _joining(0), _link(this, conf.criterion)
 {
     if(multitask && !conf.stack_size) { // auto-expand, user-level stack
-        constructor_prologue(STACK_SIZE);
+        constructor_prologue(conf.color, STACK_SIZE);
         _user_stack = new (SYSTEM) Segment(USER_STACK_SIZE);
 
         // Attach the thread's user-level stack to the current address space so we can initialize it
@@ -375,7 +406,7 @@ inline Thread::Thread(Configuration conf, int (* entry)(Tn ...), Tn ... an)
         // Initialize the thread's system-level stack
         _context = CPU::init_stack(usp, _stack + STACK_SIZE, &__exit, entry, an ...);
     } else { // single-task scenarios and idle thread, which is a kernel thread, don't have a user-level stack
-        constructor_prologue(conf.stack_size);
+        constructor_prologue(conf.color, conf.stack_size);
         _user_stack = 0;
         _context = CPU::init_stack(0, _stack + conf.stack_size, &__exit, entry, an ...);
     }

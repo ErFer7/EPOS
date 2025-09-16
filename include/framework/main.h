@@ -33,6 +33,7 @@ __END_SYS
 #include <time.h>
 #include <memory.h>
 #include <synchronizer.h>
+#include <communicator.h>
 
 #include "handle.h"
 
@@ -69,6 +70,14 @@ BIND(Clock);
 BIND(Chronometer);
 BIND(Alarm);
 BIND(Delay);
+
+BIND(Network);
+EXPORT(IPC);
+EXPORT(IP);
+EXPORT(ICMP);
+EXPORT(UDP);
+EXPORT(TCP);
+EXPORT(DHCP);
 
 template<typename Channel, bool connectionless = Channel::connectionless>
 class Link: public _SYS::Handle<_SYS::Link<Channel, connectionless>>
