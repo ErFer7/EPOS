@@ -820,7 +820,7 @@ public:
         Version version() const { return static_cast<Version>(_config & 0x07); }
         void version(const Version & v) { _config = (_config & 0xf8) | (v & 0x07); }
 
-        bool mobile() const { return ((_config & 0xf8) == 4); }
+        // bool mobile() const { return ((_config & 0xf8) == 4); }
         void mobile(bool m) { _config = (_config & 0xf8) | (m ? 4 : 0); }
 
         Type type() const { return static_cast<Type>((_config >> 3) & 0x03); }
@@ -1254,9 +1254,9 @@ public:
         record.unit = UNIT;
         record.value = _value;
         record.uncertainty = _uncertainty;
-        record.x = gs.x;
-        record.y = gs.y;
-        record.z = gs.z;
+        // record.x = gs.x;
+        // record.y = gs.y;
+        // record.z = gs.z;
         record.t = abs_time;
         record.device = _device;
         return record;
@@ -1555,9 +1555,9 @@ public:
         record.unit = UNIT;
         record.value = _value;
         record.uncertainty = _response.uncertainty();
-        record.x = gs.x;
-        record.y = gs.y;
-        record.z = gs.z;
+        // record.x = gs.x;
+        // record.y = gs.y;
+        // record.z = gs.z;
         record.t = abs_time;
         record.device = _response.device();
         return record;
@@ -1568,10 +1568,10 @@ public:
         series.type = STATIC;
         series.unit = UNIT;
         Space c = Locator::absolute(_region.center);
-        series.x = c.x;
-        series.y = c.y;
-        series.z = c.z;
-        series.r = _region.radius;
+        // series.x = c.x;
+        // series.y = c.y;
+        // series.z = c.z;
+        // series.r = _region.radius;
         series.t0 = Timekeeper::absolute(_region.t0);
         series.t1 = Timekeeper::absolute(_region.t1);
         return series;
