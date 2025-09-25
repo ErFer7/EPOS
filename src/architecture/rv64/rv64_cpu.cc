@@ -8,48 +8,53 @@ __BEGIN_SYS
 unsigned int CPU::_cpu_clock;
 unsigned int CPU::_bus_clock;
 
-void CPU::Context::save() volatile
+void CPU::Context::save() const volatile
 {
-if(multitask) {
-    ASM("       csrr     x3,  sscratch          \n"     // SSCRATCH = USP (SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads))
-        "       sd       x3,    0(a0)           \n");   // push USP
+if(supervisor) {
+    ASM("       csrr     x3,    sepc            \n");
+} else {
+    ASM("       csrr     x3,    mepc            \n");
 }
-    ASM("       sd       x1,    8(a0)           \n");   // push RA as PC
+    ASM("       sd       x3,    0(a0)           \n");   // save PC
 if(supervisor) {
     ASM("       csrr     x3,  sstatus           \n");
 } else {
     ASM("       csrr     x3,  mstatus           \n");
 }
-    ASM("       sd       x3,   16(a0)           \n"     // push ST
-        "       sd       x1,   24(a0)           \n"     // push X1
-        "       sd       x5,   32(a0)           \n"     // push X5-X31
-        "       sd       x6,   40(a0)           \n"
-        "       sd       x7,   48(a0)           \n"
-        "       sd       x8,   56(a0)           \n"
-        "       sd       x9,   64(a0)           \n"
-        "       sd      x10,   72(a0)           \n"
-        "       sd      x11,   80(a0)           \n"
-        "       sd      x12,   88(a0)           \n"
-        "       sd      x13,   96(a0)           \n"
-        "       sd      x14,  104(a0)           \n"
-        "       sd      x15,  112(a0)           \n"
-        "       sd      x16,  120(a0)           \n"
-        "       sd      x17,  128(a0)           \n"
-        "       sd      x18,  136(a0)           \n"
-        "       sd      x19,  144(a0)           \n"
-        "       sd      x20,  152(a0)           \n"
-        "       sd      x21,  160(a0)           \n"
-        "       sd      x22,  168(a0)           \n"
-        "       sd      x23,  176(a0)           \n"
-        "       sd      x24,  184(a0)           \n"
-        "       sd      x25,  192(a0)           \n"
-        "       sd      x26,  200(a0)           \n"
-        "       sd      x27,  208(a0)           \n"
-        "       sd      x28,  216(a0)           \n"
-        "       sd      x29,  224(a0)           \n"
-        "       sd      x30,  232(a0)           \n"
-        "       sd      x31,  240(a0)           \n"
-        "       ret                             \n");
+    ASM("       sd       x3,    8(a0)           \n"     // save ST
+        "       sd       x1,   16(a0)           \n"     // save RA
+        "       sd       x5,   24(a0)           \n"     // save X5-X31
+        "       sd       x6,   32(a0)           \n"
+        "       sd       x7,   40(a0)           \n"
+        "       sd       x8,   48(a0)           \n"
+        "       sd       x9,   56(a0)           \n"
+        "       sd      x10,   64(a0)           \n"
+        "       sd      x11,   72(a0)           \n"
+        "       sd      x12,   80(a0)           \n"
+        "       sd      x13,   88(a0)           \n"
+        "       sd      x14,   96(a0)           \n"
+        "       sd      x15,  104(a0)           \n"
+        "       sd      x16,  112(a0)           \n"
+        "       sd      x17,  120(a0)           \n"
+        "       sd      x18,  128(a0)           \n"
+        "       sd      x19,  136(a0)           \n"
+        "       sd      x20,  144(a0)           \n"
+        "       sd      x21,  152(a0)           \n"
+        "       sd      x22,  160(a0)           \n"
+        "       sd      x23,  168(a0)           \n"
+        "       sd      x24,  176(a0)           \n"
+        "       sd      x25,  184(a0)           \n"
+        "       sd      x26,  192(a0)           \n"
+        "       sd      x27,  200(a0)           \n"
+        "       sd      x28,  208(a0)           \n"
+        "       sd      x29,  216(a0)           \n"
+        "       sd      x30,  224(a0)           \n"
+        "       sd      x31,  232(a0)           \n");
+if(multitask) {
+    ASM("       csrr     x3,  sscratch          \n"     // SSCRATCH = USP (SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads))
+        "       sd       x3,  240(a0)           \n");   // push USP
+}
+    ASM("       ret                             \n");
 }
 
 // Context load does not verify if interrupts were previously enabled by the Context's constructor
@@ -58,7 +63,7 @@ void CPU::Context::load() const volatile
 {
     sp(Log_Addr(this));
     pop();
-    ret();
+    iret();
 }
 
 void CPU::switch_context(Context ** o, Context * n)     // "o" is in a0 and "n" is in a1
@@ -70,7 +75,7 @@ void CPU::switch_context(Context ** o, Context * n)     // "o" is in a0 and "n" 
     // Set the stack pointer to "n" and pop the context from the stack
     ASM("mv sp, a1");   // "n" is in a1
     Context::pop();
-    ret();
+    iret();
 }
 
 __END_SYS

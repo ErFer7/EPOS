@@ -1,0 +1,4 @@
+test:
+  script:
+  - if [ "$CI_COMMIT_REF_NAME" != "develop" ]; then TESTS="ip_test chronometer_test list_test disparity_periodic pci_test scheduler_gedf_test page_coloring_test stress_feature_test queue_test cipher_test timer_test handler_test mser rtc_test task_test cpu_test alarm_test periodic_thread_test mutex_test active_test thread_test scheduler_dm_test disparity elp_ieee802_15_4_test vector_test scheduler_cedf_test math_test elp_ethernet_test scheduler_pedf_test transducer_test synchronizer_test hash_test malloc_test scheduler_rm_test bandwidth_pl0 nic_test bignum_test scheduler_llf_test smartdata_pc_test ostream_test segment_test semaphore_test uart_test rs485_test pmu_test scheduler_cpu_affinity_test scheduler_edf_test"; fi
+  - make gittest

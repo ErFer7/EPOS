@@ -41,8 +41,11 @@ public:
             }
         }
 
-        if(result() == UNDEFINED)
+        if(result() == UNDEFINED) {
+            if((id().type() == UTILITY_ID) && !Traits<Framework>::hysterically_debugged)
+                db<Framework>(TRC) << ":=>" << *reinterpret_cast<Message *>(this) << endl;
             db<Framework>(WRN) << ":=: unsupported system call!" << endl;
+        }
 
         if((id().type() != UTILITY_ID) || Traits<Framework>::hysterically_debugged)
             db<Framework>(TRC) << "<=:" << *reinterpret_cast<Message *>(this) << endl;
@@ -323,19 +326,19 @@ void Agent::handle_segment()
 
     switch(method()) {
     case CREATE1: {
-        unsigned int bytes;
+        unsigned long bytes;
         in(bytes);
         id(Id(SEGMENT_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Segment>(bytes))));
     } break;
     case CREATE2: {
-        unsigned int bytes;
+        unsigned long bytes;
         Segment::Flags flags;
         in(bytes, flags);
         id(Id(SEGMENT_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Segment>(bytes, flags))));
     } break;
     case CREATE3: {
         Segment::Phy_Addr phy_addr;
-        unsigned int bytes;
+        unsigned long bytes;
         Segment::Flags flags;
         in(phy_addr, bytes, flags);
         id(Id(SEGMENT_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Segment>(phy_addr, bytes, flags))));
@@ -350,7 +353,7 @@ void Agent::handle_segment()
         res = seg->phy_address();
         break;
     case SEGMENT_RESIZE: {
-        int amount;
+        long amount;
         in(amount);
         res = seg->resize(amount);
     } break;
@@ -398,7 +401,7 @@ void Agent::handle_semaphore()
         id(Id(SEMAPHORE_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Semaphore>())));
         break;
     case CREATE1:
-        int value;
+        long value;
         in(value);
         id(Id(SEMAPHORE_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Semaphore>(value))));
         break;
@@ -475,7 +478,7 @@ void Agent::handle_alarm()
     case CREATE3: {
         Microsecond time;
         Handler * handler;
-        int times;
+        unsigned int times;
         in(time, handler, times);
         id(Id(ALARM_ID, reinterpret_cast<Id::Unit_Id>(new Adapter<Alarm>(time, handler, times))));
     } break;

@@ -13,12 +13,13 @@ class CPU: protected CPU_Common
 
 private:
     static const bool supervisor = Traits<Machine>::supervisor;
+    static const bool amo = Traits<CPU>::atomic_memory_operations;
     static const bool multicore = Traits<System>::multicore;
     static const bool multitask = Traits<System>::multitask;
 
 public:
     // Bootstrap/service CPU id
-    static const unsigned long BSP = 0;
+    static const unsigned long BSP = Traits<Machine>::BSP;
 
     // CPU Native Data Types
     using CPU_Common::Reg8;
@@ -38,6 +39,7 @@ public:
         MIE             = 1 <<  3,      // Machine Interrupts Enabled
         UPIE            = 1 <<  4,      // User Previous Interrupts Enabled
         SPIE            = 1 <<  5,      // Supervisor Previous Interrupts Enabled
+        UBE             = 1 <<  6,      // Endianness of data memory accesses in user mode (0 -> little, 1 -> big); fetches are always little-endian
         MPIE            = 1 <<  7,      // Machine Previous Interrupts Enabled
         SPP             = 1 <<  8,      // Supervisor Previous Privilege
         SPP_U           = 0 <<  8,      // Supervisor Previous Privilege = user
@@ -56,7 +58,7 @@ public:
         XS_INIT         = 1 << 15,      // Extension on
         XS_CLEAN        = 2 << 15,      // Extension registers clean
         XS_DIRTY        = 3 << 15,      // Extension registers dirty (and must be saved on context switch)
-        MPRV            = 1 << 17,      // Memory PRiVilege (when set, enables MMU also in machine mode)
+        MPRV            = 1 << 17,      // Memory PRiVilege (when set, enables MMU if MPP uses MMU)
         SUM             = 1 << 18,      // Supervisor User Memory access allowed
         MXR             = 1 << 19,      // Make eXecutable Readable
         TVM             = 1 << 20,      // Trap Virtual Memory makes SATP inaccessible in supervisor mode
@@ -126,7 +128,7 @@ public:
             }
         }
 
-        void save() volatile __attribute__ ((naked));
+        void save() const volatile __attribute__ ((naked));
         void load() const volatile __attribute__ ((naked));
 
         friend OStream & operator<<(OStream & os, const Context & c) {
@@ -177,8 +179,8 @@ public:
         Reg _st;      // [m|s]status
     //  Reg _x0;      // zero
         Reg _x1;      // ra, ABI Link Register
-    //  Reg _x2;      // sp, ABI Stack Pointer, saved as this
-    //  Reg _x3;      // gp, ABI Global Pointer, used in EPOS as a temporary
+    //  Reg _x2;      // sp, ABI Stack Pointer, saved in EPOS as the Context's this pointer
+    //  Reg _x3;      // gp, ABI Global Pointer, used in EPOS as a temporary inside the kernel
     //  Reg _x4;      // tp, ABI Thread Pointer, used in EPOS as core id
         Reg _x5;      // t0
         Reg _x6;      // t1
@@ -250,42 +252,50 @@ public:
 
     static void halt() { ASM("wfi"); }
 
-    static void fpu_save() { /* FIXME */ }
-    static void fpu_restore()  { /* FIXME */ }
+    static void fpu_save();
+    static void fpu_restore();
 
     static void switch_context(Context ** o, Context * n) __attribute__ ((naked));
 
     static void syscall(void * message);
-    static void syscalled(unsigned int int_id);
+    static void syscalled(Interrupt_Id int_id);
 
     template<typename T>
     static T tsl(volatile T & lock) {
         register T old;
-        register T one = 1;
-        ASM("1: lr.w    %0, (%1)        \n"
-            "   sc.w    t3, %2, (%1)    \n"
-            "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&lock), "r"(one) : "t3", "cc", "memory");
+        if(amo)
+            ASM("amoswap.w %0, %2, (%1)" : "=&r"(old) : "r"(&lock), "r"(1) : "memory");
+        else
+            ASM("1: lr.w    %0, (%1)        \n"
+                "   sc.w    t3, %2, (%1)    \n"
+                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&lock), "r"(1) : "t3", "cc", "memory");
         return old;
     }
 
     template<typename T>
     static T finc(volatile T & value) {
         register T old;
-        ASM("1: lr.w    %0, (%1)        \n"
-            "   addi    %0, %0, 1       \n"
-            "   sc.w    t3, %0, (%1)    \n"
-            "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
-        return old - 1;
+        if(amo)
+            ASM("amoadd.w %0, %2, (%1)" : "=&r"(old) : "r"(&value), "r"(1) : "memory");
+        else
+            ASM("1: lr.w    %0, (%1)        \n"
+                "   addi    t3, %0, 1       \n"
+                "   sc.w    t3, t3, (%1)    \n"
+                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
+        return old;
     }
 
     template<typename T>
     static T fdec(volatile T & value) {
         register T old;
-        ASM("1: lr.w    %0, (%1)        \n"
-            "   addi    %0, %0, -1      \n"
-            "   sc.w    t3, %0, (%1)    \n"
-            "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
-        return old + 1;
+        if(amo)
+            ASM("amoadd.w %0, %2, (%1)" : "=&r"(old) : "r"(&value), "r"(-1) : "memory");
+        else
+            ASM("1: lr.w    %0, (%1)        \n"
+                "   addi    t3, %0, -1      \n"
+                "   sc.w    t3, t3, (%1)    \n"
+                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
+        return old;
     }
 
     template <typename T>
@@ -334,9 +344,9 @@ public:
         init_stack_helper(&ctx->_x10, an ...); // x10 is a0
 
         if(usp) { // multitask applications
-            // Dummy context
+            // Context to switch to user mode
             ksp -= sizeof(Context);
-            ctx = new(ksp) Context(&Context::first_dispatch, 0, 0); // this context will be popped by switch() to reach _int_leave(), which will activate the thread's context
+            ctx = new(ksp) Context(&Context::first_dispatch, 0, 0); // this context will be popped by switch() to reach first_dispatch(), which will activate the thread's context at return
             ctx->_x10 = 0; // zero fr() for the pop(true) issued by first_dispatch()
         }
 
@@ -495,27 +505,22 @@ if(interrupt && multitask) {
     ASM("       addi     sp, sp, %0             \n" : : "i"(-sizeof(Context))); // adjust SP for the pushes below
 if(interrupt) {
   if(supervisor) {
-    ASM("       csrr     x3,    sepc            \n"
-        "       sw       x3,    0(sp)           \n");   // push SEPC as PC on interrupts
+    ASM("       csrr     x3,    sepc            \n");   // push SEPC as PC on interrupts in supervisor mode
   } else {
-    ASM("       csrr     x3,    mepc            \n"
-        "       sw       x3,    0(sp)           \n");   // push MEPC as PC on interrupts
+    ASM("       csrr     x3,    mepc            \n");   // push MEPC as PC on interrupts in machine mode
   }
 } else {
-    ASM("       sw       x1,    0(sp)           \n");   // push RA as PC on context switches
+    ASM("       mv       x3,    x1              \n");   // push RA as PC on context switches
 }
-if(!interrupt && supervisor) {
-    ASM("       li       x3,      %0            \n"
-        "       csrs     sstatus, x3            \n": : "i"(SPP_S));   // set SPP_S inside the kernel; the push(true) on IC::entry() has already saved the correct value to eventually return to the application
-}
+    ASM("       sw       x3,    0(sp)           \n");   // push PC
 if(supervisor) {
     ASM("       csrr     x3, sstatus            \n");
 } else {
     ASM("       csrr     x3, mstatus            \n");
 }
     ASM("       sw       x3,    4(sp)           \n"     // push ST
-        "       sw       x1,    8(sp)           \n"     // push X1-X31
-        "       sw       x5,   12(sp)           \n"
+        "       sw       x1,    8(sp)           \n"     // push RA
+        "       sw       x5,   12(sp)           \n"     // push X5-X31
         "       sw       x6,   16(sp)           \n"
         "       sw       x7,   20(sp)           \n"
         "       sw       x8,   24(sp)           \n"
@@ -556,26 +561,23 @@ inline void CPU::Context::pop(bool interrupt)
 if(interrupt) {
     int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
 }
-    ASM("       lw       x3,    0(sp)           \n");   // pop PC into TMP
-if(interrupt) {
-    ASM("       add      x3, x3, a0             \n");   // A0 is set by exception handlers to adjust [M|S]EPC to point to the next instruction if needed
+if(multitask) {
+    ASM("       lw       x3,  120(sp)           \n"     // pop USP into TMP
+        "       csrw     sscratch, x3           \n");   // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)
 }
+    ASM("       lw       x3,    0(sp)           \n");   // pop PC into TMP
 if(supervisor) {
     ASM("       csrw     sepc, x3               \n");   // SEPC = PC
 } else {
     ASM("       csrw     mepc, x3               \n");   // MEPC = PC
 }
-if(multitask) {
-    ASM("       lw       x3,  120(sp)           \n"     // pop USP into TMP
-        "       csrw    sscratch, x3            \n");   // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)
-}
     ASM("       lw       x3,    4(sp)           \n");   // pop ST into TMP
-if(!interrupt) {
+if(!interrupt) {                                        // MSTATUS.MPP is automatically cleared on the MRET in the ISR, so we need to recover it here
     ASM("       li      x10, %0                 \n"     // use X10 as a second TMP, since it will be restored later
-        "       or       x3, x3, x10            \n" : : "i"(supervisor ? MPP_S : MPP_M)); // [M|S]STATUS.[S|M]PP is automatically cleared on the [M|S]RET in the ISR, so we need to recover it here
+        "       or       x3, x3, x10            \n" : : "i"(supervisor ? SPP_S : MPP_M)); // [M|S]STATUS.[S|M]PP is automatically cleared on the [M|S]RET in the ISR, so we need to recover it here
 }
-    ASM("       lw       x1,    8(sp)           \n"     // pop X1-X31
-        "       lw       x5,   12(sp)           \n"
+    ASM("       lw       x1,    8(sp)           \n"     // pop RA
+        "       lw       x5,   12(sp)           \n"     // pop X5-X31
         "       lw       x6,   16(sp)           \n"
         "       lw       x7,   20(sp)           \n"
         "       lw       x8,   24(sp)           \n"

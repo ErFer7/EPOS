@@ -13,6 +13,7 @@ class CPU: protected CPU_Common
 
 private:
     static const bool supervisor = Traits<Machine>::supervisor;
+    static const bool amo = Traits<CPU>::atomic_memory_operations;
     static const bool multicore = Traits<System>::multicore;
     static const bool multitask = Traits<System>::multitask;
 
@@ -119,10 +120,10 @@ public:
 
     public:
         Context() {}
-        // Contexts are loaded with [m|s]ret, which gets pc from [m|s]epc and updates some bits of [m|s]status, that's why _st is initialized with [M|S]PIE and [M|S]PP
-        // Kernel threads are created with usp = 0 and have SPP_S set
+        // Contexts are loaded with [M|S]RET, which gets pc from [M|S]EPC and updates some bits of [M|S]STATUS, that's why _st is initialized with [M|S]PIE and [M|S]PP
+        // Kernel threads are created with usp = 0 and have SPP_S so they don't transition to user-level
         // Dummy contexts for the first execution of each thread (both kernel and user) are created with exit = 0 and SPIE cleared (no interrupts until the second context is popped)
-        Context(Log_Addr entry, Log_Addr exit, Log_Addr usp): _usp(usp), _pc(entry), _st(supervisor ? ((exit ? SPIE : 0) | (usp ? SPP_U : SPP_S) | SUM) : ((exit ? MPIE : 0) | MPP_M)), _x1(exit) {
+        Context(Log_Addr entry, Log_Addr exit, Log_Addr usp): _pc(entry), _st(supervisor ? ((exit ? SPIE : 0) | (usp ? SPP_U : SPP_S) | SUM) : ((exit ? MPIE : 0) | MPP_M)), _x1(exit), _usp(usp) {
             if(Traits<Build>::hysterically_debugged || Traits<Thread>::trace_idle) {
                                                                         _x5 =  5;  _x6 =  6;  _x7 =  7;  _x8 =  8;  _x9 =  9;
                 _x10 = 10; _x11 = 11; _x12 = 12; _x13 = 13; _x14 = 14; _x15 = 15; _x16 = 16; _x17 = 17; _x18 = 18; _x19 = 19;
@@ -131,7 +132,7 @@ public:
             }
         }
 
-        void save() volatile __attribute__ ((naked));
+        void save() const volatile __attribute__ ((naked));
         void load() const volatile __attribute__ ((naked));
 
         friend OStream & operator<<(OStream & os, const Context & c) {
@@ -178,7 +179,6 @@ public:
         static void first_dispatch() __attribute__ ((naked));
 
     private:
-        Reg _usp;     // usp (used with multitasking)
         Reg _pc;      // pc
         Reg _st;      // [m|s]status
     //  Reg _x0;      // zero
@@ -213,6 +213,7 @@ public:
         Reg _x29;     // t4
         Reg _x30;     // t5
         Reg _x31;     // t6
+        Reg _usp;     // usp (used with multitasking)
     };
 
     // Interrupt Service Routines
@@ -255,8 +256,8 @@ public:
 
     static void halt() { ASM("wfi"); }
 
-    static void fpu_save() { /* FIXME */ }
-    static void fpu_restore()  { /* FIXME */ }
+    static void fpu_save();
+    static void fpu_restore();
 
     static void switch_context(Context ** o, Context * n) __attribute__ ((naked));
 
@@ -266,15 +267,20 @@ public:
     template<typename T>
     static T tsl(volatile T & lock) {
         register T old;
-        register T one = 1;
         if(sizeof(T) == sizeof(Reg64))
-            ASM("1: lr.d    %0, (%1)        \n"
-                "   sc.d    t3, %2, (%1)    \n"
-                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&lock), "r"(one) : "t3", "cc", "memory");
+            if(amo)
+                ASM("amoswap.d %0, %2, (%1)" : "=&r"(old) : "r"(&lock), "r"(1) : "memory");
+            else
+                ASM("1: lr.d    %0, (%1)        \n"
+                    "   sc.d    t3, %2, (%1)    \n"
+                    "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&lock), "r"(1) : "t3", "cc", "memory");
         else
-            ASM("1: lr.w    %0, (%1)        \n"
-                "   sc.w    t3, %2, (%1)    \n"
-                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&lock), "r"(one) : "t3", "cc", "memory");
+            if(amo)
+                ASM("amoswap.w %0, %2, (%1)" : "=&r"(old) : "r"(&lock), "r"(1) : "memory");
+            else
+                ASM("1: lr.w    %0, (%1)        \n"
+                    "   sc.w    t3, %2, (%1)    \n"
+                    "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&lock), "r"(1) : "t3", "cc", "memory");
         return old;
     }
 
@@ -282,32 +288,44 @@ public:
     static T finc(volatile T & value) {
         register T old;
         if(sizeof(T) == sizeof(Reg64))
-            ASM("1: lr.d    %0, (%1)        \n"
-                "   addi    %0, %0, 1       \n"
-                "   sc.d    t3, %0, (%1)    \n"
-                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
+            if(amo)
+                ASM("amoadd.d %0, %2, (%1)" : "=r&"(old) : "r"(&value), "r"(1) : "memory");
+            else
+                ASM("1: lr.d    %0, (%1)        \n"
+                    "   addi    t3, %0, 1       \n"
+                    "   sc.d    t3, t3, (%1)    \n"
+                    "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
         else
-            ASM("1: lr.w    %0, (%1)        \n"
-                "   addi    %0, %0, 1       \n"
-                "   sc.w    t3, %0, (%1)    \n"
-                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
-        return old - 1;
+            if(amo)
+                ASM("amoadd.w %0, %2, (%1)" : "=&r"(old) : "r"(&value), "r"(1) : "memory");
+            else
+                ASM("1: lr.w    %0, (%1)        \n"
+                    "   addi    t3, %0, 1       \n"
+                    "   sc.w    t3, t3, (%1)    \n"
+                    "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
+        return old;
     }
 
     template<typename T>
     static T fdec(volatile T & value) {
         register T old;
         if(sizeof(T) == sizeof(Reg64))
-            ASM("1: lr.d    %0, (%1)        \n"
-                "   addi    %0, %0, -1      \n"
-                "   sc.d    t3, %0, (%1)    \n"
-                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
+            if(amo)
+                ASM("amoadd.d %0, %2, (%1)" : "=r"(old) : "r"(&value), "r"(-1) : "memory");
+            else
+                ASM("1: lr.d    %0, (%1)        \n"
+                    "   addi    t3, %0, -1      \n"
+                    "   sc.d    t3, t3, (%1)    \n"
+                    "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
         else
-            ASM("1: lr.w    %0, (%1)        \n"
-                "   addi    %0, %0, -1      \n"
-                "   sc.w    t3, %0, (%1)    \n"
-                "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
-        return old + 1;
+            if(amo)
+                ASM("amoadd.w %0, %2, (%1)" : "=&r"(old) : "r"(&value), "r"(-1) : "memory");
+            else
+                ASM("1: lr.w    %0, (%1)        \n"
+                    "   addi    t3, %0, -1      \n"
+                    "   sc.w    t3, t3, (%1)    \n"
+                    "   bnez    t3, 1b          \n" : "=&r"(old) : "r"(&value) : "t3", "cc", "memory");
+        return old;
     }
 
     template <typename T>
@@ -412,7 +430,7 @@ public:
     static void gp(Reg r) {   ASM("mv x3, %0" : : "r"(r) :); }
 
     static void ecall() { ASM("ecall"); }
-    static void ret(bool interrupt = false) { if(interrupt) if(supervisor) sret(); else mret(); else ASM("ret"); }
+    static void iret() { supervisor ? sret() : mret(); }
 
     // Machine mode
     static void mint_enable()  { ASM("csrsi mstatus, %0" : : "i"(MIE) : "cc"); }
@@ -521,14 +539,7 @@ if(interrupt && multitask) {
         "       mv      sp, x3                  \n"
         "1:                                     \n" : : "i"(SPP_S));
 }
-
     ASM("       addi     sp, sp, %0             \n" : : "i"(-sizeof(Context))); // adjust SP for the pushes below
-
-if(multitask) {
-    ASM("       csrr     x3, sscratch           \n"     // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)
-        "       sd       x3,    0(sp)           \n");   // push USP
-}
-
 if(interrupt) {
   if(supervisor) {
     ASM("       csrr     x3,    sepc            \n");   // push SEPC as PC on interrupts in supervisor mode
@@ -538,108 +549,104 @@ if(interrupt) {
 } else {
     ASM("       mv       x3,    x1              \n");   // push RA as PC on context switches
 }
-    ASM("       sd       x3,    8(sp)           \n");   // push PC
-
+    ASM("       sd       x3,    0(sp)           \n");   // push PC
 if(supervisor) {
     ASM("       csrr     x3, sstatus            \n");
 } else {
     ASM("       csrr     x3, mstatus            \n");
 }
-    ASM("       sd       x3,   16(sp)           \n");   // push ST
-
-    ASM("       sd       x1,   24(sp)           \n"     // push X1
-        "       sd       x5,   32(sp)           \n"     // push X5-X31
-        "       sd       x6,   40(sp)           \n"
-        "       sd       x7,   48(sp)           \n"
-        "       sd       x8,   56(sp)           \n"
-        "       sd       x9,   64(sp)           \n"
-        "       sd      x10,   72(sp)           \n"
-        "       sd      x11,   80(sp)           \n"
-        "       sd      x12,   88(sp)           \n"
-        "       sd      x13,   96(sp)           \n"
-        "       sd      x14,  104(sp)           \n"
-        "       sd      x15,  112(sp)           \n"
-        "       sd      x16,  120(sp)           \n"
-        "       sd      x17,  128(sp)           \n"
-        "       sd      x18,  136(sp)           \n"
-        "       sd      x19,  144(sp)           \n"
-        "       sd      x20,  152(sp)           \n"
-        "       sd      x21,  160(sp)           \n"
-        "       sd      x22,  168(sp)           \n"
-        "       sd      x23,  176(sp)           \n"
-        "       sd      x24,  184(sp)           \n"
-        "       sd      x25,  192(sp)           \n"
-        "       sd      x26,  200(sp)           \n"
-        "       sd      x27,  208(sp)           \n"
-        "       sd      x28,  216(sp)           \n"
-        "       sd      x29,  224(sp)           \n"
-        "       sd      x30,  232(sp)           \n"
-        "       sd      x31,  240(sp)           \n");
+    ASM("       sd       x3,    8(sp)           \n"     // push ST
+        "       sd       x1,   16(sp)           \n"     // push RA
+        "       sd       x5,   24(sp)           \n"     // push X5-X31
+        "       sd       x6,   32(sp)           \n"
+        "       sd       x7,   40(sp)           \n"
+        "       sd       x8,   48(sp)           \n"
+        "       sd       x9,   56(sp)           \n"
+        "       sd      x10,   64(sp)           \n"
+        "       sd      x11,   72(sp)           \n"
+        "       sd      x12,   80(sp)           \n"
+        "       sd      x13,   88(sp)           \n"
+        "       sd      x14,   96(sp)           \n"
+        "       sd      x15,  104(sp)           \n"
+        "       sd      x16,  112(sp)           \n"
+        "       sd      x17,  120(sp)           \n"
+        "       sd      x18,  128(sp)           \n"
+        "       sd      x19,  136(sp)           \n"
+        "       sd      x20,  144(sp)           \n"
+        "       sd      x21,  152(sp)           \n"
+        "       sd      x22,  160(sp)           \n"
+        "       sd      x23,  168(sp)           \n"
+        "       sd      x24,  176(sp)           \n"
+        "       sd      x25,  184(sp)           \n"
+        "       sd      x26,  192(sp)           \n"
+        "       sd      x27,  200(sp)           \n"
+        "       sd      x28,  208(sp)           \n"
+        "       sd      x29,  216(sp)           \n"
+        "       sd      x30,  224(sp)           \n"
+        "       sd      x31,  232(sp)           \n");
+if(multitask) {
+    ASM("       csrr     x3, sscratch           \n"     // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)
+        "       sd       x3,  240(sp)           \n");   // push USP
+}
+if(interrupt) {
+    ASM("       mv       x3, sp                 \n");   // leave TMP pointing the context to easy subsequent access to the saved context
+}
 }
 
 inline void CPU::Context::pop(bool interrupt)
 {
-if(interrupt) {
-    int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
-}
-
+//if(interrupt) {
+//    int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
+//}
 if(multitask) {
-    ASM("       ld       x3,    0(sp)           \n"     // pop USP into TMP
+    ASM("       ld       x3,  240(sp)           \n"     // pop USP into TMP
         "       csrw     sscratch, x3           \n");   // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)
 }
-
-    ASM("       ld       x3,    8(sp)           \n");   // pop PC into TMP
-if(interrupt) {
-    ASM("       add      x3, x3, a0             \n");   // A0 is set by exception handlers to adjust [M|S]EPC to point to the next instruction if needed
-  if(supervisor) {
+    ASM("       ld       x3,    0(sp)           \n");   // pop PC into TMP
+if(supervisor) {
     ASM("       csrw     sepc, x3               \n");   // SEPC = PC
-  } else {
-    ASM("       csrw     mepc, x3               \n");   // MEPC = PC
-  }
 } else {
-    ASM("       mv       x1,   x3               \n");   // RA = PC
+    ASM("       csrw     mepc, x3               \n");   // MEPC = PC
 }
-
-if(interrupt) {
-    ASM("       ld       x3,   16(sp)           \n");   // pop ST into TMP
-  if(supervisor) {
+    ASM("       ld       x3,    8(sp)           \n");   // pop ST into TMP
+if(!interrupt) {                                        // MSTATUS.MPP is automatically cleared on the MRET in the ISR, so we need to recover it here
+    ASM("       li      x10, %0                 \n"     // use X10 as a second TMP, since it will be restored later
+        "       or       x3, x3, x10            \n" : : "i"(supervisor ? SPP_S : MPP_M)); // [M|S]STATUS.[S|M]PP is automatically cleared on the [M|S]RET in the ISR, so we need to recover it here
+}
+    ASM("       ld       x1,   16(sp)           \n"     // pop RA
+        "       ld       x5,   24(sp)           \n"     // pop X5-X31
+        "       ld       x6,   32(sp)           \n"
+        "       ld       x7,   40(sp)           \n"
+        "       ld       x8,   48(sp)           \n"
+        "       ld       x9,   56(sp)           \n"
+        "       ld      x10,   64(sp)           \n"
+        "       ld      x11,   72(sp)           \n"
+        "       ld      x12,   80(sp)           \n"
+        "       ld      x13,   88(sp)           \n"
+        "       ld      x14,   96(sp)           \n"
+        "       ld      x15,  104(sp)           \n"
+        "       ld      x16,  112(sp)           \n"
+        "       ld      x17,  120(sp)           \n"
+        "       ld      x18,  128(sp)           \n"
+        "       ld      x19,  136(sp)           \n"
+        "       ld      x20,  144(sp)           \n"
+        "       ld      x21,  152(sp)           \n"
+        "       ld      x22,  160(sp)           \n"
+        "       ld      x23,  168(sp)           \n"
+        "       ld      x24,  176(sp)           \n"
+        "       ld      x25,  184(sp)           \n"
+        "       ld      x26,  192(sp)           \n"
+        "       ld      x27,  200(sp)           \n"
+        "       ld      x28,  208(sp)           \n"
+        "       ld      x29,  216(sp)           \n"
+        "       ld      x30,  224(sp)           \n"
+        "       ld      x31,  232(sp)           \n"
+        "       addi    sp, sp, %0              \n" : : "i"(sizeof(Context))); // complete the pops above by adjusting SP
+if(supervisor) {
     ASM("       csrw    sstatus, x3             \n");   // SSTATUS = ST
-  } else {
+} else {
     ASM("       csrw    mstatus, x3             \n");   // MSTATUS = ST
-  }
-    ASM("       ld       x1,   24(sp)           \n");   // pop RA
 }
-
-    ASM("       ld       x5,   32(sp)           \n"     // pop X5-X31
-        "       ld       x6,   40(sp)           \n"
-        "       ld       x7,   48(sp)           \n"
-        "       ld       x8,   56(sp)           \n"
-        "       ld       x9,   64(sp)           \n"
-        "       ld      x10,   72(sp)           \n"
-        "       ld      x11,   80(sp)           \n"
-        "       ld      x12,   88(sp)           \n"
-        "       ld      x13,   96(sp)           \n"
-        "       ld      x14,  104(sp)           \n"
-        "       ld      x15,  112(sp)           \n"
-        "       ld      x16,  120(sp)           \n"
-        "       ld      x17,  128(sp)           \n"
-        "       ld      x18,  136(sp)           \n"
-        "       ld      x19,  144(sp)           \n"
-        "       ld      x20,  152(sp)           \n"
-        "       ld      x21,  160(sp)           \n"
-        "       ld      x22,  168(sp)           \n"
-        "       ld      x23,  176(sp)           \n"
-        "       ld      x24,  184(sp)           \n"
-        "       ld      x25,  192(sp)           \n"
-        "       ld      x26,  200(sp)           \n"
-        "       ld      x27,  208(sp)           \n"
-        "       ld      x28,  216(sp)           \n"
-        "       ld      x29,  224(sp)           \n"
-        "       ld      x30,  232(sp)           \n"
-        "       ld      x31,  240(sp)           \n");
-
-    ASM("       addi    sp, sp, %0              \n" : : "i"(sizeof(Context))); // complete the pops above by adjusting SP
-
 if(multitask && interrupt) {
     // swap(KSP, USP) if going to user mode (i.e. (sstatus & SSP) == SSP_U)
     ASM("       andi    x3, x3, %0              \n"

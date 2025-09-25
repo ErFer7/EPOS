@@ -16,6 +16,9 @@ class Application
     friend void * ::malloc(size_t);
     friend void ::free(void *);
 
+public:
+    typedef Application_Heap Heap;
+
 private:
     static void init();
 
@@ -88,7 +91,7 @@ extern "C"
             return System::_heap->alloc(bytes);
     }
 
-    inline void * calloc(size_t n, unsigned int bytes) {
+    inline void * calloc(size_t n, size_t bytes) {
         void * ptr = malloc(n * bytes);
         memset(ptr, 0, n * bytes);
         return ptr;

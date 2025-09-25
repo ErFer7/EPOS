@@ -28,7 +28,7 @@ public:
 
             db<Init>(INF) << "Initializing system's heap: " << endl;
             if(Traits<System>::multiheap) {
-            System::_heap_segment = new (&System::_preheap[0]) Segment(HEAP_SIZE, Segment::Flags::SYSD);
+                System::_heap_segment = new (&System::_preheap[0]) Segment(HEAP_SIZE, Segment::Flags::SYSD);
                 char * heap;
                 if(Memory_Map::SYS_HEAP == Traits<Machine>::NOT_USED)
                     heap = Address_Space(MMU::current()).attach(System::_heap_segment);
@@ -37,9 +37,8 @@ public:
                 if(!heap)
                     db<Init>(ERR) << "Failed to initialize the system's heap!" << endl;
                 System::_heap = new (&System::_preheap[sizeof(Segment)]) Heap(heap, System::_heap_segment->size());
-            } else{
+            } else
                 System::_heap = new (&System::_preheap[0]) Heap(MMU::alloc(MMU::pages(HEAP_SIZE)), HEAP_SIZE);
-            }
 
             db<Init>(INF) << "Initializing the machine: " << endl;
             Machine::init();
@@ -83,7 +82,7 @@ public:
 #endif
 
                 if(!Traits<TSC>::enabled)
-                    db<Init>(WRN) << "Due to lack of entropy, Random is a pseudo random numbers generator!" << endl;
+                    db<Init>(INF) << "Due to lack of entropy, Random is a pseudo random numbers generator!" << endl;
             }
         }
 

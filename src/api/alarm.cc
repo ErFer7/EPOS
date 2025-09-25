@@ -10,9 +10,8 @@ __BEGIN_SYS
 Alarm_Timer * Alarm::_timer;
 volatile Alarm::Tick Alarm::_elapsed;
 Alarm::Queue Alarm::_request;
-Spin Alarm::_lock;
 
-Alarm::Alarm(const Microsecond & time, Handler * handler, unsigned int times)
+Alarm::Alarm(Microsecond time, Handler * handler, unsigned int times)
 : _time(time), _handler(handler), _times(times), _ticks(ticks(time)), _link(this, _ticks)
 {
     lock();
@@ -28,8 +27,10 @@ Alarm::Alarm(const Microsecond & time, Handler * handler, unsigned int times)
         (*handler)();
     }
 
-    if(multitask && Task::self())
+    if(multitask) {
+        assert(Task::self());
         Task::self()->enroll(this);
+    }
 }
 
 Alarm::~Alarm()
@@ -40,8 +41,10 @@ Alarm::~Alarm()
 
     _request.remove(this);
 
-    if(multitask && Task::self())
+    if(multitask) {
+        assert(Task::self());
         Task::self()->dismiss(this);
+    }
 
     unlock();
 }
@@ -62,7 +65,7 @@ void Alarm::reset()
         unlock();
 }
 
-void Alarm::period(const Microsecond & p)
+void Alarm::period(Microsecond p)
 {
     bool locked = Thread::locked();
     if(!locked)
@@ -80,7 +83,7 @@ void Alarm::period(const Microsecond & p)
 }
 
 
-void Alarm::delay(const Microsecond & time)
+void Alarm::delay(Microsecond time)
 {
     db<Alarm>(TRC) << "Alarm::delay(time=" << time << ")" << endl;
 

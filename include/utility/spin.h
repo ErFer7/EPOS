@@ -5,7 +5,7 @@
 
 #include <architecture.h>
 
-extern "C" { volatile unsigned long _running(); }
+extern "C" { volatile void * _running(); }
 
 __BEGIN_UTIL
 
@@ -16,7 +16,7 @@ public:
     Spin(): _level(0), _owner(0) {}
 
     void acquire() {
-        unsigned long me = _running();
+        unsigned long me = reinterpret_cast<unsigned long>(_running());
 
         while(CPU::cas(_owner, 0UL, me) != me);
         _level++;
@@ -59,7 +59,7 @@ public:
     }
 
 private:
-    volatile bool _locked;
+    alignas(int) volatile bool _locked;
 };
 
 __END_UTIL

@@ -27,7 +27,7 @@ public:
     void fill(unsigned int s, Tn ... an) {
         _size = s;
         Data data(an ...);
-        memcpy(this, &data, s);
+        memcpy(reinterpret_cast<void *>(this), &data, s);
     }
 
     Data * data() { return this; }

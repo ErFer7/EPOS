@@ -43,8 +43,8 @@ namespace Space_Time {
 
     public:
         _Space() {}
-        _Space(const Number & x, const Number & y, const Number & z): Point<Number, 3>(x, y, z) {}
-        _Space(const Point<Number, 3> & p): Point<Number, 3>(p.x(), p.y(), p.z()) {}
+        _Space(Number x, Number y, Number z): Point<Number, 3>(x, y, z) {}
+        _Space(Point<Number, 3> p): Point<Number, 3>(p.x(), p.y(), p.z()) {}
 
         operator _Space<NULL>() const;
         operator _Space<CMx50_8>() const;
@@ -62,8 +62,8 @@ namespace Space_Time {
 
     public:
         _Space() {}
-        _Space(const Number & x, const Number & y, const Number & z) {}
-        _Space(const Point<Number, 3> & p) {}
+        _Space(Number x, Number y, Number z) {}
+        _Space(Point<Number, 3> p) {}
 
         Number x() const { return 0; }
         Number y() const { return 0; }
@@ -820,8 +820,8 @@ public:
         Version version() const { return static_cast<Version>(_config & 0x07); }
         void version(const Version & v) { _config = (_config & 0xf8) | (v & 0x07); }
 
-        // bool mobile() const { return ((_config & 0xf8) == 4); }
-        void mobile(bool m) { _config = (_config & 0xf8) | (m ? 4 : 0); }
+        bool mobile() const { return ((_config & 0xfc) == 4); }
+        void mobile(bool m) { _config = (_config & 0xfc) | (m ? 4 : 0); }
 
         Type type() const { return static_cast<Type>((_config >> 3) & 0x03); }
         void type(const Type & t) { _config = (_config & 0xe7) | ((t & 0x03) << 3); }
@@ -1254,9 +1254,9 @@ public:
         record.unit = UNIT;
         record.value = _value;
         record.uncertainty = _uncertainty;
-        // record.x = gs.x;
-        // record.y = gs.y;
-        // record.z = gs.z;
+        record.x = gs.x();
+        record.y = gs.y();
+        record.z = gs.z();
         record.t = abs_time;
         record.device = _device;
         return record;
@@ -1555,9 +1555,9 @@ public:
         record.unit = UNIT;
         record.value = _value;
         record.uncertainty = _response.uncertainty();
-        // record.x = gs.x;
-        // record.y = gs.y;
-        // record.z = gs.z;
+        record.x = gs.x();
+        record.y = gs.y();
+        record.z = gs.z();
         record.t = abs_time;
         record.device = _response.device();
         return record;
@@ -1568,10 +1568,10 @@ public:
         series.type = STATIC;
         series.unit = UNIT;
         Space c = Locator::absolute(_region.center);
-        // series.x = c.x;
-        // series.y = c.y;
-        // series.z = c.z;
-        // series.r = _region.radius;
+        series.x = c.x();
+        series.y = c.y();
+        series.z = c.z();
+        series.r = _region.radius();
         series.t0 = Timekeeper::absolute(_region.t0);
         series.t1 = Timekeeper::absolute(_region.t1);
         return series;

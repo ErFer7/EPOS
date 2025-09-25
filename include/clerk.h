@@ -303,11 +303,11 @@ public:
         case Event::ELAPSED_TIME:
             return Alarm::elapsed();
         case Event::DEADLINE_MISSES:
-            return t->statistics().missed_deadlines;
+            return t->criterion().statistics().jobs_released - t->criterion().statistics().jobs_finished;
         case Event::RUNNING_THREAD:
             return reinterpret_cast<volatile Data>(t);
         case Event::THREAD_EXECUTION_TIME:
-            return t->statistics().thread_execution_time;
+            return t->criterion().statistics().thread_execution_time;
         case Event::CPU_EXECUTION_TIME:
             // return t->statistics()._cpu_time[CPU::id()];
         default:
@@ -323,11 +323,13 @@ public:
         case Event::ELAPSED_TIME:
             break;
         case Event::DEADLINE_MISSES:
-            t->criterion()._statistics.missed_deadlines = 0;
+            t->criterion().statistics().jobs_released = 0;
+            t->criterion().statistics().jobs_finished = 0;
             break;
         case Event::RUNNING_THREAD:
             break;
         case Event::THREAD_EXECUTION_TIME:
+            t->criterion().statistics().thread_execution_time = 0;
             break;
         case Event::CPU_EXECUTION_TIME:
             break;

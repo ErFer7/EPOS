@@ -7,7 +7,7 @@
 
 using namespace EPOS;
 
-const int iterations = 1000;
+const int iterations = 100;
 const int thread_count = 2;
 
 Mutex mutex;
@@ -47,7 +47,7 @@ int main() {
 int test(int n) {
     for (int i = 0; i < iterations; i++) {
         mutex.lock();
-        cout << CPU::tp() << endl;
+        cout << CPU::id() << endl;
         mutex.unlock();
     }
 

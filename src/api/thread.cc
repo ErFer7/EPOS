@@ -5,15 +5,16 @@
 #include <process.h>
 #include <clerk.h>
 
-extern "C" { volatile unsigned long _running() __attribute__ ((alias ("_ZN4EPOS1S6Thread4selfEv"))); }
-
 __BEGIN_SYS
+
+extern OStream kout;
 
 bool Thread::_not_booting;
 volatile unsigned int Thread::_thread_count;
 Scheduler_Timer * Thread::_timer;
 Scheduler<Thread> Thread::_scheduler;
 Spin Thread::_lock;
+bool Thread::_previous_interrupt_enabled[Traits<Build>::CPUS];
 
 
 void Thread::constructor_prologue(Color color, unsigned int stack_size)
@@ -48,6 +49,8 @@ void Thread::constructor_epilogue(Log_Addr entry, unsigned int stack_size)
 
     if((_state != READY) && (_state != RUNNING))
         _scheduler.suspend(this);
+
+    criterion().handle(Criterion::CREATION);
 
     if(preemptive && (_state == READY) && (_link.rank() != IDLE))
         reschedule(_link.rank().queue());
@@ -107,7 +110,7 @@ Thread::~Thread()
 }
 
 
-void Thread::priority(const Criterion & c)
+void Thread::priority(Criterion c)
 {
     lock();
 
@@ -117,9 +120,9 @@ void Thread::priority(const Criterion & c)
     unsigned long new_cpu = c.queue();
 
     if(_state != RUNNING) { // reorder the scheduling queue
-        _scheduler.remove(this);
+        _scheduler.suspend(this);
         _link.rank(c);
-        _scheduler.insert(this);
+        _scheduler.resume(this);
     } else
         _link.rank(c);
 
@@ -248,6 +251,7 @@ void Thread::exit(int status)
     _scheduler.remove(prev);
     prev->_state = FINISHING;
     *reinterpret_cast<int *>(prev->_stack) = status;
+    prev->criterion().handle(Criterion::FINISH);
 
     _thread_count--;
 
@@ -327,6 +331,63 @@ void Thread::wakeup_all(Queue * q)
 }
 
 
+void Thread::prioritize(Queue * q)
+{
+    assert(locked()); // locking handled by caller
+
+//    if(priority_inversion_protocol == Traits<Build>::NONE)
+       return;
+
+    db<Thread>(TRC) << "Thread::prioritize(q=" << q << ") [running=" << running() << "]" << endl;
+
+    Thread * r = running();
+    for(Queue::Iterator i = q->begin(); i != q->end(); ++i) {
+        if(i->object()->priority() > r->priority()) {
+            r->_natural_priority = r->criterion();
+            Criterion c = /* (priority_inversion_protocol == Traits<Build>::CEILING) ? CEILING :*/ r->criterion();
+            if(r->_state == READY) {
+                _scheduler.suspend(r);
+                r->_link.rank(c);
+                _scheduler.resume(r);
+            } else if(r->state() == WAITING) {
+                r->_waiting->remove(&r->_link);
+                r->_link.rank(c);
+                r->_waiting->insert(&r->_link);
+            } else
+                r->_link.rank(c);
+        }
+    }
+}
+
+
+void Thread::deprioritize(Queue * q)
+{
+    assert(locked()); // locking handled by caller
+
+//    if(priority_inversion_protocol == Traits<Build>::NONE)
+//        return;
+
+    db<Thread>(TRC) << "Thread::deprioritize(q=" << q << ") [running=" << running() << "]" << endl;
+
+    Thread * r = running();
+    Criterion c = r->_natural_priority;
+    for(Queue::Iterator i = q->begin(); i != q->end(); ++i) {
+        if(i->object()->priority() != c) {
+            if(r->_state == READY) {
+                _scheduler.suspend(r);
+                r->_link.rank(c);
+                _scheduler.resume(r);
+            } else if(r->state() == WAITING) {
+                r->_waiting->remove(&r->_link);
+                r->_link.rank(c);
+                r->_waiting->insert(&r->_link);
+            } else
+                r->_link.rank(c);
+        }
+    }
+}
+
+
 void Thread::reschedule()
 {
     if(!Criterion::timed || Traits<Thread>::hysterically_debugged)
@@ -374,65 +435,33 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
 {
     // "next" is not in the scheduler's queue anymore. It's already "chosen"
 
-    if(charge) {
-        if(Criterion::timed)
-            _timer->restart();
+    assert(CPU::int_disabled());
 
-        if(Criterion::collecting) {
-            prev->criterion().collect();
-            next->criterion().collect();
-            if(Criterion::task_wide)
-                for_all_threads_in_task(prev->task(), &collector, prev);
-            if(Criterion::cpu_wide)
-                for_all_threads_in_cpu(CPU::id(), &collector, prev);
-            if(Criterion::system_wide)
-                for_all_threads(&collector, prev);
-            prev->criterion().collect(true);
-        }
+    if(charge && Criterion::timed)
+        _timer->restart();
 
-        if(Criterion::charging) {
-            prev->criterion().charge();
-            if(Criterion::cpu_wide)
-                for_all_threads(&charger, prev);
-            prev->criterion().charge(true);
-        }
-
-        if(Criterion::awarding) {
-            next->criterion().award();
-            if(Criterion::cpu_wide)
-                for_all_threads(&charger);
-            next->criterion().award(true);
-        }
-
-        if(Criterion::migrating && (next->criterion().statistics().destination_cpu != Criterion::ANY)) {
-            next->criterion().statistics().destination_cpu = Criterion::ANY;
-            Criterion c = next->priority();
-            c.queue((next->criterion().statistics().destination_cpu));
-            next->priority(c); // reorder queues for migration
-            next = _scheduler.choose_another();
-        }
-
-        if(monitored)
-            Monitor::run();
-    }
+    if(monitored)
+        Monitor::run();
 
     if(prev != next) {
         if(prev->_state == RUNNING)
             prev->_state = READY;
         next->_state = RUNNING;
 
-        db<Thread>(TRC) << "Thread::dispatch(prev=" << prev << ",next=" << next << ")" << endl;
-        if(Traits<Thread>::debugged && Traits<Debug>::info) {
-            CPU::Context tmp;
-            tmp.save();
-            db<Thread>(INF) << "Thread::dispatch:prev={" << prev << ",ctx=" << tmp << "}" << endl;
-        }
-        db<Thread>(INF) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
+//        db<Thread>(WRN) << "Thread::dispatch(prev=" << prev << ",next=" << next << ")" << endl;
+////        if(Traits<Thread>::debugged && Traits<Debug>::info) {
+//            CPU::Context tmp;
+//            tmp.save();
+//            db<Thread>(WRN) << "Thread::dispatch:prev={" << prev << ",ctx=" << tmp << "}" << endl;
+////        }
+//        db<Thread>(WRN) << "Thread::dispatch:next={" << next << ",ctx=" << *next->_context << "}" << endl;
 
         if(multitask && (next->_task != prev->_task)) {
             next->_task->activate();
             db<Thread>(INF) << "Thread::dispatch:task_switch(prev=" << prev->_task << ",next=" << next->_task << ")" << endl;
         }
+
+        assert(CPU::int_disabled());
 
         if(smp)
             _lock.release();
@@ -443,6 +472,8 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         // disrupting the context (it doesn't make a difference for Intel, which already saves
         // parameters on the stack anyway).
         CPU::switch_context(const_cast<Context **>(&prev->_context), next->_context);
+
+//        assert(CPU::int_disabled() || (running()->criterion() == IDLE));
 
         if(smp)
             _lock.acquire();
@@ -465,22 +496,15 @@ int Thread::idle()
             yield();
     }
 
-    CPU::int_disable();
     if(CPU::id() == CPU::BSP) {
         if(monitored)
             Monitor::process_batch();
-        db<Thread>(WRN) << "The last thread has exited!" << endl;
-        if(reboot) {
-            db<Thread>(WRN) << "Rebooting the machine ..." << endl;
-            Machine::reboot();
-        } else {
-            db<Thread>(WRN) << "Halting the machine ..." << endl;
-            CPU::halt();
-        }
+        kout << "\n\n*** The last thread under control of EPOS has finished." << endl;
+        kout << "*** EPOS is shutting down!" << endl;
     }
 
-    // Some machines will need a little time to actually reboot
-    for(;;);
+    CPU::smp_barrier();
+    Machine::reboot();
 
     return 0;
 }

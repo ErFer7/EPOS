@@ -171,7 +171,7 @@ int GEM::send(Buffer * buf)
         db<GEM>(INF) << "GEM::send:desc=" << desc << " => " << *desc << endl;
 
         // Wait for packet to be sent and release it
-        while(!(desc->ctrl & Tx_Desc::OWN));
+//        while(!(desc->ctrl & Tx_Desc::OWN));
         buf->unlock();
     }
 

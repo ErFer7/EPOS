@@ -21,7 +21,7 @@ void No_MMU::init()
     char * free_base = &_end;
     if(!Traits<System>::multitask) // heap in data segment
         free_base += Traits<Application>::STACK_SIZE;
-    free(free_base, pages(Memory_Map::FREE_TOP - reinterpret_cast<unsigned long>(free_base)));
+    free(free_base, pages(Memory_Map::FREE_TOP + 1 - reinterpret_cast<unsigned long>(free_base)));
 }
 
 __END_SYS

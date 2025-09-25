@@ -1,13 +1,13 @@
 // EPOS Application Scaffold and Application Component Implementation
 
+#include <utility/spin.h>
 #include <system.h>
 #include <network.h>
 
-__BEGIN_SYS
-
 // Application class attributes
+__BEGIN_SYS
 char Application::_preheap[];
-Heap * Application::_heap;
+Application::Heap * Application::_heap;
 
 __END_SYS
 

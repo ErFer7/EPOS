@@ -100,30 +100,30 @@ public:
     void broadcast() { enter(); Component::broadcast(); leave(); }
 
     // Timing
-    static void delay(const Microsecond & time) { static_enter(); Component::delay(time); static_leave(); }
+    static void delay(Microsecond time) { static_enter(); Component::delay(time); static_leave(); }
     void reset() { enter(); Component::reset(); leave(); }
     void start() { enter(); Component::start(); leave(); }
     void lap() { enter(); Component::lap(); leave(); }
     void stop() { enter(); Component::stop(); leave(); }
-    int frequency() { enter(); int res = Component::frequency(); leave(); return res; }
-    int ticks() { enter(); int res = Component::ticks(); leave(); return res; }
-    int read() { enter(); int res = Component::read(); leave(); return res; }
+    long frequency() { enter(); long res = Component::frequency(); leave(); return res; }
+    long ticks() { enter(); long res = Component::ticks(); leave(); return res; }
+    long read() { enter(); long res = Component::read(); leave(); return res; }
     const Microsecond period() { enter(); Microsecond res = Component::period(); leave(); return res; }
-    void period(const Microsecond p) { enter(); Component::period(p); leave(); }
+    void period(Microsecond p) { enter(); Component::period(p); leave(); }
     static Hertz alarm_frequency() { static_enter(); Hertz res = Component::frequency(); static_leave(); return res; }
 
     // Communication
     template<typename ... Tn>
     int send(Tn ... an) {
         enter();
-        int res = Component::send(an ...);
+        long res = Component::send(an ...);
         leave();
         return res;
     }
     template<typename ... Tn>
     int receive(Tn ... an) {
         enter();
-        int res = Component::receive(an ...);
+        long res = Component::receive(an ...);
         leave();
         return res;
     }

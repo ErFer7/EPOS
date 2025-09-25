@@ -8,17 +8,22 @@ __BEGIN_SYS
 unsigned int CPU::_cpu_clock;
 unsigned int CPU::_bus_clock;
 
-void CPU::Context::save() volatile
+void CPU::Context::save() const volatile
 {
-    ASM("       sw       x1,    0(a0)           \n");   // push RA as PC
+if(supervisor) {
+    ASM("       csrr     x3,    sepc            \n");
+} else {
+    ASM("       csrr     x3,    mepc            \n");
+}
+    ASM("       sw       x3,    0(a0)           \n");   // save PC
 if(supervisor) {
     ASM("       csrr     x3,  sstatus           \n");
 } else {
     ASM("       csrr     x3,  mstatus           \n");
 }
-    ASM("       sw       x3,    4(a0)           \n"     // push ST
-        "       sw       x1,    8(a0)           \n"     // push X1-X31
-        "       sw       x5,   12(a0)           \n"
+    ASM("       sw       x3,    4(a0)           \n"     // save ST
+        "       sw       x1,    8(a0)           \n"     // save RA
+        "       sw       x5,   12(a0)           \n"     // save X5-X31
         "       sw       x6,   16(a0)           \n"
         "       sw       x7,   20(a0)           \n"
         "       sw       x8,   24(a0)           \n"

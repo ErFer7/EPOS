@@ -77,8 +77,8 @@ make veryclean &> /dev/null
 printf "********************************************************************************\n"
 cd $REP
 printf "${GREEN}Passed:\n"
-grep -l "The last thread has exited!" *.out
+grep -l "*** The last thread under control of EPOS has finished." *.out
 printf "\n${RED}Failed:\n"
-grep -L "The last thread has exited!" *.out
+grep -L "*** The last thread under control of EPOS has finished." *.out
 printf "${NORMAL}"
 printf "********************************************************************************\n"

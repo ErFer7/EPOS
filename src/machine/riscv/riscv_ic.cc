@@ -28,11 +28,13 @@ void IC::entry()
 
     // Restore context from the stack
     CPU::Context::pop(true);
-    CPU::ret(true);
+    CPU::iret();
 }
 
 void IC::dispatch()
 {
+    CPU::Context * ctx = reinterpret_cast<CPU::Context *>(CPU::gp());
+
     // Preserve handler's arguments
     CPU::Reg a0 = CPU::a0();
     CPU::Reg a1 = CPU::a1();
@@ -47,12 +49,16 @@ void IC::dispatch()
             CPU::sipc(CPU::SSI);        // IPI EOI was already issued by _int_m2s, so we only clear SSI
         else if(id == INT_SYS_TIMER)
             CPU::ecall();               // we can't clear CPU::sipc(CPU::STI) in supervisor mode, so let's ecall int_m2s to do it for us
+        else if(id == INT_SYSCALL) {
+            ctx->_pc += 4;
+        }
     } else {
         if(id == INT_RESCHEDULER)
             IC::ipi_eoi(id & CLINT::INT_MASK);
         else if(id == INT_SYS_TIMER)
             Timer::reset();             // MIP.MTI is a direct logic on (MTIME == MTIMECMP) and reseting the Timer seems to be the only way to clear it
     }
+
 
     CPU::gp(a0); // ensure exit() gets the correct return code in gp (a0 will be used to pass id)
     CPU::a1(a1); // ensure syscalled() gets the correct message in a1
@@ -62,16 +68,11 @@ void IC::dispatch()
         complete(int2irq(id));
         db<IC, System>(TRC) << "IC::dispatch(i=" << id << ") => interrupt handled!" << endl;
     }
-
-    if(id >= EXCS)
-        CPU::fr(0); // tell CPU::Context::pop(true) not to increment PC since it is automatically incremented for hardware interrupts
 }
 
 void IC::int_not(Interrupt_Id id)
 {
     db<IC>(WRN) << "IC::int_not(i=" << id << ")" << endl;
-    if(Traits<Build>::hysterically_debugged)
-        Machine::panic();
 }
 
 void IC::exception(Interrupt_Id id)
@@ -144,14 +145,12 @@ void IC::exception(Interrupt_Id id)
 
     db<IC, System>(WRN) << endl;
 
-//    if(Traits<Build>::hysterically_debugged)
+    if(Traits<Build>::hysterically_debugged)
         db<IC, System>(ERR) << "Exception stopped execution due to hysterically debugging!" << endl;
-//    else {
-//        db<IC, Machine>(WRN) << "The running thread will now be terminated!" << endl;
-//        Thread::exit(-1);
-//    }
-
-    CPU::fr(4); // since exceptions do not increment PC, tell CPU::Context::pop(true) to perform PC = PC + 4 on return
+    else {
+        db<IC, Machine>(WRN) << "The running thread will now be terminated!" << endl;
+        Thread::exit(-1);
+    }
 }
 
 __END_SYS
@@ -159,6 +158,5 @@ __END_SYS
 static void print_context(bool push) {
     __USING_SYS
     db<IC, System>(TRC) << "IC::entry:" << (push ? "push" : "pop") << ":ctx=" << *static_cast<CPU::Context *>(CPU::sp() + 3 * sizeof(CPU::Reg) + (push ? sizeof(CPU::Context) : 0)) << endl; // 3 words for function's stack frame
-    CPU::fr(0);
 }
 

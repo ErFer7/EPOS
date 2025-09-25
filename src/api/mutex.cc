@@ -8,8 +8,10 @@ Mutex::Mutex(): _locked(false)
 {
     db<Synchronizer>(TRC) << "Mutex() => " << this << endl;
 
-    if(multitask && Task::self())
+    if(multitask) {
+        assert(Task::self());
         Task::self()->enroll(this);
+    }
 }
 
 
@@ -17,8 +19,10 @@ Mutex::~Mutex()
 {
     db<Synchronizer>(TRC) << "~Mutex(this=" << this << ")" << endl;
 
-    if(multitask && Task::self())
+    if(multitask) {
+        assert(Task::self());
         Task::self()->dismiss(this);
+    }
 }
 
 
@@ -26,10 +30,10 @@ void Mutex::lock()
 {
     db<Synchronizer>(TRC) << "Mutex::lock(this=" << this << ")" << endl;
 
-    begin_atomic();
+    lock_for_acquiring();
     if(tsl(_locked))
         sleep();
-    end_atomic();
+    unlock_for_acquiring();
 }
 
 
@@ -37,12 +41,12 @@ void Mutex::unlock()
 {
     db<Synchronizer>(TRC) << "Mutex::unlock(this=" << this << ")" << endl;
 
-    begin_atomic();
-    if(_queue.empty())
+    lock_for_releasing();
+    if(_waiting.empty())
         _locked = false;
     else
         wakeup();
-    end_atomic();
+    unlock_for_releasing();
 }
 
 __END_SYS

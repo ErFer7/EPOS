@@ -32,42 +32,39 @@ public:
 class Alarm
 {
     friend class System;                        // for init()
-    template<typename> friend class Clerk;      // for elapsed()
-    friend class Alarm_Chronometer;             // for elapsed()
-    friend class Periodic_Thread;               // for ticks() and elapsed()
-    friend class RT_Thread;                     // for ticks() and elapsed()
-    friend class FCFS;                          // for ticks() and elapsed()
-    friend class EDF;                           // for ticks() and elapsed()
+    friend class Periodic_Thread;               // for times()
 
 private:
     static const bool multitask = Traits<System>::multitask;
 
-    typedef Timer_Common::Tick Tick;
-    typedef Relative_Queue<Alarm, Tick> Queue;
+    typedef Relative_Queue<Alarm, Timer_Common::Tick> Queue;
 
 public:
-    Alarm(const Microsecond & time, Handler * handler, unsigned int times = 1);
+    typedef Timer_Common::Tick Tick;
+
+public:
+    Alarm(Microsecond time, Handler * handler, unsigned int times = 1);
     ~Alarm();
 
-    const Microsecond & period() const { return _time; }
-    void period(const Microsecond & p);
+    Microsecond period() const { return _time; }
+    void period(Microsecond p);
+
+    unsigned int times() const { return _times; }
 
     void reset();
 
+    static volatile Tick elapsed() { return _elapsed; }
+
+    static Tick ticks(Microsecond time) { return Timer_Common::ticks(time, _timer->frequency()); }
+    static Microsecond time(Tick ticks) { return Timer_Common::time(ticks, _timer->frequency()); }
+
     static Hertz frequency() { return _timer->frequency(); }
 
-    static void delay(const Microsecond & time);
+    static void delay(Microsecond time);
 
 private:
-    unsigned int times() const { return _times; }
-
-    static volatile Tick & elapsed() { return _elapsed; }
-
-    static Microsecond timer_period() { return 1000000 / frequency(); }
-    static Tick ticks(const Microsecond & time) { return (time + timer_period() / 2) / timer_period(); }
-
-    static void lock() { Thread::lock(&_lock); }
-    static void unlock() { Thread::unlock(&_lock); }
+    static void lock() { Thread::lock(); }
+    static void unlock() { Thread::unlock(); }
 
     static void handler(IC::Interrupt_Id i);
 
@@ -83,14 +80,13 @@ private:
     static Alarm_Timer * _timer;
     static volatile Tick _elapsed;
     static Queue _request;
-    static Spin _lock;
 };
 
 
 class Delay
 {
 public:
-    Delay(const Microsecond & time): _time(time)  { Alarm::delay(_time); }
+    Delay(Microsecond time): _time(time)  { Alarm::delay(_time); }
 
 private:
     Microsecond _time;
@@ -164,7 +160,7 @@ private:
     Time_Stamp _stop;
 };
 
-class Chronometer: public IF<Traits<TSC>::enabled && !Traits<System>::multicore, TSC_Chronometer, Alarm_Chronometer>::Result {};
+class Chronometer: public IF<Traits<TSC>::enabled && !Traits<System>::multicore, TSC_Chronometer, Alarm_Chronometer>::Result {}; // using TSC in multicore configurations would return inconsistent values on core migratons 
 
 __END_SYS
 

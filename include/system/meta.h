@@ -312,12 +312,12 @@ inline void SERIALIZE(char * buf, int index) {}
 
 template<typename T>
 void SERIALIZE(char * buf, int index, const T & a) {
-    __builtin_memcpy(&buf[index], &a, sizeof(T));
+    __builtin_memcpy(&buf[index], reinterpret_cast<const void *>(&a), sizeof(T));
 }
 
 template<typename T, typename ... Tn>
 void SERIALIZE(char * buf, int index, const T & a, const Tn & ... an) {
-    __builtin_memcpy(&buf[index], &a, sizeof(T));
+    __builtin_memcpy(&buf[index], reinterpret_cast<const void *>(&a), sizeof(T));
     SERIALIZE(buf, index + sizeof(T), an ...);
 }
 
@@ -326,12 +326,12 @@ inline void DESERIALIZE(char * buf, int index) {}
 
 template<typename T>
 void DESERIALIZE(char * buf, int index, T && a) {
-    __builtin_memcpy(&a, &buf[index], sizeof(T));
+    __builtin_memcpy(reinterpret_cast<void *>(&a), &buf[index], sizeof(T));
 }
 
 template<typename T, typename ... Tn>
 void DESERIALIZE(char * buf, int index, T && a, Tn && ... an) {
-    __builtin_memcpy(&a, &buf[index], sizeof(T));
+    __builtin_memcpy(reinterpret_cast<void *>(&a), &buf[index], sizeof(T));
     DESERIALIZE(buf, index + sizeof(T), an ...);
 }
 

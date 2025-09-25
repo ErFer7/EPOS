@@ -7,17 +7,17 @@
 // ARCHITECTURE, MACHINE, AND APPLICATION SELECTION
 // This section is generated automatically from makedefs by $EPOS/etc/makefile
 //============================================================================
-#define SMOD xxx
-#define ARCH xxx
-#define MACH xxx
-#define MMOD xxx
-#define NETW xxx
-#define APPL xxx
-#define __mode_xxx__
-#define __arch_xxx__
-#define __mach_xxx__
-#define __mmod_xxx__
-#define __netw_xxx__
+#define SMOD kernel
+#define ARCH rv64
+#define MACH riscv
+#define MMOD sifive_u
+#define NETW standalone
+#define APPL philosophers_dinner
+#define __kernel__
+#define __rv64__
+#define __riscv__
+#define __sifive_u__
+#define __standalone__
 
 //============================================================================
 // NAMESPACES AND DEFINITIONS
@@ -156,7 +156,6 @@ namespace EPOS {
 #define __cortex_a__
 #define __cortex_a53__
 #define __TSC_H                 __HEADER_ARCH(tsc)
-
 #define __PMU_H                 __HEADER_ARCH(pmu)
 
 #define __UART_H                __HEADER_MACH(uart)
@@ -188,9 +187,8 @@ namespace EPOS {
 #define __cortex_a__
 #define __cortex_a53__
 #define __TSC_H                 __HEADER_ARCH(tsc)
-#ifdef __armv7__
 #define __PMU_H                 __HEADER_ARCH(pmu)
-#endif
+
 #define __UART_H                __HEADER_MACH(uart)
 #endif
 

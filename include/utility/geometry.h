@@ -22,7 +22,7 @@ public:
     using Distance = typename UNSIGNED<Larger_T>::Result;
 
     Point() {}
-    Point(const T & xi, const T & yi): _x(xi), _y(yi) {}
+    Point(T xi, T yi): _x(xi), _y(yi) {}
 
     Number x() const { return _x; }
     Number y() const { return _y; }
@@ -111,7 +111,7 @@ public:
     using Distance = typename UNSIGNED<Larger_T>::Result;
 
     Point() {}
-    Point(const T & xi, const T & yi, const T & zi): _x(xi), _y(yi), _z(zi) {}
+    Point(T xi, T yi, T zi): _x(xi), _y(yi), _z(zi) {}
 
     Number x() const { return _x; }
     Number y() const { return _y; }

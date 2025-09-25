@@ -37,6 +37,9 @@ public:
 
     static Time_Stamp time_stamp() { return (CPU::Reg64(reg(MTIMEH)) << 32) | reg(MTIME); }
 
+    static Microsecond time(Time_Stamp ts) { return TSC_Common::time(ts, CLOCK); }
+    static Time_Stamp ts(Microsecond time) { return TSC_Common::ts(time, CLOCK); }
+
 private:
     static void init() {}
 

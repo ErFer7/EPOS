@@ -62,13 +62,12 @@ void Thread::init()
 
 #endif
 
-    } else
-        Machine::delay(1000000);
-    
-    // Idle thread creation does not cause rescheduling (see Thread::constructor_epilogue)
-    new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::IDLE), &Thread::idle);
+    }
 
     CPU::smp_barrier();
+
+    // Idle thread creation does not cause rescheduling (see Thread::constructor_epilogue)
+    new (SYSTEM) Thread(Thread::Configuration(Thread::READY, Thread::IDLE), &Thread::idle);
 
     // The installation of the scheduler timer handler does not need to be done after the
     // creation of threads, since the constructor won't call reschedule() which won't call
@@ -82,9 +81,11 @@ void Thread::init()
     // No more interrupts until we reach init_end
     CPU::int_disable();
 
-    // Transition from CPU-based locking to thread-based locking
     CPU::smp_barrier();
-    _not_booting = true;
+
+    // Transition from CPU-based locking to thread-based locking
+    if(CPU::id() == CPU::BSP)
+        _not_booting = true;
 }
 
 __END_SYS

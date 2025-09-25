@@ -35,7 +35,7 @@ public:
             char * heap = (MMU::align_page(&_end) >= CPU::Log_Addr(Memory_Map::APP_DATA)) ? MMU::align_page(&_end) : CPU::Log_Addr(Memory_Map::APP_DATA); // ld is eliminating the data segment in some compilations, particularly for RISC-V, and placing _end in the code segment
             if(Traits<Build>::SMOD != Traits<Build>::KERNEL) // if not a kernel, then use the stack allocated by SETUP, otherwise make that part of the heap
                 heap += MMU::align_page(Traits<Application>::STACK_SIZE);
-            Application::_heap = new (&Application::_preheap[0]) Heap(heap, HEAP_SIZE);
+            Application::_heap = new (&Application::_preheap[0]) Application::Heap(heap, HEAP_SIZE);
         } else {
             db<Init>(INF) << "adding all free memory to the unified system's heap!" << endl;
             for(unsigned int frames = MMU::allocable(); frames; frames = MMU::allocable())
