@@ -8,7 +8,7 @@
 using namespace EPOS;
 
 const int iterations = 100;
-const int thread_count = 2;
+const int thread_count = 4;
 
 Mutex mutex;
 
@@ -19,19 +19,16 @@ OStream cout;
 int test(int n);
 
 int main() {
-    // mutex.lock();
-    cout << "Basic test" << endl;
+    cout << '[' << CPU::id() << "]: Basic test" << endl;
 
     for (int i = 0; i < thread_count; i++) {
         threads[i] = new Thread(&test, i);
     }
 
-    // mutex.unlock();
-
     for (int i = 0; i < thread_count; i++) {
         int ret = threads[i]->join();
         mutex.lock();
-        cout << "Thread [" << ret << "] finished" << endl;
+        cout << '[' << CPU::id() << "]: Thread [" << ret << "] finished" << endl;
         mutex.unlock();
     }
 
@@ -39,7 +36,7 @@ int main() {
         delete threads[i];
     }
 
-    cout << "Test result: OK" << endl;
+    cout << '[' << CPU::id() << "]: Test result: OK" << endl;
 
     return 0;
 }
@@ -47,7 +44,7 @@ int main() {
 int test(int n) {
     for (int i = 0; i < iterations; i++) {
         mutex.lock();
-        cout << CPU::id() << endl;
+        cout << '[' << CPU::id() << "]: "<< n << endl;
         mutex.unlock();
     }
 

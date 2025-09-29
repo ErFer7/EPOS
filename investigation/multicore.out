@@ -1,0 +1,115 @@
+
+
+
+
+
+
+
+
+
+
+
+*** This is EPOS!
+
+Setting up this machine as follows: 
+  Mode:         kernel
+  Processor:    4 x RV64 at 1000 MHz (BUS clock = 33 MHz)
+  Machine:      SiFive-U
+  Memory:       131071 KB [0x0000000080000000:0x0000000087ffffff]
+  User memory:  63124 KB [0x0000000080000000:0x0000000083da5000]
+  I/O space:    524287 KB [0x0000000000000000:0x000000001fffffff]
+  Node Id:      will get from the network!
+  Position:     will get from the network!
+  Setup:        18104 bytes
+  Init:         7296 bytes
+  OS code:      75632 bytes	data: 1544 bytes   stack: 524288 bytes
+  APP code:     12288 bytes	data: 1183744 bytes
+
+[0]: Basic test
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[2]: 0
+[2]: 2
+[0]: 1
+[0]: 3
+[2]: 2
+[2]: 0
+[0]: 3
+[0]: 1
+[2]: 0
+<0>: IC::Exception(12) => {thread=0x000000002055f728,atp=0x8000000000087f7e,usp=
+0xffffffc000c1ff60,ksp=0x000000002055f570,status=0x200040020,cause=c,epc=0x00000
+0002000e09a,tval=0x000000002000e09a} => instruction page fault :<0>
+
+PANIC: unexpected error!
+Rebooting the machine!

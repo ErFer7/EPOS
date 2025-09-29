@@ -367,7 +367,7 @@ private:
 // Threads with the default configuration are only used in single-task scenarios, since the framework's agent always creates a configuration
 template<typename ... Tn>
 inline Thread::Thread(int (* entry)(Tn ...), Tn ... an)
-: _task(Task::self()), _user_stack(0), _state(READY), _waiting(0), _joining(0), _link(this, Fixed_CPU())
+: _task(Task::self()), _user_stack(0), _state(READY), _waiting(0), _joining(0), _link(this, NORMAL)
 {
     constructor_prologue(WHITE, STACK_SIZE);
     _context = CPU::init_stack(0, _stack + STACK_SIZE, &__exit, entry, an ...);
