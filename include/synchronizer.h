@@ -20,11 +20,11 @@ protected:
     Synchronizer_Common() {}
     ~Synchronizer_Common() {
         Thread::lock();
-        while(!_granted.empty()) {
-            Queue::Element * e = _granted.remove();
-            if(e)
-                delete e;
-        }
+        // while(!_granted.empty()) {
+        //     Queue::Element * e = _granted.remove();
+        //     if(e)
+        //         delete e;
+        // }
         if(!_waiting.empty())
             db<Synchronizer>(WRN) << "~Synchronizer(this=" << this << ") called with active blocked clients!" << endl;
         wakeup_all();
@@ -37,9 +37,9 @@ protected:
     long fdec(volatile long & number) { return CPU::fdec(number); }
 
     // Thread operations
-    void lock_for_acquiring() { Thread::lock(); Thread::prioritize(&_granted); }
-    void unlock_for_acquiring() { _granted.insert(new (SYSTEM) Queue::Element(Thread::running())); Thread::unlock(); }
-    void lock_for_releasing() { Thread::lock(); Queue::Element * e = _granted.remove(); if(e) delete e; Thread::deprioritize(&_granted); Thread::deprioritize(&_waiting); }
+    void lock_for_acquiring() { Thread::lock(); }
+    void unlock_for_acquiring() { Thread::unlock(); }
+    void lock_for_releasing() { Thread::lock(); }
     void unlock_for_releasing() { Thread::unlock(); }
 
     void sleep() { Thread::sleep(&_waiting); }
@@ -48,7 +48,7 @@ protected:
 
 protected:
     Queue _waiting;
-    Queue _granted;
+    // Queue _granted;
 };
 
 

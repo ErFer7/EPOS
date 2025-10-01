@@ -8,6 +8,8 @@ from re import findall
 
 ITERATIONS = 100
 SAVING_DIRECTORY = join('..', 'EPOS-Debug', 'outputs', 'Multicore+Multitask@experimental')
+APPLICATION_ENDINGS = {'philosophers_dinner': 'The end!', 'multicore': 'Test result: OK'}
+APPLICATION = 'multicore'
 
 
 def handle_command_return_code(return_code: int) -> None:
@@ -30,17 +32,17 @@ for i in range(ITERATIONS):
     try:
         print(f'Running iteration {i + 1}/{ITERATIONS}.')
 
-        result = run(['make', 'APPLICATION=philosophers_dinner', 'run'], stdout=DEVNULL, check=True)
+        result = run(['make', f'APPLICATION={APPLICATION}', 'run'], stdout=DEVNULL, check=True)
         handle_command_return_code(result.returncode)
 
         output = ''
 
-        with open(join('img', 'philosophers_dinner.out'), 'r', encoding='utf-8') as output_file:
+        with open(join('img', f'{APPLICATION}.out'), 'r', encoding='utf-8') as output_file:
             output = output_file.read()
 
         exceptions = findall(r'Exception\((\d+)\)', output)
 
-        failed = 'The end!' not in output or len(exceptions) != 0
+        failed = APPLICATION_ENDINGS[APPLICATION] not in output or len(exceptions) != 0
 
         for exception in exceptions:
             print(f'Status: Has exception {exception}.')
@@ -54,8 +56,8 @@ for i in range(ITERATIONS):
             print('Status: Failed.')
             failed_count += 1
             result = run(['cp',
-                          join('img', 'philosophers_dinner.out'),
-                          join(SAVING_DIRECTORY, f'philosophers_dinner_{i}.txt')], stdout=DEVNULL, check=True)
+                          join('img', f'{APPLICATION}.out'),
+                          join(SAVING_DIRECTORY, f'{APPLICATION}_{i}.txt')], stdout=DEVNULL, check=True)
             handle_command_return_code(result.returncode)
         else:
             print('Status: OK.')

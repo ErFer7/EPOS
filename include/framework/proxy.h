@@ -52,7 +52,7 @@ private:
 
 public:
     template<typename ... Tn>
-    Proxy(const Tn & ... an): Message(Id(Type<Component>::ID, 0)) { invoke(CREATE + sizeof ... (Tn), an ...); }
+    Proxy(const Tn & ... an): Message(Id(Type<Component>::ID, 0)) { invoke_create(CREATE + sizeof ... (Tn), an ...); }
     ~Proxy() { invoke(DESTROY); }
 
     static Proxy<Component> * self() { return new (reinterpret_cast<void *>(static_invoke(SELF))) Proxied<Component>; }
@@ -123,7 +123,7 @@ public:
 
  private:
     template<typename ... Tn>
-    Result invoke(const Method & m, const Tn & ... an) {
+    Result invoke_create(const Method & m, const Tn & ... an) {
         method(m);
         out(an ...);
         act();
@@ -131,10 +131,15 @@ public:
     }
 
     template<typename ... Tn>
+    Result invoke(const Method & m, const Tn & ... an) {
+        Message msg(Id(Type<Component>::ID, this->id().unit()), m, an ...);
+        msg.act();
+        return msg.result();
+    }
+
+    template<typename ... Tn>
     static Result static_invoke(const Method & m, const Tn & ... an) {
-        Message msg(Id(Type<Component>::ID, 0)); // avoid calling ~Proxy()
-        msg.method(m);
-        msg.out(an ...);
+        Message msg(Id(Type<Component>::ID, 0), m, an ...); // avoid calling ~Proxy()
         msg.act();
         return (m == SELF) ? msg.id().unit() : msg.result();
     }

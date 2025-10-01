@@ -365,7 +365,7 @@ void Thread::deprioritize(Queue * q)
     assert(locked()); // locking handled by caller
 
 //    if(priority_inversion_protocol == Traits<Build>::NONE)
-//        return;
+       return;
 
     db<Thread>(TRC) << "Thread::deprioritize(q=" << q << ") [running=" << running() << "]" << endl;
 
