@@ -358,6 +358,7 @@ void populate_strings()
     case Traits<Build>::Raspberry_Pi3:  set_token_value("MMOD", "raspberry_pi3");      break;
     case Traits<Build>::SiFive_E:       set_token_value("MMOD", "sifive_e");           break;
     case Traits<Build>::SiFive_U:       set_token_value("MMOD", "sifive_u");           break;
+    case Traits<Build>::VisionFive2:    set_token_value("MMOD", "visionfive2");        break;
     default:                            set_token_value("MMOD", "unsuported");         break;
     }
 

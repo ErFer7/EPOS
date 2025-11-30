@@ -135,17 +135,17 @@ endif
 
 ifeq ($(MMOD),sifive_u)
 ifeq ($(ARCH),rv64)
-riscv_CC_FLAGS          = -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany
+riscv_CC_FLAGS          = -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany -g
 riscv_AS_FLAGS          = -march=rv64gc -mabi=lp64d
 riscv_LD_FLAGS          = -m elf64lriscv_lp64f --no-relax
-riscv_EMULATOR          = /home/erfer/Documents/LISHA/Tools/qemu-10.1.0/build/qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -smp $(shell expr $(CPUS) + 1) -m $(RAM_SIZE_MB) -serial mon:stdio -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
+riscv_EMULATOR          = qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -smp $(shell expr $(CPUS) + 1) -m $(RAM_SIZE_MB) -serial pty -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
 else
 riscv_CC_FLAGS          = -march=rv32gc -mabi=ilp32d -Wl, -mno-relax
 riscv_AS_FLAGS          = -march=rv32gc -mabi=ilp32d
 riscv_LD_FLAGS          = -m elf32lriscv_ilp32f --no-relax
 riscv_EMULATOR          = qemu-system-riscv32 $(QEMU_DEBUG) -machine sifive_u -smp 2 -m $(RAM_SIZE_MB) -serial mon:stdio -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
 endif 
-riscv_DEBUGGER          = /home/erfer/Documents/LISHA/Tools/riscv-gnu-toolchain/riscv/bin/riscv64-unknown-linux-gnu-gdb
+riscv_DEBUGGER          = /usr/local/rv64/bin/riscv64-unknown-linux-gnu-gdb
 riscv_FLASHER           = 
 riscv_MAGIC             = --nmagic
 riscv_CODE_NAME         = .init
@@ -153,6 +153,21 @@ riscv_DATA_NAME         = .sdata
 riscv_IMG_SUFFIX        = .img
 riscv_NIC               = cadence_gem
 endif
+
+ifeq ($(MMOD),visionfive2)
+riscv_CC_FLAGS      := -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany
+riscv_AS_FLAGS      := -march=rv64gc -mabi=lp64d
+riscv_LD_FLAGS      := -m elf64lriscv_lp64f --no-relax
+riscv_EMULATOR      := qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -smp $(shell expr $(CPUS) + 1) -m $(RAM_SIZE_MB) -serial mon:stdio -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
+riscv_DEBUGGER      := $(COMP_PREFIX)gdb
+riscv_FLASHER       :=
+riscv_MAGIC     := --nmagic
+riscv_CODE_NAME     := .init
+riscv_DATA_NAME     := .sdata
+riscv_IMG_SUFFIX    := .bin
+endif
+
+
 
 atmega_CC_FLAGS         = -mmcu=atmega128 -Wno-inline
 atmega_AS_FLAGS         = -mmcu=atmega128
@@ -166,7 +181,7 @@ atmega_DATA_NAME        = .data
 atmega_IMG_SUFFIX       = .hex
 atmega_NIC              =
 
-MACH_CC_FLAGS           := $($(MACH)_CC_FLAGS) -O -nostdinc --no-stack-protector --no-pie -Wno-builtin-declaration-mismatch -Wno-array-bounds -Wno-address-of-packed-member -Wno-stringop-overflow
+MACH_CC_FLAGS           := $($(MACH)_CC_FLAGS) -O -nostdinc --no-stack-protector --no-pie -Wno-builtin-declaration-mismatch -Wno-array-bounds -Wno-address-of-packed-member -Wno-stringop-overflow -Wno-uninitialized
 MACH_CXX_FLAGS          := $($(MACH)_CC_FLAGS) -O -std=c++14 -nostdinc --no-exceptions --no-rtti --no-use-cxa-atexit --no-unwind-tables --no-asynchronous-unwind-tables --no-stack-protector --no-pie --data-sections --function-sections -Wall -Werror -Wno-builtin-declaration-mismatch -Wno-array-bounds -Wno-attribute-alias -Wno-placement-new -Wno-class-memaccess -Wno-address-of-packed-member -Wno-stringop-overflow
 MACH_AS_FLAGS           := $($(MACH)_AS_FLAGS)
 MACH_LD_FLAGS           := $($(MACH)_LD_FLAGS)

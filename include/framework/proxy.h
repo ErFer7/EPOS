@@ -124,17 +124,22 @@ public:
  private:
     template<typename ... Tn>
     Result invoke(const Method & m, const Tn & ... an) {
-        method(m);
-        out(an ...);
-        act();
-        return result();
+		if(m >= CREATE && m <= CREATE9) {
+			//This will set the object address to be used as id.unit()
+			method(m);
+			out(an ...);
+			act();
+			return result();
+		} else {
+			Message msg(Id(Type<Component>::ID, this->id().unit()), m, an ...);
+			msg.act();
+			return msg.result();
+		}
     }
 
     template<typename ... Tn>
     static Result static_invoke(const Method & m, const Tn & ... an) {
-        Message msg(Id(Type<Component>::ID, 0)); // avoid calling ~Proxy()
-        msg.method(m);
-        msg.out(an ...);
+        Message msg(Id(Type<Component>::ID, 0), m, an ...); // avoid calling ~Proxy()
         msg.act();
         return (m == SELF) ? msg.id().unit() : msg.result();
     }

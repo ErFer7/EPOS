@@ -39,6 +39,7 @@ protected:
     static const unsigned int QUANTUM = Traits<Thread>::QUANTUM;
     static const unsigned int STACK_SIZE = multitask ? Traits<System>::STACK_SIZE : Traits<Application>::STACK_SIZE;
     static const unsigned int USER_STACK_SIZE = Traits<Application>::STACK_SIZE;
+    static const unsigned int PRIORITY_INVERSION_PROTOCOL = Traits<Build>::NONE;  // TODO: Add a trait for this configuration
 
     typedef CPU::Log_Addr Log_Addr;
     typedef CPU::Context Context;
@@ -126,7 +127,6 @@ protected:
     static Thread * volatile running() { return _not_booting ? _scheduler.chosen() : reinterpret_cast<Thread * volatile>(CPU::id() + 1); }
 
     static void lock() {
-        _previous_interrupt_enabled[CPU::id()] = CPU::int_enabled(); 
         CPU::int_disable();
         if(smp)
             _lock.acquire();
@@ -135,7 +135,7 @@ protected:
     static void unlock() {
         if(smp)
             _lock.release();
-        if(_not_booting && (_previous_interrupt_enabled[CPU::id()]))
+        if(_not_booting)
             CPU::int_enable();
     }
 
@@ -185,7 +185,6 @@ protected:
     static Scheduler_Timer * _timer;
     static Scheduler<Thread> _scheduler;
     static Spin _lock;
-    static bool _previous_interrupt_enabled[Traits<Build>::CPUS];
 };
 
 
@@ -367,7 +366,7 @@ private:
 // Threads with the default configuration are only used in single-task scenarios, since the framework's agent always creates a configuration
 template<typename ... Tn>
 inline Thread::Thread(int (* entry)(Tn ...), Tn ... an)
-: _task(Task::self()), _user_stack(0), _state(READY), _waiting(0), _joining(0), _link(this, Fixed_CPU())
+: _task(Task::self()), _user_stack(0), _state(READY), _waiting(0), _joining(0), _link(this, NORMAL)
 {
     constructor_prologue(WHITE, STACK_SIZE);
     _context = CPU::init_stack(0, _stack + STACK_SIZE, &__exit, entry, an ...);

@@ -3,7 +3,6 @@
 #include <time.h>
 #include <synchronizer.h>
 #include <process.h>
-#include <architecture.h>
 
 using namespace EPOS;
 
@@ -24,7 +23,7 @@ unsigned long long busy_wait(unsigned long long n);
 int main()
 {
     table.lock();
-    cout << CPU::id() << ": The Philosopher's Dinner:" << endl;
+    cout << "The Philosopher's Dinner:" << endl;
 
     for(int i = 0; i < 5; i++)
         chopstick[i] = new Semaphore;
@@ -35,15 +34,15 @@ int main()
     phil[3] = new Thread(&philosopher, 3, 16, 24);
     phil[4] = new Thread(&philosopher, 4, 10, 20);
 
-    cout << CPU::id() << ": Philosophers are alive and hungry!" << endl;
+    cout << "Philosophers are alive and hungry!" << endl;
 
-    cout << CPU::id() << ": The dinner is served ..." << endl;
+    cout << "The dinner is served ..." << endl;
     table.unlock();
 
     for(int i = 0; i < 5; i++) {
         int ret = phil[i]->join();
         table.lock();
-        cout << CPU::id() << ": Philosopher " << i << " ate " << ret << " times " << endl;
+        cout << "Philosopher " << i << " ate " << ret << " times " << endl;
         table.unlock();
     }
 
@@ -52,7 +51,7 @@ int main()
     for(int i = 0; i < 5; i++)
         delete phil[i];
 
-    cout << CPU::id() << ": The end!" << endl;
+    cout << "The end!" << endl;
 
     return 0;
 }
@@ -64,27 +63,27 @@ int philosopher(int n, int l, int c)
 
     for(int i = iterations; i > 0; i--) {
 
-        table.lock(); // 0xffffffc000000482
-        cout << CPU::id() << ": Philosopher " << n << " is thinking." << endl;
-        table.unlock(); // 0xffffffc000000528
+        table.lock();
+        cout << "Philosopher " << n << " is thinking." << endl;
+        table.unlock();
 
         think(1000000);
 
-        table.lock(); // 0xffffffc00000054a
-        cout << CPU::id() << ": Philosopher " << n << " is hungry." << endl;
+        table.lock();
+        cout << "Philosopher " << n << " is hungry." << endl;
         table.unlock();
 
         chopstick[first]->p();   // get first chopstick
         chopstick[second]->p();  // get second chopstick
 
         table.lock();
-        cout << CPU::id() << ": Philosopher " << n << " is eating." << endl;
+        cout << "Philosopher " << n << " is eating." << endl;
         table.unlock();
 
         eat(500000);
 
         table.lock();
-        cout << CPU::id() << ": Philosopher " << n << " is sate." << endl;
+        cout << "Philosopher " << n << " is sate." << endl;
         table.unlock();
 
         chopstick[first]->v();   // release first chopstick
@@ -92,7 +91,7 @@ int philosopher(int n, int l, int c)
     }
 
     table.lock();
-    cout << CPU::id() << ": Philosopher " << n << " is done!" << endl;
+    cout << "Philosopher " << n << " is done!" << endl;
     table.unlock();
 
     return iterations;

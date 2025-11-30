@@ -99,18 +99,15 @@ public:
     Message(const Message & msg): _link(this) { *this = msg; _link = this; }
     Message(const Id & id): _id(id), _link(this) {}
     template<typename ... Tn>
-    Message(const Id & id, const Method & m, Tn && ... an): _id(id), _link(this) {
-        _method[CPU::id()] = m;
-        out(an ...);
-    }
+    Message(const Id & id, const Method & m, Tn && ... an): _id(id), _method(m), _link(this) { out(an ...); }
 
     const Id & id() const { return _id; }
     void id(const Id & id) { _id = id; }
 
-    const Method & method() const { return _method[CPU::id()]; }
-    void method(const Method & m) { _method[CPU::id()] = m; }
-    const Result & result() const { return _method[CPU::id()]; }
-    void result(const Result & r) { _method[CPU::id()] = r; }
+    const Method & method() const { return _method; }
+    void method(const Method & m) { _method = m; }
+    const Result & result() const { return _method; }
+    void result(const Result & r) { _method = r; }
 
     template<typename ... Tn>
     void in(Tn && ... an) {
@@ -133,7 +130,7 @@ public:
     Element * lext() { return &_link; }
 
     friend OStream & operator << (OStream & os, const Message & m) {
-          os << "{id=" << m._id << ",m=" << hex << m._method[CPU::id()] << ",rt=" << m._reply_to
+          os << "{id=" << m._id << ",m=" << hex << m._method << ",rt=" << m._reply_to
              << ",p={" << reinterpret_cast<void *>(*static_cast<const int *>(reinterpret_cast<const void *>(&m._parms[0]))) << ","
              << reinterpret_cast<void *>(*static_cast<const int *>(reinterpret_cast<const void *>(&m._parms[4]))) << ","
              << reinterpret_cast<void *>(*static_cast<const int *>(reinterpret_cast<const void *>(&m._parms[8]))) << "}}";
@@ -142,7 +139,7 @@ public:
 
 public:
     Id _id;
-    Method _method[Traits<Build>::CPUS];
+    Method _method;
     char _parms[MAX_PARAMETERS_SIZE];
 
     Id _reply_to;

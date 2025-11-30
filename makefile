@@ -31,7 +31,7 @@ ia32_PREFIX	:= /usr/bin/x86_64-linux-gnu-
 armv7_PREFIX	:= /usr/bin/arm-none-eabi-
 armv8_PREFIX	:= /usr/bin/aarch64-linux-gnu-
 rv32_PREFIX	:= /usr/bin/riscv64-linux-gnu-
-rv64_PREFIX	:= /home/erfer/Documents/LISHA/Tools/riscv-gnu-toolchain/riscv/bin/riscv64-unknown-linux-gnu-
+rv64_PREFIX	:= /usr/bin/riscv64-linux-gnu-
 
 # Make basic commands
 DD              = dd
@@ -43,15 +43,15 @@ CLEAN           = rm -f
 CLEANDIR        = rm -rf
 INSTALL         = install
 LINK            = ln -sf
-# QEMU_DEBUG      = -D $(addsuffix .log,$(APPLICATION)) -d int
-QEMU_DEBUG      = -D $(addsuffix .log,$(APPLICATION))
+#QEMU_DEBUG      = -D $(addsuffix .log,$(APPLICATION)) -d int,mmu
+# QEMU_DEBUG      = -serial pty
 SHELL           = bash
 TCPDUMP         = tcpdump -tttttennvvvXXr
 TEE             = tee
 ifndef DISPLAY
 TERM            = sh -c
 else
-TERM            = konsole -e
+TERM            = xterm -e
 endif
 TOUCH           = touch
 

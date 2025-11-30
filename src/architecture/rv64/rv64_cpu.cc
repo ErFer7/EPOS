@@ -73,7 +73,7 @@ void CPU::switch_context(Context ** o, Context * n)     // "o" is in a0 and "n" 
     ASM("sd sp, 0(a0)");   // update Context * volatile * o, which is in a0
 
     // Set the stack pointer to "n" and pop the context from the stack
-    ASM("mv sp, a1");   // "n" is in a1
+    ASM("mv sp, a1"); 
     Context::pop();
     iret();
 }

@@ -4,6 +4,7 @@
 #define __rv64_h
 
 #include <architecture/cpu.h>
+#include <utility/string.h>
 
 __BEGIN_SYS
 
@@ -377,12 +378,26 @@ public:
 
         // Real context
         ksp -= sizeof(Context);
+
+        // WARN: Experimental: This is a quick fix for the VisionFive 2 board
+        // memset(ksp, 0, sizeof(Context));
+        unsigned char *ptr = static_cast<unsigned char*>(ksp);
+        size_t n = sizeof(Context);
+        while (n--) *ptr++ = 0;
+
         Context * ctx = new(ksp) Context(entry, exit, usp); // init_stack is called with usp = 0 for kernel threads
         init_stack_helper(&ctx->_x10, an ...); // x10 is a0
 
         if(usp) { // multitask applications
             // Context to switch to user mode
             ksp -= sizeof(Context);
+
+            // WARN: Experimental: This is a quick fix for the VisionFive 2 board
+            // memset(ksp, 0, sizeof(Context));
+            unsigned char *ptr = static_cast<unsigned char*>(ksp);
+            size_t n = sizeof(Context);
+            while (n--) *ptr++ = 0;
+
             ctx = new(ksp) Context(&Context::first_dispatch, 0, 0); // this context will be popped by switch() to reach first_dispatch(), which will activate the thread's context at return
             ctx->_x10 = 0; // zero fr() for the pop(true) issued by first_dispatch()
         }
@@ -595,9 +610,9 @@ if(interrupt) {
 
 inline void CPU::Context::pop(bool interrupt)
 {
-//if(interrupt) {
-//    int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
-//}
+if(interrupt) {
+   int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
+}
 if(multitask) {
     ASM("       ld       x3,  240(sp)           \n"     // pop USP into TMP
         "       csrw     sscratch, x3           \n");   // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)

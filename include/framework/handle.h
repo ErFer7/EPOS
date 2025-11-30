@@ -19,7 +19,7 @@ template<typename Component>
 class Handled: public Handle<Component>
 {
 public:
-    Handled(): Handle<Component>(Handle<Component>::HANDLED) {
+    Handled(): Handle<Component>(Handle<Component>::Private_Handle::HANDLED) {
         db<Framework>(TRC) << "Handled(this=" << this << ")" << endl;
     }
 
@@ -50,7 +50,7 @@ class Handle
 private:
     typedef Stub<Component, Traits<Component>::ASPECTS::Length || (Traits<Build>::SMOD == Traits<Build>::KERNEL)> _Stub;
 
-    enum Private_Handle{ HANDLED };
+    enum class Private_Handle{ HANDLED };
 
 private:
     Handle(const Private_Handle & h) { db<Framework>(TRC) << "Handle(HANDLED) => [stub=" << _stub << "]" << endl; }

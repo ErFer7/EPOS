@@ -14,7 +14,6 @@ volatile unsigned int Thread::_thread_count;
 Scheduler_Timer * Thread::_timer;
 Scheduler<Thread> Thread::_scheduler;
 Spin Thread::_lock;
-bool Thread::_previous_interrupt_enabled[Traits<Build>::CPUS];
 
 
 void Thread::constructor_prologue(Color color, unsigned int stack_size)
@@ -97,8 +96,8 @@ Thread::~Thread()
     }
 
     if(multitask) {
-        _task->dismiss(this);
-        delete _user_stack;
+       _task->dismiss(this);
+       delete _user_stack;
     }
 
     if(_joining)
@@ -333,10 +332,10 @@ void Thread::wakeup_all(Queue * q)
 
 void Thread::prioritize(Queue * q)
 {
-    assert(locked()); // locking handled by caller
+    if(PRIORITY_INVERSION_PROTOCOL == Traits<Build>::NONE)
+        return;
 
-//    if(priority_inversion_protocol == Traits<Build>::NONE)
-       return;
+    assert(locked()); // locking handled by caller
 
     db<Thread>(TRC) << "Thread::prioritize(q=" << q << ") [running=" << running() << "]" << endl;
 
@@ -362,10 +361,10 @@ void Thread::prioritize(Queue * q)
 
 void Thread::deprioritize(Queue * q)
 {
+    if(PRIORITY_INVERSION_PROTOCOL == Traits<Build>::NONE)
+        return;
+    
     assert(locked()); // locking handled by caller
-
-//    if(priority_inversion_protocol == Traits<Build>::NONE)
-//        return;
 
     db<Thread>(TRC) << "Thread::deprioritize(q=" << q << ") [running=" << running() << "]" << endl;
 
@@ -471,7 +470,10 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         // passing the volatile to switch_constext forces it to push prev onto the stack,
         // disrupting the context (it doesn't make a difference for Intel, which already saves
         // parameters on the stack anyway).
-        CPU::switch_context(const_cast<Context **>(&prev->_context), next->_context);
+        while(!next->_context);
+        CPU::Context *c = next->_context;
+        next->_context = nullptr;
+        CPU::switch_context(const_cast<CPU::Context**>(&prev->_context), c);
 
 //        assert(CPU::int_disabled() || (running()->criterion() == IDLE));
 

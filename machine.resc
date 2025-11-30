@@ -1,0 +1,23 @@
+$name?="vf2"
+
+using sysbus
+mach create $name
+machine LoadPlatformDescription @vf2.repl
+
+showAnalyzer uart0
+
+emulation CreateSwitch "switch1"
+connector Connect sysbus.ethernet switch1
+emulation LogToWireshark switch1
+
+$bin?=@img/ethernet.bin
+
+macro reset
+"""
+    sysbus LoadBinary $bin 0x40000000
+    sysbus.U74_2   PC 0x40000000
+    sysbus.U74_1   PC 0x40000000
+    start
+"""
+runMacro $reset
+

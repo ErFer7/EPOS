@@ -754,13 +754,13 @@ void _entry() // machine mode
 {
     typedef IF<Traits<CPU>::WORD_SIZE == 32, SV32_MMU, SV39_MMU>::Result MMU; // architecture.h will use No_MMU if multitasking is disable, but we need the correct MMU for the Flat Memory Model.
 
-    if(CPU::mhartid() == 0)                             // SiFive-U has 5 cores, but core 0 (an E51) does not feature an MMU, so we halt it and let the other cores (U54) run in a multicore configuration
+    if(CPU::mhartid() == 0 || CPU::mhartid() > Traits<Build>::CPUS)
         CPU::halt();
 
     CPU::mstatusc(CPU::MIE);                            // disable interrupts (they will be reenabled at Init_End)
 
-    CPU::tp(CPU::mhartid() - 1);                        // tp will be CPU::id() for supervisor mode; we won't count core 0, which is an heterogeneous E51
-    CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE * (CPU::id() + 1) - sizeof(long)); // set the stack pointer, thus creating a stack for SETUP
+    CPU::tp(CPU::mhartid() - 1);
+    CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE - sizeof(long)); // set the stack pointer, thus creating a stack for SETUP
 
     if(CPU::id() == CPU::BSP)
         Machine::clear_bss();

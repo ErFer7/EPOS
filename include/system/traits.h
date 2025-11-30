@@ -186,7 +186,7 @@ struct Traits_Tokens
     enum {eMote1, eMote2, STK500, RCX, Cortex, PC, Leon, Virtex, RISCV};
 
     // Machine models
-    enum {Unique, Legacy_PC, eMote3, LM3S811, Zynq, Realview_PBX, Raspberry_Pi3, FZ3, SiFive_E, SiFive_U};
+    enum {Unique, Legacy_PC, eMote3, LM3S811, Zynq, Realview_PBX, Raspberry_Pi3, FZ3, SiFive_E, SiFive_U, VisionFive2};
 
     // Networking models
     enum {STANDALONE = 1, PAN = 10, LAN = 100, MAN = 1000, WAN = 10000, UNROUTED = 0}; // UNROUTED means all nodes are in a single collision domain, but it doesn't assume anything about the number of nodes
