@@ -800,11 +800,11 @@ void _setup() // supervisor mode
 void _int_m2s()
 {
     // Save context
-    ASM("       csrw    mscratch, sp            \n");
+    ASM("       csrw    mscratch, sp            \n");   // We'll need more than MSCRATCH to save the context, so will trick PC, SP and TP (which must be restored later)
 if(Traits<CPU>::WORD_SIZE == 32) {
-    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page))
-        "       slli     tp, tp,  8             \n"
-        "       sub      sp, sp, tp             \n"     // SP -= 256 * CPU::id()
+    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page)), that is, the top of the last page contains the stacks
+        "       slli     tp, tp,  8             \n"     // TP is CPU::id(), each CPU will get a private 256 bytes stack, so we multiply TP by 256
+        "       sub      sp, sp, tp             \n"     // SP -= TP
         "       sw       a0,  -8(sp)            \n"
         "       sw       a1, -12(sp)            \n"
         "       sw       a2, -16(sp)            \n"
@@ -814,9 +814,9 @@ if(Traits<CPU>::WORD_SIZE == 32) {
         "       sw       a6, -32(sp)            \n"
         "       sw       a7, -36(sp)            \n");
 } else {
-    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page))
-        "       slli     tp, tp,  8             \n"
-        "       sub      sp, sp, tp             \n"     // SP -= 256 * CPU::id()
+    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page)), that is, the top of the last page contains the stacks
+        "       slli     tp, tp,  8             \n"     // TP is CPU::id(), each CPU will get a private 256 bytes stack, so we multiply TP by 256
+        "       sub      sp, sp, tp             \n"     // SP -= TP
         "       sd       a0, -12(sp)            \n"
         "       sd       a1, -20(sp)            \n"
         "       sd       a2, -28(sp)            \n"
@@ -824,7 +824,8 @@ if(Traits<CPU>::WORD_SIZE == 32) {
         "       sd       a4, -44(sp)            \n"
         "       sd       a5, -52(sp)            \n");
 }
-    CPU::tp(CPU::mhartid() - 1);
+    ASM("       srli     tp, tp, 8              \n"); // restore TP
+
     CPU::Reg id = CPU::mcause();
 
     if((id & CLINT::INT_MASK) == CLINT::IRQ_MAC_SOFT) {

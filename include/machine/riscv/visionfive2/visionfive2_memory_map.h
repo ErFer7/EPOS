@@ -1,4 +1,4 @@
-// EPOS SiFive-U (RISC-V) Memory Map
+// EPOS VisionFive 2 (RISC-V) Memory Map
 
 #ifndef __riscv_sifive_u_memory_map_h
 #define __riscv_sifive_u_memory_map_h
@@ -7,14 +7,13 @@
 
 __BEGIN_SYS
 
-struct Memory_Map
-{
-private:
+struct Memory_Map {
+  private:
     static const bool multitask = Traits<System>::multitask;
 
-public:
+  public:
     enum : unsigned long {
-        NOT_USED        = Traits<Machine>::NOT_USED,
+        NOT_USED = Traits<Machine>::NOT_USED,
 
         // Physical Memory
         RAM_BASE        = Traits<Machine>::RAM_BASE,
@@ -22,28 +21,35 @@ public:
         MIO_BASE        = Traits<Machine>::MIO_BASE,
         MIO_TOP         = Traits<Machine>::MIO_TOP,
         LAST_PAGE       = RAM_TOP + 1 - 4096,
-        INT_M2S         = LAST_PAGE,   	  // the last page is used by the _int_m2s() machine mode interrupt forwarder installed by SETUP before going into supervisor mode; code and stack share the same page, with code at the bottom and the stack at the top
+        INT_M2S         = LAST_PAGE, // the last page is used by the _int_m2s() machine mode interrupt forwarder installed by SETUP before going into supervisor mode; code and stack share the same page, with code at the bottom and the stack at the top
         FLAT_MEM_MAP    = INT_M2S - 4096, // in LIBRARY mode, a single-level mapping of the whole memory space is used
         BOOT_STACK      = FLAT_MEM_MAP - Traits<Machine>::STACK_SIZE * Traits<Build>::CPUS, // will be used as the stack's base, not the stack pointer
         FREE_BASE       = RAM_BASE,
         FREE_TOP        = BOOT_STACK - 1,
 
         // Memory-mapped devices
-        BIOS_BASE       = 0x00001000,   // BIOS ROM
-        TEST_BASE       = 0x00100000,   // SiFive test engine
-        RTC_BASE        = 0x00101000,   // Goldfish RTC
-        UART0_BASE      = 0x10000000,   // SiFive UART
-        CLINT_BASE      = 0x02000000,   // SiFive CLINT
-        TIMER_BASE      = 0x02004000,   // CLINT Timer
-        PLIC_BASE       = 0x0c000000,   // SiFive PLIC
-        PRCI_BASE       = 0x10000000,   // SiFive-U Power, Reset, Clock, Interrupt
-        GPIO_BASE       = 0x10060000,   // SiFive-U GPIO
-        OTP_BASE        = 0x10070000,   // SiFive-U OTP
-        ETH_BASE        = 0x10090000,   // SiFive-U Ethernet
-        FLASH_BASE      = 0x20000000,   // Virt / SiFive-U Flash
-        SPI0_BASE       = 0x10060000,   // SiFive-U QSPI 0
-        SPI1_BASE       = 0x10070000,   // SiFive-U QSPI 1
-        SPI2_BASE       = 0x10080000,   // SiFive-U QSPI 2
+        BIOS_BASE       = 0x00001000,  // BIOS ROM
+        TEST_BASE       = 0x00100000,  // SiFive test engine
+        RTC_BASE        = 0x00101000,  // Goldfish RTC
+        UART0_BASE      = 0x10000000,  // SiFive UART
+        CLINT_BASE      = 0x02000000,  // SiFive CLINT
+        TIMER_BASE      = 0x02004000,  // CLINT Timer
+        PLIC_BASE       = 0x0c000000,  // SiFive PLIC
+        PRCI_BASE       = 0x10000000,  // VisionFive2 Power, Reset, Clock, Interrupt
+        GPIO_BASE       = 0x10060000,  // VisionFive2 GPIO
+        OTP_BASE        = 0x10070000,  // VisionFive2 OTP
+        ETH_BASE        = 0x16030000,  // VisionFive2 Ethernet
+        FLASH_BASE      = 0x20000000,  // Virt / VisionFive2 Flash
+        SPI0_BASE       = 0x10060000,  // VisionFive2 QSPI 0
+        SPI1_BASE       = 0x10070000,  // VisionFive2 QSPI 1
+        SPI2_BASE       = 0x10080000,  // VisionFive2 QSPI 2
+        I2C5_BASE       = 0x12050000,  // VisionFive2 I2C5
+        SYS_CRG_BASE    = 0x13020000,  // VisionFive2 System CRG
+        SYS_CON_BASE    = 0x13030000,  // VisionFive2 System CON
+        SYS_AON_BASE    = 0x17000000,  // VisionFive2 System AON
+        L2PM_BASE       = 0x02010000,  // L2 Cache PMU
+        TEMP_BASE       = 0x120e0000,  // VisionFive2 temperature sensor
+        L2_CACHE_BASE   = 0x02010000,  // VisionFive2 cache controller
 
         // Physical Memory at Boot
         BOOT            = Traits<Machine>::BOOT,
@@ -67,7 +73,7 @@ public:
         SYS_PD          = multitask ? SYS + 0x00102000 : NOT_USED,
         SYS_DATA        = multitask ? SYS + 0x00103000 : NOT_USED,
         SYS_STACK       = multitask ? SYS + 0x00200000 : NOT_USED,
-        INIT            = multitask ? SYS_STACK        : NOT_USED,
+        INIT            = multitask ? SYS_STACK : NOT_USED,
         SYS_HEAP        = multitask ? SYS + 0x00400000 : NOT_USED,
         SYS_HIGH        = multitask ? SYS + 0x5fffffff : NOT_USED
     };
@@ -76,4 +82,3 @@ public:
 __END_SYS
 
 #endif
-

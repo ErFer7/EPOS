@@ -29,7 +29,7 @@ public:
         EXCEPTIONS_TAKEN                                = 1 << 8,
         INTEGER_LOAD_INSTRUCTIONS_RETIRED               = 1 << 9,
         INTEGER_STORE_INSTRUCTIONS_RETIRED              = 1 << 10,
-        ATOMIC_MEMEMORY_INSTRUCTIONS_RETIRED            = 1 << 11,
+        ATOMIC_MEMORY_INSTRUCTIONS_RETIRED              = 1 << 11,
         SYSTEM_INSTRUCTIONS_RETIRED                     = 1 << 12,
         INTEGER_ARITHMETIC_INSTRUCTIONS_RETIRED         = 1 << 13,
         CONDITIONAL_BRANCHES_RETIRED                    = 1 << 14,
@@ -37,9 +37,16 @@ public:
         JALR_INSTRUCTIONS_RETIRED                       = 1 << 16,
         INTEGER_MULTIPLICATION_INSTRUCTIONS_RETIRED     = 1 << 17,
         INTEGER_DIVISION_INSTRUCTIONS_RETIRED           = 1 << 18,
+        FLOATING_POINT_LOAD_INSTRUCTION_RETIRED         = 1 << 19,
+        FLOATING_POINT_STORE_INSTRUCTION_RETIRED        = 1 << 20,
+        FLOATING_POINT_ADDITION_RETIRED                 = 1 << 21,
+        FLOATING_POINT_MULTIPLICATION_RETIRED           = 1 << 22,
+        FLOATING_POINT_FUSED_MULTIPLY_ADD_RETIRED       = 1 << 23,
+        FLOATING_POINT_DIVISION_OR_SQUARE_ROOT_RETIRED  = 1 << 24,
+        OTHER_FLOATING_POINT_INSTRUCTION_RETIRED        = 1 << 25,
 
         // Microarchitectural events (mhpmeventX[7:0] = 1)
-        LOAD_USE_INTERLOCK                              = 1 <<  8 | 1,
+        ADDRESS_GENERATION_INTERLOCK                    = 1 <<  8 | 1,
         LONG_LATENCY_INTERLOCK                          = 1 <<  9 | 1,
         CSR_READ_INTERLOCK                              = 1 << 10 | 1,
         INSTRUCTION_CACHE_ITIM_BUSY                     = 1 << 11 | 1,
@@ -49,10 +56,15 @@ public:
         PIPELINE_FLUSH_FROM_CSR_WRITE                   = 1 << 15 | 1,
         PIPELINE_FLUSH_FROM_OTHER_EVENT                 = 1 << 16 | 1,
         INTEGER_MULTIPLICATION_INTERLOCK                = 1 << 17 | 1,
+        FLOATING_POINT_INTERLOCK                        = 1 << 18 | 1,
 
         // Memory System events (mhpmeventX[7:0] = 2)
         INSTRUCTION_CACHE_MISS                          = 1 <<  8 | 2,
-        MEMORY_MAPPED_IO_ACCESS                         = 1 <<  9 | 2
+        DATA_CACHE_MISS_OR_MEMORY_MAPPED_IO_ACCESS      = 1 <<  9 | 2,
+        DATA_CACHE_WRITE_BACK                           = 1 << 10 | 2,
+        INSTRUCTION_TLB_MISS                            = 1 << 11 | 2,
+        DATA_TLB_MISS                                   = 1 << 12 | 2,
+        L2_TLB_MISS                                     = 1 << 13 | 2
     };
 
 public:

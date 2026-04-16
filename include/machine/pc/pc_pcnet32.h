@@ -4,6 +4,7 @@
 #define __pcnet32_h
 
 #include <architecture.h>
+#include <machine/ic.h>
 #include <utility/convert.h>
 #include <network/ethernet.h>
 

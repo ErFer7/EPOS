@@ -165,6 +165,8 @@ public:
             return tmp;
         }
 
+        using TCP::Observed::attach;
+        using TCP::Observed::detach;
         void attach(TCP::Observer * obs) { _observer = obs; }
         void detach(TCP::Observer * obs) { _observer = 0; }
         bool notify(const Connection_Id & cid, Buffer * buf) {

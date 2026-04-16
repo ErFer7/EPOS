@@ -18,6 +18,11 @@ void Timer::int_handler(Interrupt_Id i)
         _channels[SCHEDULER]->_current[CPU::id()] = _channels[SCHEDULER]->_initial;
         _channels[SCHEDULER]->_handler(i);
     }
+
+    if(_channels[MONITOR] && (--_channels[MONITOR]->_current[CPU::id()] <= 0)) {
+        _channels[MONITOR]->_current[CPU::id()] = _channels[MONITOR]->_initial;
+        _channels[MONITOR]->_handler(i);
+    }
 }
 
 __END_SYS

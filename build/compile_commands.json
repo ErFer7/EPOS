@@ -1,5 +1,6 @@
 [
   {
+    "file": "eposcfg.cc",
     "arguments": [
       "/usr/bin/g++",
       "-c",
@@ -8,13 +9,13 @@
       "-std=c++14",
       "-Wall",
       "-O",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "eposcfg.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/tools/eposcfg",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/tools/eposcfg/eposcfg.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/tools/eposcfg"
   },
   {
+    "file": "eposmkbi.cc",
     "arguments": [
       "/usr/bin/g++",
       "-c",
@@ -23,20 +24,21 @@
       "-std=c++14",
       "-Wall",
       "-O",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "eposmkbi.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/tools/eposmkbi",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/tools/eposmkbi/eposmkbi.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/tools/eposmkbi"
   },
   {
+    "file": "aes.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -58,20 +60,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "aes.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/aes.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "bignum.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -93,20 +96,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "bignum.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/bignum.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "delete.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -128,20 +132,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "delete.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/delete.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "elf.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -163,20 +168,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "elf.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/elf.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "heap.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -198,20 +204,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "heap.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/heap.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "ostream.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -233,20 +240,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "ostream.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/ostream.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "random.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -268,20 +276,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "random.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/random.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "srec.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -303,20 +312,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "srec.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/srec.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "string.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -338,20 +348,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "string.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/utility",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/utility/string.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/utility"
   },
   {
+    "file": "mmu_common.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -373,20 +384,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "mmu_common.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/common/mmu_common.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/common"
   },
   {
+    "file": "mmu_common_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -408,21 +420,22 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "mmu_common_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/common/mmu_common_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/common"
   },
   {
+    "file": "../common/crtbegin.c",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-gcc",
       "-ansi",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-nostdinc",
       "--no-stack-protector",
@@ -432,24 +445,25 @@
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
       "-Wno-uninitialized",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
+      "../common/crtbegin.c",
       "-o",
-      "rv64_crtbegin.o",
-      "../common/crtbegin.c"
+      "rv64_crtbegin.o"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/common/crtbegin.c",
-    "output": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_crtbegin.o"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64",
+    "output": "rv64_crtbegin.o"
   },
   {
+    "file": "../common/crtend.c",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-gcc",
       "-ansi",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-nostdinc",
       "--no-stack-protector",
@@ -459,23 +473,24 @@
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
       "-Wno-uninitialized",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
+      "../common/crtend.c",
       "-o",
-      "rv64_crtend.o",
-      "../common/crtend.c"
+      "rv64_crtend.o"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/common/crtend.c",
-    "output": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_crtend.o"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64",
+    "output": "rv64_crtend.o"
   },
   {
+    "file": "rv64_cpu.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -497,20 +512,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_cpu.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_cpu.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "rv64_cpu_syscall.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -532,20 +548,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_cpu_syscall.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_cpu_syscall.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "rv64_cpu_syscalled.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -567,20 +584,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_cpu_syscalled.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_cpu_syscalled.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "rv64_mmu.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -602,20 +620,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_mmu.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_mmu.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "rv64_pmu.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -637,20 +656,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_pmu.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_pmu.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "rv64_cpu_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -672,20 +692,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_cpu_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_cpu_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "rv64_mmu_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -707,20 +728,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rv64_mmu_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/architecture/rv64/rv64_mmu_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/architecture/rv64"
   },
   {
+    "file": "info.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -742,20 +764,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "info.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common/info.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/common"
   },
   {
+    "file": "machine_common.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -777,20 +800,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "machine_common.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common/machine_common.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/common"
   },
   {
+    "file": "rtc_common.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -812,20 +836,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "rtc_common.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common/rtc_common.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/common"
   },
   {
+    "file": "scratchpad_common.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -847,20 +872,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "scratchpad_common.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common/scratchpad_common.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/common"
   },
   {
+    "file": "serial_display.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -882,20 +908,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "serial_display.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common/serial_display.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/common"
   },
   {
+    "file": "serial_keyboard.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -917,20 +944,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "serial_keyboard.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/common/serial_keyboard.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/common"
   },
   {
+    "file": "riscv_gem.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -952,20 +980,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_gem.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_gem.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "riscv_ic.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -987,20 +1016,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_ic.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_ic.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "riscv_machine.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1022,20 +1052,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_machine.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_machine.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "riscv_timer.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1057,20 +1088,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_timer.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_timer.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "visionfive2_gmac.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1092,20 +1124,93 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
+      "visionfive2_gmac.cc"
+    ],
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
+  },
+  {
+    "file": "visionfive2_hardware_clock.cc",
+    "arguments": [
+      "/usr/bin/riscv64-linux-gnu-g++",
+      "-c",
+      "-march=rv64g",
+      "-mabi=lp64d",
+      "-mno-relax",
+      "-mcmodel=medany",
+      "-g",
+      "-O",
+      "-std=c++14",
+      "-nostdinc",
+      "--no-exceptions",
+      "--no-rtti",
+      "--no-use-cxa-atexit",
+      "--no-unwind-tables",
+      "--no-asynchronous-unwind-tables",
+      "--no-stack-protector",
+      "--no-pie",
+      "--data-sections",
+      "--function-sections",
+      "-Wall",
+      "-Werror",
+      "-Wno-builtin-declaration-mismatch",
+      "-Wno-array-bounds",
+      "-Wno-attribute-alias",
+      "-Wno-placement-new",
+      "-Wno-class-memaccess",
+      "-Wno-address-of-packed-member",
+      "-Wno-stringop-overflow",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
+      "visionfive2_hardware_clock.cc"
+    ],
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
+  },
+  {
+    "file": "riscv_gem_init.cc",
+    "arguments": [
+      "/usr/bin/riscv64-linux-gnu-g++",
+      "-c",
+      "-march=rv64g",
+      "-mabi=lp64d",
+      "-mno-relax",
+      "-mcmodel=medany",
+      "-g",
+      "-O",
+      "-std=c++14",
+      "-nostdinc",
+      "--no-exceptions",
+      "--no-rtti",
+      "--no-use-cxa-atexit",
+      "--no-unwind-tables",
+      "--no-asynchronous-unwind-tables",
+      "--no-stack-protector",
+      "--no-pie",
+      "--data-sections",
+      "--function-sections",
+      "-Wall",
+      "-Werror",
+      "-Wno-builtin-declaration-mismatch",
+      "-Wno-array-bounds",
+      "-Wno-attribute-alias",
+      "-Wno-placement-new",
+      "-Wno-class-memaccess",
+      "-Wno-address-of-packed-member",
+      "-Wno-stringop-overflow",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_gem_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_gem_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "riscv_ic_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1127,20 +1232,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_ic_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_ic_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "riscv_machine_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1162,20 +1268,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_machine_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_machine_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "riscv_timer_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1197,20 +1304,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "riscv_timer_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/machine/riscv/riscv_timer_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/machine/riscv"
   },
   {
+    "file": "elp.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1232,20 +1340,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "elp.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/elp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/elp/elp.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/elp"
   },
   {
+    "file": "elp_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1267,20 +1376,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "elp_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/elp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/elp/elp_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/elp"
   },
   {
+    "file": "dhcp.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1302,20 +1412,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "dhcp.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4/dhcp.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/ipv4"
   },
   {
+    "file": "icmp.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1337,20 +1448,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "icmp.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4/icmp.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/ipv4"
   },
   {
+    "file": "ip.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1372,20 +1484,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "ip.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4/ip.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/ipv4"
   },
   {
+    "file": "tcp.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1407,20 +1520,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "tcp.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4/tcp.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/ipv4"
   },
   {
+    "file": "udp.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1442,20 +1556,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "udp.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4/udp.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/ipv4"
   },
   {
+    "file": "ip_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1477,20 +1592,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "ip_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/ipv4/ip_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/ipv4"
   },
   {
+    "file": "locator.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1512,20 +1628,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "locator.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/locator.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "manager.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1547,20 +1664,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "manager.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/manager.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "router.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1582,20 +1700,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "router.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/router.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "security.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1617,20 +1736,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "security.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/security.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "timekeeper.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1652,20 +1772,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "timekeeper.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/timekeeper.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "tstp.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1687,20 +1808,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "tstp.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/tstp.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "tstp_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1722,20 +1844,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "tstp_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/tstp/tstp_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network/tstp"
   },
   {
+    "file": "network_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1757,20 +1880,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "network_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/network",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/network/network_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/network"
   },
   {
+    "file": "address_space.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1792,20 +1916,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "address_space.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/address_space.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "alarm.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1827,20 +1952,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "alarm.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/alarm.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "clerk.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1862,20 +1988,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "clerk.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/clerk.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "condition.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1897,20 +2024,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "condition.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/condition.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "mutex.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1932,20 +2060,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "mutex.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/mutex.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "page_coloring.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -1967,20 +2096,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "page_coloring.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/page_coloring.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "scheduler.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2002,20 +2132,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "scheduler.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/scheduler.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "scheduler_cpu_affinity.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2037,20 +2168,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "scheduler_cpu_affinity.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/scheduler_cpu_affinity.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "scheduler_ea_pedf.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2072,20 +2204,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "scheduler_ea_pedf.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/scheduler_ea_pedf.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "scheduler_ea_pedf_rv64.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2107,20 +2240,57 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
+      "scheduler_ea_pedf_rv64.cc"
+    ],
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
+  },
+  {
+    "file": "segment.cc",
+    "arguments": [
+      "/usr/bin/riscv64-linux-gnu-g++",
+      "-c",
+      "-march=rv64g",
+      "-mabi=lp64d",
+      "-mno-relax",
+      "-mcmodel=medany",
+      "-g",
+      "-O",
+      "-std=c++14",
+      "-nostdinc",
+      "--no-exceptions",
+      "--no-rtti",
+      "--no-use-cxa-atexit",
+      "--no-unwind-tables",
+      "--no-asynchronous-unwind-tables",
+      "--no-stack-protector",
+      "--no-pie",
+      "--data-sections",
+      "--function-sections",
+      "-Wall",
+      "-Werror",
+      "-Wno-builtin-declaration-mismatch",
+      "-Wno-array-bounds",
+      "-Wno-attribute-alias",
+      "-Wno-placement-new",
+      "-Wno-class-memaccess",
+      "-Wno-address-of-packed-member",
+      "-Wno-stringop-overflow",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "segment.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/segment.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "semaphore.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2142,20 +2312,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "semaphore.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/semaphore.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "task.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2177,20 +2348,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "task.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/task.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "thread.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2212,20 +2384,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "thread.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/thread.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "alarm_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2247,20 +2420,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "alarm_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/alarm_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "page_coloring_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2282,20 +2456,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "page_coloring_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/page_coloring_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "system_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2317,20 +2492,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "system_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/system_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "thread_init.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2352,20 +2528,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "thread_init.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/api",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/api/thread_init.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/api"
   },
   {
+    "file": "setup_visionfive2.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2387,20 +2564,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "setup_visionfive2.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/setup",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/setup/setup_visionfive2.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/setup"
   },
   {
+    "file": "system_scaffold.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2422,20 +2600,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "system_scaffold.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/system",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/system/system_scaffold.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/system"
   },
   {
+    "file": "system_binding.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2457,20 +2636,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "system_binding.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/system",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/system/system_binding.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/system"
   },
   {
+    "file": "application_scaffold.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2492,20 +2672,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "application_scaffold.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/system",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/system/application_scaffold.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/system"
   },
   {
+    "file": "init_application.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2527,20 +2708,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "init_application.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/init",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/init/init_application.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/init"
   },
   {
+    "file": "init_begin.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2562,20 +2744,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "init_begin.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/init",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/init/init_begin.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/init"
   },
   {
+    "file": "init_end.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2597,20 +2780,21 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "init_end.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/init",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/init/init_end.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/init"
   },
   {
+    "file": "init_system.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
       "-c",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2632,19 +2816,20 @@
       "-Wno-class-memaccess",
       "-Wno-address-of-packed-member",
       "-Wno-stringop-overflow",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "init_system.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/src/init",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/src/init/init_system.cc"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/src/init"
   },
   {
+    "file": "stress_feature_test.cc",
     "arguments": [
       "/usr/bin/riscv64-linux-gnu-g++",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-nostdinc",
       "--no-stack-protector",
@@ -2657,10 +2842,11 @@
       "-c",
       "-ansi",
       "-O",
-      "-march=rv64gc",
+      "-march=rv64g",
       "-mabi=lp64d",
       "-mno-relax",
       "-mcmodel=medany",
+      "-g",
       "-O",
       "-std=c++14",
       "-nostdinc",
@@ -2687,15 +2873,14 @@
       "--no-use-cxa-atexit",
       "-std=c++14",
       "-include",
-      "/home/erfer/Code/LISHA/vf2/epos/include/system.h",
-      "-I/home/erfer/Code/LISHA/vf2/epos/include",
-      "-DCONFIG_KEYS=\"/home/erfer/Code/LISHA/vf2/epos/app/uart_loader/uart_loader.key\"",
+      "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include/system.h",
+      "-I/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/include",
       "-o",
-      "uart_loader.o",
-      "uart_loader.cc"
+      "stress_feature_test.o",
+      "-DCONFIG_KEYS=\"/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/app/stress_feature_test/stress_feature_test.key\"",
+      "stress_feature_test.cc"
     ],
-    "directory": "/home/erfer/Code/LISHA/vf2/epos/app/uart_loader",
-    "file": "/home/erfer/Code/LISHA/vf2/epos/app/uart_loader/uart_loader.cc",
-    "output": "/home/erfer/Code/LISHA/vf2/epos/app/uart_loader/uart_loader.o"
+    "directory": "/home/erfer/Code/LISHA/epos_worktree/ann_energy_optimizer_riscv/tests/stress_feature_test",
+    "output": "stress_feature_test.o"
   }
 ]

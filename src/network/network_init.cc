@@ -10,8 +10,10 @@ void Network::init()
 {
     db<Init, Network>(TRC) << "Network::init()" << endl;
 
+#ifdef __elp__
     if(Traits<ELP>::enabled)
         ELP::init();
+#endif
 
 #ifdef __ipv4__
 

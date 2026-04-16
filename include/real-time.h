@@ -21,6 +21,26 @@ typedef Thread Aperiodic_Thread;
 // them before the associate alarm and semaphore are created. The first job
 // is dispatched by resume() (thus the _state = SUSPENDED statement)
 
+// Periodic Thread Configuration
+template<bool smp = Traits<Thread>::smp>
+struct Periodic_Thread_Configuratoin: public Thread::Configuration {
+    Periodic_Thread_Configuratoin(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE, Thread *thread = nullptr)
+    : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu, true, thread), cl, t, ss), activation(a), times(n) {}
+
+    Microsecond activation;
+    unsigned int times;
+};
+
+template<>
+struct Periodic_Thread_Configuratoin<false>: public Thread::Configuration {
+    Periodic_Thread_Configuratoin(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE)
+    : Thread::Configuration(s, Thread::Criterion(p, d, c), cl, t, ss), activation(a), times(n) {}
+
+    Microsecond activation;
+    unsigned int times;
+};
+
+
 // Periodic Thread
 class Periodic_Thread: public Thread
 {
@@ -50,6 +70,7 @@ protected:
 
         void operator()() {
             _thread->criterion().handle(Criterion::JOB_RELEASE);
+            _thread->criterion().handle(Criterion::JOB_ALARM_HANDLE);
             Semaphore_Handler::operator()();
         }
 
@@ -60,13 +81,7 @@ protected:
     typedef IF<Criterion::dynamic | Traits<System>::monitored, Dynamic_Handler, Static_Handler>::Result Handler;
 
 public:
-    struct Configuration: public Thread::Configuration {
-        Configuration(Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN, Microsecond a = NOW, const unsigned int n = INFINITE, unsigned int cpu = ANY, State s = READY, Color cl = WHITE, Task * t = 0, unsigned int ss = STACK_SIZE)
-        : Thread::Configuration(s, Criterion(p, d, c, cpu), cl, t, ss), activation(a), times(n) {}
-
-        Microsecond activation;
-        unsigned int times;
-    };
+    typedef Periodic_Thread_Configuratoin<Thread::smp> Configuration;
 
 public:
     template<typename ... Tn>
@@ -115,8 +130,8 @@ class RT_Thread: public Periodic_Thread
 {
 public:
     RT_Thread(void (* function)(), Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN, Microsecond a = NOW, int n = INFINITE, unsigned int cpu = ANY, Color cl = WHITE, Task * t = 0, unsigned int ss = STACK_SIZE)
-    : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss), &entry, this, function, a, n) {
-        resume();
+    : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss, this), &entry, this, function, a, n) {
+        // resume();
     }
 
 private:
@@ -132,6 +147,8 @@ private:
             new (&t->_alarm) Alarm(t->criterion().period(), &t->_handler, n);
         }
 
+        // TODO: Reset the deadline misses here?
+
         // Periodic execution loop
         do {
 //            Alarm::Tick tick;
@@ -139,7 +156,9 @@ private:
 //                tick = Alarm::elapsed() + Alarm::ticks(t->criterion()._capacity);
 
             // Release job
+            t->criterion().handle(Criterion::JOB_EXECUTION_START);
             function();
+            t->criterion().handle(Criterion::JOB_EXECUTION_FINISH);
 
 //            if(Traits<Periodic_Thread>::simulate_capacity && t->criterion()._capacity)
 //                while(Alarm::elapsed() < tick);

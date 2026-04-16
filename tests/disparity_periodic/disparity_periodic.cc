@@ -51,9 +51,9 @@ OStream cout;
 #define MAX_EXECS 1000
 
 // img1 and img2 size dependent
-#define PERIOD   6000000// IA32 == 160000 
-#define DEADLINE 6000000// IA32 == 160000
-#define WCET     5700000// IA32 == 155000
+static const Microsecond PERIOD   = 6000000; // IA32 == 160000 
+static const Microsecond DEADLINE = 6000000; // IA32 == 160000
+static const Microsecond WCET     = 5700000; // IA32 == 155000
 
 
 extern signed char img1[];
@@ -153,9 +153,7 @@ int main(void)
 {
     // p,d,c,act,t,cpu
     int CPU = 0;
-    Thread *t = new Periodic_Thread(RTConf(PERIOD, DEADLINE, WCET, 0, MAX_EXECS, CPU, Thread::READY,
-            Thread::Criterion((Microsecond) PERIOD, DEADLINE,
-            WCET, 0)), &FuncTask1);
+    Thread *t = new Periodic_Thread(RTConf(PERIOD, DEADLINE, WCET, 0, MAX_EXECS, CPU, Thread::READY), &FuncTask1);
 
     cout << "Disparity Periodic: All TASKs created with result (>0 is OK): " << t << endl;
 

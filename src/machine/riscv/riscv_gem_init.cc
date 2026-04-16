@@ -83,7 +83,7 @@ void GEM::init(unsigned int unit)
 
     // Register the device
     GEM::_devices[unit].device = dev;
-    GEM::_devices[unit].interrupt = IC::INT_ETH0;
+    //GEM::_devices[unit].interrupt = IC::INT_ETH0;
 
     // Install interrupt handler
     IC::int_vector(_devices[unit].interrupt, &int_handler);

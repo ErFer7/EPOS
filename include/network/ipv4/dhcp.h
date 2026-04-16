@@ -36,7 +36,7 @@ public:
 
     public:
         Packet() {
-            memset(this, 0, sizeof(Packet));
+            memset(reinterpret_cast<void *>(this), 0, sizeof(Packet));
             _magic[0] = 0x63;
             _magic[1] = 0x82;
             _magic[2] = 0x53;

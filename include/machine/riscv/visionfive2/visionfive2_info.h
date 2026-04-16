@@ -1,4 +1,4 @@
-// EPOS SiFive-U (RISC-V) Run-Time System Information
+// EPOS VisionFive 2 (RISC-V) Run-Time System Information
 
 #ifndef __riscv_visionfive2_info_h
 #define __riscv_visionfive2_info_h

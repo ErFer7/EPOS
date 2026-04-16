@@ -73,7 +73,7 @@ IP::Buffer * IP::alloc(const Address & to, const Protocol & prot, unsigned int o
         Packet * packet = el->object()->frame()->data<Packet>();
 
         // Setup header
-        memcpy(packet->header(), &header, sizeof(Header));
+        memcpy(reinterpret_cast<void *>(packet->header()), &header, sizeof(Header));
         packet->flags(el->next() ? Header::MF : 0);
         packet->length(el->object()->size());
         packet->offset(offset);

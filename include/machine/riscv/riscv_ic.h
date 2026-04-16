@@ -120,10 +120,18 @@ private:
     static bool _pending(Reg32 id) { return reg(PENDING + (id >> 3)) & ~(1 << (id % 32)); }
 
     // SiFive-U has 9 contexts: Hart0 MAC, Hart1 MAC, Hart1 SUP, Hart2 MAC, Hart2 SUP, Hart3 MAC, Hart3 SUP, Hart4 MAC, Hart4 SUP
-    static unsigned int context() { return (Traits<Build>::MODEL == Traits<Build>::SiFive_U) ? (supervisor || ((CPU::id() + CPU_OFFSET) == 0)) + (CPU::id() + CPU_OFFSET) * 2 - 1 : 0; }
+    static unsigned int context() { return (Traits<Build>::MODEL == Traits<Build>::SiFive_U || Traits<Build>::MODEL == Traits<Build>::VisionFive2) ? (supervisor || ((CPU::id() + CPU_OFFSET) == 0)) + (CPU::id() + CPU_OFFSET) * 2 - 1 : 0; }
 
     static volatile Reg32 & reg(unsigned int o) { return reinterpret_cast<volatile CPU::Reg32 *>(Memory_Map::PLIC_BASE)[o / sizeof(CPU::Reg32)]; }
     static volatile Reg32 & enabled(Reg32 context, Reg32 id) { return reg(ENABLED + context * 0x80 + (id >> 3)); } // if contexto ranges from 0 to 8
+
+public:
+	static void init() {
+		threshold(0);
+		for(unsigned int i = 0; i < IRQS; i++) {
+			disable(i);
+		}
+	}
 
 private:
     static Reg32 _claimed;
@@ -154,31 +162,31 @@ public:
         INT_RESCHEDULER = EXCS + IRQ_SOFT,
         INT_PLIC        = EXCS + IRQ_PLIC,
         HARD_INT        = EXCS + CLINT::IRQS,
-        INT_DDR         = HARD_INT + PLIC::IRQ_DDR,
-        INT_DMA0        = HARD_INT + PLIC::IRQ_DMA0,
-        INT_ETH0        = HARD_INT + PLIC::IRQ_ETH0,
-        INT_GPIO0       = HARD_INT + PLIC::IRQ_GPIO0,
-        INT_I2C         = HARD_INT + PLIC::IRQ_I2C,
-        INT_L2_CACHE    = HARD_INT + PLIC::IRQ_L2_CACHE,
-        INT_MIS0        = HARD_INT + PLIC::IRQ_MSI0,
-        INT_PWM0        = HARD_INT + PLIC::IRQ_PWM0,
-        INT_PWM1        = HARD_INT + PLIC::IRQ_PWM1,
-        INT_PWM2        = HARD_INT + PLIC::IRQ_PWM2,
-        INT_PWM3        = HARD_INT + PLIC::IRQ_PWM3,
-        INT_QSPI0       = HARD_INT + PLIC::IRQ_QSPI0,
-        INT_QSPI1       = HARD_INT + PLIC::IRQ_QSPI1,
-        INT_QSPI2       = HARD_INT + PLIC::IRQ_QSPI2,
-        INT_QSPI3       = HARD_INT + PLIC::IRQ_QSPI3,
-        INT_RTC         = HARD_INT + PLIC::IRQ_RTC,
-        INT_SPI0        = HARD_INT + PLIC::IRQ_SPI0,
-        INT_SPI1        = HARD_INT + PLIC::IRQ_SPI1,
-        INT_SPI2        = HARD_INT + PLIC::IRQ_SPI2,
-        INT_SPI3        = HARD_INT + PLIC::IRQ_SPI3,
-        INT_UART0       = HARD_INT + PLIC::IRQ_UART0,
-        INT_UART1       = HARD_INT + PLIC::IRQ_UART1,
-        INT_UART2       = HARD_INT + PLIC::IRQ_UART2,
-        INT_UART3       = HARD_INT + PLIC::IRQ_UART3,
-        INT_WDOG        = HARD_INT + PLIC::IRQ_WDOG
+        //INT_DDR         = HARD_INT + PLIC::IRQ_DDR,
+        //INT_DMA0        = HARD_INT + PLIC::IRQ_DMA0,
+        //INT_ETH0        = HARD_INT + PLIC::IRQ_ETH0,
+        //INT_GPIO0       = HARD_INT + PLIC::IRQ_GPIO0,
+        //INT_I2C         = HARD_INT + PLIC::IRQ_I2C,
+        //INT_L2_CACHE    = HARD_INT + PLIC::IRQ_L2_CACHE,
+        //INT_MIS0        = HARD_INT + PLIC::IRQ_MSI0,
+        //INT_PWM0        = HARD_INT + PLIC::IRQ_PWM0,
+        //INT_PWM1        = HARD_INT + PLIC::IRQ_PWM1,
+        //INT_PWM2        = HARD_INT + PLIC::IRQ_PWM2,
+        //INT_PWM3        = HARD_INT + PLIC::IRQ_PWM3,
+        //INT_QSPI0       = HARD_INT + PLIC::IRQ_QSPI0,
+        //INT_QSPI1       = HARD_INT + PLIC::IRQ_QSPI1,
+        //INT_QSPI2       = HARD_INT + PLIC::IRQ_QSPI2,
+        //INT_QSPI3       = HARD_INT + PLIC::IRQ_QSPI3,
+        //INT_RTC         = HARD_INT + PLIC::IRQ_RTC,
+        //INT_SPI0        = HARD_INT + PLIC::IRQ_SPI0,
+        //INT_SPI1        = HARD_INT + PLIC::IRQ_SPI1,
+        //INT_SPI2        = HARD_INT + PLIC::IRQ_SPI2,
+        //INT_SPI3        = HARD_INT + PLIC::IRQ_SPI3,
+        //INT_UART0       = HARD_INT + PLIC::IRQ_UART0,
+        //INT_UART1       = HARD_INT + PLIC::IRQ_UART1,
+        //INT_UART2       = HARD_INT + PLIC::IRQ_UART2,
+        //INT_UART3       = HARD_INT + PLIC::IRQ_UART3,
+        //INT_WDOG        = HARD_INT + PLIC::IRQ_WDOG
     };
 
 public:

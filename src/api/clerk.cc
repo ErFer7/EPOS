@@ -9,6 +9,7 @@ bool Clerk<PMU>::_in_use[Traits<Build>::CPUS][CHANNELS];
 
 // System_Monitor
 Simple_List<Monitor> Monitor::_monitors[Traits<Build>::CPUS];
+Monitor::Time_Stamp Monitor::_sync_now[Traits<Build>::CPUS];
 volatile bool Monitor::_enable;
 
 void Monitor::run()
@@ -16,6 +17,7 @@ void Monitor::run()
     if(_enable) { 
         db<Monitor>(TRC) << "Monitor::run()" << endl;
         Simple_List<Monitor> * monitor = &_monitors[CPU::id()];
+        update_sync_now();
         for(List::Iterator it = monitor->begin(); it != monitor->end(); it++)
             it->object()->capture();
     }

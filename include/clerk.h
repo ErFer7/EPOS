@@ -10,10 +10,15 @@
 #include <time.h>
 #include <transducer.h>
 #include <process.h>
+#include "machine/riscv/visionfive2/visionfive2_hardware_clock.h"
+#include "system/traits.h"
+#include <machine/pmic.h>
 
 extern "C" { void __pre_main(); }
 
 __BEGIN_SYS
+
+extern OStream kout;
 
 class Monitor
 {
@@ -30,7 +35,6 @@ protected:
     static const unsigned int TIME_ACCEPTED_DRIFT = 2;            // ts difference between captures +/- 2 * frequency
     static const unsigned int MINIMUN_SNAPSHOTS_TO_VALIDATE = 20; // start verification if #SNAPSHOTS greater than this value
     static const unsigned long TIME_SPAN = (Traits<Build>::EXPECTED_SIMULATION_TIME != 0) ? Traits<Build>::EXPECTED_SIMULATION_TIME : Traits<System>::LIFE_SPAN;
-
 public:
     Monitor(): _captures(0), _t0(TSC::time_stamp()) {}
     virtual ~Monitor() {}
@@ -64,7 +68,7 @@ public:
     }
 
     // Only start capturing when enters in main (enabled by CPU 0 at the end of init, which is only called at pre_init)
-    static void enable_captures() { 
+    static void enable_captures() {
         Time_Stamp t0 = TSC::time_stamp();
         // Adjust each Clerk Monitor instantiated.
         for(unsigned int n = 0; n < CPU::cores(); n++) {
@@ -80,13 +84,37 @@ public:
 
     static void disable_captures() { _enable = false; }
 
+    template<unsigned int CHANNEL>
+    static void print_system_events(unsigned int i);
+
+    template<unsigned int CHANNEL>
+    static void print_pmu_events(unsigned int i);
+
+    static void print_monitor_info() {
+        if (!Traits<Build>::monitored) {
+            kout << "The monitor is disabled" << endl;
+            return;
+        }
+
+        kout << "Monitored events:" << endl;
+
+        for (unsigned int i = 0; i < Traits<Build>::CPUS; i++) {
+            kout << "   > Core " << i << ':' << '\n' << "   > System events:" << endl;
+            print_system_events<0>(i);
+
+            kout << "   > PMU events:" << endl;
+            print_pmu_events<0>(i);
+        }
+    }
+
     friend OStream & operator<<(OStream & os, const Monitor & m) {
         m.print(os);
         return os;
     }
 
 protected:
-    inline Time_Stamp time_since_t0() { return TSC::time_stamp() - _t0; }
+    inline Time_Stamp time_since_t0() { return _sync_now[CPU::id()] - _t0; }
+    inline static void update_sync_now() { _sync_now[CPU::id()] = TSC::time_stamp(); }
 
     static inline Time_Stamp us2count(Microsecond t) {
         return Convert::us2count<Time_Stamp, Microsecond>(TSC::frequency(), t);
@@ -108,6 +136,7 @@ private:
 protected:
     unsigned int _captures;
     Time_Stamp _t0;
+    static Time_Stamp _sync_now[Traits<Build>::CPUS];
 
     static Simple_List<Monitor> _monitors[Traits<Build>::CPUS];
 
@@ -269,7 +298,7 @@ public:
     typedef typename T::Value Data;
 
 public:
-    Clerk(const Event & event, unsigned int dev, const Hertz frequency = 0, bool monitored = false): _dev(dev), _monitor(monitored ? new (SYSTEM) Clerk_Monitor<Clerk>(this, frequency) : 0) {}
+    Clerk(unsigned int dev, const Hertz frequency = 0, bool monitored = false): _dev(dev), _monitor(monitored ? new (SYSTEM) Clerk_Monitor<Clerk>(this, frequency) : 0) {}
     ~Clerk() {}
 
     Data read() { return T::sense(_dev); }
@@ -297,19 +326,30 @@ public:
         _monitor(monitored ? new (SYSTEM) Clerk_Monitor<Clerk>(this, frequency, (event == Event::THREAD_EXECUTION_TIME || event == Event::CPU_EXECUTION_TIME)) : 0) {}
     ~Clerk() {}
 
-    Data read() {
-        Thread * t = Thread::self();
+    Data read(Thread * t = Thread::self()) {
         switch(_event) {
         case Event::ELAPSED_TIME:
             return Alarm::elapsed();
         case Event::DEADLINE_MISSES:
-            return t->criterion().statistics().jobs_released - t->criterion().statistics().jobs_finished;
+            // return t->criterion().statistics().jobs_released - t->criterion().statistics().jobs_finished;
+            return t->criterion().statistics().deadline_misses;
         case Event::RUNNING_THREAD:
             return reinterpret_cast<volatile Data>(t);
         case Event::THREAD_EXECUTION_TIME:
             return t->criterion().statistics().thread_execution_time;
         case Event::CPU_EXECUTION_TIME:
             // return t->statistics()._cpu_time[CPU::id()];
+            return 0;
+        case Event::JOB_UTILIZATION:
+            return t->criterion().period() ? static_cast<Data>(count2us(t->criterion().statistics().job_utilization)) : 0;
+        case Event::JOB_UTILIZATION_PER_PERIOD:
+            return t->criterion().period() ? (count2us(t->criterion().statistics().job_utilization) * 100) / t->criterion().period() : 0;
+        case Event::CPU_CLOCK:
+            return HardwareClock::get_cpu_clock();
+        case Event::CPU_VOLTAGE:
+            return PMIC::get_cpu_voltage();
+        case Event::CORE:
+            return CPU::id();
         default:
             return 0;
         }
@@ -317,8 +357,7 @@ public:
 
     void start() {}
     void stop() {}
-    void reset() {
-        Thread* t = Thread::self();
+    void reset(Thread * t = Thread::self()) {
         switch(_event) {
         case Event::ELAPSED_TIME:
             break;
@@ -333,9 +372,51 @@ public:
             break;
         case Event::CPU_EXECUTION_TIME:
             break;
+        case Event::JOB_UTILIZATION:
+            t->criterion().statistics().job_utilization = 0;
+            break;
+        case Event::JOB_UTILIZATION_PER_PERIOD:
+            t->criterion().statistics().job_utilization = 0;
+            break;
         default:
             break;
         }
+    }
+
+    static const char *get_event_name(const System_Event & event) {
+        switch (event) {
+            case NONE:
+                return "System::NONE";
+            case ELAPSED_TIME:
+                return "System::ELAPSED_TIME";
+            case DEADLINE_MISSES:
+                return "System::DEADLINE_MISSES";
+            case CPU_EXECUTION_TIME:
+                return "System::CPU_EXECUTION_TIME";
+            case THREAD_EXECUTION_TIME:
+                return "System::THREAD_EXECUTION_TIME";
+            case RUNNING_THREAD:
+                return "System::RUNNING_THREAD";
+            case JOB_UTILIZATION:
+                return "System::JOB_UTILIZATION";
+            case JOB_UTILIZATION_PER_PERIOD:
+                return "System::JOB_UTILIZATION_PER_PERIOD";
+            case CPU_CLOCK:
+                return "System::CPU_CLOCK";
+            case CPU_VOLTAGE:
+                return "System::CPU_VOLTAGE";
+            case CORE:
+                return "System::CORE";
+            case PREDICTED_JOB_UTILIZATION:
+                return "System::PREDICTED_JOB_UTILIZATION";
+            default:
+                return "System::UNDEFINED_EVENT";
+        }
+    }
+protected:
+
+    static inline Microsecond count2us(TSC::Time_Stamp t) {
+        return Convert::count2us<Hertz, TSC::Time_Stamp, Microsecond>(TSC::frequency(), t);
     }
 
 private:
@@ -392,7 +473,7 @@ template<unsigned int CHANNEL>
 inline void Monitor::init_pmu_monitoring()
 {
     unsigned int  used_channels = 0;
-    if(Traits<Monitor>::PMU_EVENTS_FREQUENCIES[CHANNEL]) {
+    if((Traits<Monitor>::PMU_EVENTS_CORES[CHANNEL] & (1 << CPU::id())) && Traits<Monitor>::PMU_EVENTS_FREQUENCIES[CHANNEL]) {
         if(CPU::id() == 0)
             db<Monitor>(TRC) << "Monitor::init: monitoring PMU event " << Traits<Monitor>::PMU_EVENTS[CHANNEL] << " at " << Traits<Monitor>::PMU_EVENTS_FREQUENCIES[CHANNEL] << " Hz" << endl;
         if((((sizeof(Clerk<PMU>::Data) + sizeof(TSC::Time_Stamp)) * Traits<Monitor>::PMU_EVENTS_FREQUENCIES[CHANNEL] * TIME_SPAN) + sizeof(Clerk<PMU>)) > System::_heap->grouped_size()  - Traits<Application>::HEAP_SIZE)
@@ -415,13 +496,14 @@ inline void Monitor::init_pmu_monitoring<COUNTOF(Traits<Monitor>::PMU_EVENTS)>()
 template<unsigned int CHANNEL>
 inline void Monitor::init_system_monitoring()
 {
-    if((Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] > 0) && (CPU::id() == 0)) {
+    if((Traits<Monitor>::SYSTEM_EVENTS_CORES[CHANNEL] & (1 << CPU::id())) && Traits<Monitor>::SYSTEM_EVENTS[CHANNEL] != NONE && (Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] > 0)) {
         db<Monitor>(TRC) << "Monitor::init: monitoring system event " << Traits<Monitor>::SYSTEM_EVENTS[CHANNEL] << " at " << Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] << " Hz" << endl;
         if((((sizeof(Clerk<System>::Data) + sizeof(TSC::Time_Stamp)) * Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] * TIME_SPAN) + sizeof(Clerk<System>)) > System::_heap->grouped_size() - Traits<Application>::HEAP_SIZE)
             db<Monitor>(ERR) << "Monitor::init: not enough memory to allocate Clerk (requested size=" << (((sizeof(Clerk<System>::Data) + sizeof(TSC::Time_Stamp)) * Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] * TIME_SPAN) + sizeof(Clerk<System>)) << ", Heap::grouped_size()=" << System::_heap->grouped_size() - Traits<Application>::HEAP_SIZE << ")" << endl;
         else {
             new (SYSTEM) Clerk<System>(Traits<Monitor>::SYSTEM_EVENTS[CHANNEL], Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL], true);
-            db<Monitor>(WRN) << "Monitor::init: system event " << Traits<Monitor>::SYSTEM_EVENTS[CHANNEL] << " at " << Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] << " Hz created" << endl;
+            if (CPU::id() == 0)
+                db<Monitor>(WRN) << "Monitor::init: system event " << Traits<Monitor>::SYSTEM_EVENTS[CHANNEL] << " at " << Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL] << " Hz created" << endl;
         }
     }
     init_system_monitoring<CHANNEL + 1>();
@@ -429,6 +511,43 @@ inline void Monitor::init_system_monitoring()
 
 template<>
 inline void Monitor::init_system_monitoring<COUNTOF(Traits<Monitor>::SYSTEM_EVENTS)>() {}
+
+template<unsigned int CHANNEL>
+inline void Monitor::print_system_events(unsigned int i) {
+    if (Traits<Monitor>::SYSTEM_EVENTS_CORES[CHANNEL] & (1 << i)) {
+        kout << "        > "
+             << Clerk<System>::get_event_name(Traits<Monitor>::SYSTEM_EVENTS[CHANNEL])
+             << " (" << Traits<Monitor>::SYSTEM_EVENTS[CHANNEL]
+             << ") at "
+             << Traits<Monitor>::SYSTEM_EVENTS_FREQUENCIES[CHANNEL]
+             << "Hz"
+             << endl;
+    }
+
+    print_system_events<CHANNEL + 1>(i);
+}
+
+template<>
+inline void Monitor::print_system_events<COUNTOF(Traits<Monitor>::SYSTEM_EVENTS)>(unsigned int i) {}
+
+template<unsigned int CHANNEL>
+inline void Monitor::print_pmu_events(unsigned int i) {
+    if (Traits<Monitor>::PMU_EVENTS_CORES[CHANNEL] & (1 << i)) {
+        kout << "       > "
+                << PMU::get_event_name(Traits<Monitor>::PMU_EVENTS[CHANNEL])
+                << " (" << Traits<Monitor>::PMU_EVENTS[CHANNEL]
+                << ") -> ("
+                << PMU::get_event_code(Traits<Monitor>::PMU_EVENTS[CHANNEL])
+                << ") at "
+                << Traits<Monitor>::PMU_EVENTS_FREQUENCIES[CHANNEL]
+                << "Hz"
+                << endl;
+    }
+    print_pmu_events<CHANNEL + 1>(i);
+}
+
+template<>
+inline void Monitor::print_pmu_events<COUNTOF(Traits<Monitor>::PMU_EVENTS)>(unsigned int i) {}
 
 __END_SYS
 

@@ -144,7 +144,13 @@ public:
 
         long long b = (long long) f;
         (*this) << b << ".";
-        long long m = (long long) ((f - b)  * 10000);
+
+        long long m = (long long) ((f - b) * 10000 + 0.5f);
+
+        if (m < 1000) (*this) << "0";
+        if (m < 100)  (*this) << "0";
+        if (m < 10)   (*this) << "0";
+
         (*this) << m;
         return *this;
     }

@@ -12,9 +12,9 @@ template<> struct Traits<CPU>: public Traits<Build>
     enum {LITTLE, BIG};
     static const unsigned int ENDIANESS         = LITTLE;
     static const unsigned int WORD_SIZE         = 64;
-    static const unsigned long CLOCK            = (MODEL == SiFive_U) ? 1000000000L : (MODEL == VisionFive2) ? 600000000L : 50000000;
+	static const unsigned long CLOCK            = (MODEL == SiFive_U) ? 1000000000L : (MODEL == VisionFive2) ? 600000000L : 50000000;
     static const bool unaligned_memory_access   = false;
-    static const bool atomic_memory_operations  = (MODEL == SiFive_U);
+    static const bool atomic_memory_operations  = (MODEL == SiFive_U || MODEL == VisionFive2);
 };
 
 template<> struct Traits<MMU>: public Traits<Build>
@@ -25,7 +25,7 @@ template<> struct Traits<MMU>: public Traits<Build>
 
 template<> struct Traits<FPU>: public Traits<Build>
 {
-    static const bool enabled = false;
+    static const bool enabled = true;
     static const bool user_save = true;
 };
 

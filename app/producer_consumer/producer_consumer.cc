@@ -25,10 +25,21 @@ char * buffer;
 Semaphore * empty;
 Semaphore * full;
 
-int main(int argc, char ** arvg) {
+int main(int argc, char ** arvg)
+{
     cout << "Producer x Consumer\n" << endl;
 
     cout << "I'm the first Task." << endl;
+
+#ifndef __kernel__
+
+    buffer = new char[BUF_SIZE];
+    empty = new Semaphore(BUF_SIZE);
+    full = new Semaphore(0);
+
+    Thread * cons = new Thread(&consumer);
+
+#else
 
     Segment * seg = new Segment(BUF_SIZE + 2 * sizeof(Id));
     if(seg)
@@ -61,6 +72,8 @@ int main(int argc, char ** arvg) {
         return -1;
     }
 
+#endif
+
     Thread * prod = new Thread(&producer);
 
     cons->join();
@@ -74,7 +87,10 @@ int main(int argc, char ** arvg) {
     return 0;
 }
 
-int consumer_main(int argc, char ** arvg) {
+#ifdef __kernel__
+
+int consumer_main(int argc, char ** arvg)
+{
     OStream cout;
 
     cout << "\nI'm the second Task." << endl;
@@ -106,7 +122,10 @@ int consumer_main(int argc, char ** arvg) {
     return consumer();
 }
 
-int producer() {
+#endif
+
+int producer()
+{
     cout << "I'm the Producer." << endl;
 
     int in = 0;
@@ -123,7 +142,9 @@ int producer() {
     return 0;
 }
 
-int consumer() {
+
+int consumer()
+{
     cout << "I'm the Consumer." << endl;
 
     int out = 0;
@@ -132,20 +153,23 @@ int consumer() {
         full->p();
         cout << "C<-" << buffer[out] << " ";
         out = (out + 1) % BUF_SIZE;
-        consume(100000);
+        produce(100000);
         empty->v();
     }
 
     return 0;
 }
 
+
 void produce(unsigned long long n) {
     busy_wait(n);
 }
 
+
 void consume(unsigned long long n) {
     busy_wait(n);
 }
+
 
 unsigned long long busy_wait(unsigned long long n)
 {

@@ -94,7 +94,7 @@ void TCP::Connection::fsend(const Flags & flags)
 
     Packet * packet = buf->frame()->data<Packet>();
     Segment * segment = packet->data<Segment>();
-    memcpy(segment, header(), sizeof(Header));
+    memcpy(reinterpret_cast<void *>(segment), header(), sizeof(Header));
     segment->sum(packet->from(), packet->to(), 0, 0);
 
     db<TCP>(INF) << "TCP::Connection::send:conn=" << this << " => " << *this << endl;
@@ -211,7 +211,7 @@ int TCP::Connection::dsend(const void * d, unsigned int size)
 
         if(el == pool->link()) {
             Segment * segment = packet->data<Segment>();
-            memcpy(segment, header(), sizeof(Header));
+            memcpy(reinterpret_cast<void *>(segment), header(), sizeof(Header));
             segment->sum(packet->from(), packet->to(), data, buf->size() - sizeof(Header) - sizeof(IP::Header));
             memcpy(segment->data<void>(), data, buf->size() - sizeof(Header) - sizeof(IP::Header));
             data += buf->size() - sizeof(Header) - sizeof(IP::Header);

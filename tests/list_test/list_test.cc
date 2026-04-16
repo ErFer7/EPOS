@@ -1,6 +1,7 @@
 // EPOS List Utility Test Program
 
 #include <utility/list.h>
+#include <time.h>
 
 using namespace EPOS;
 

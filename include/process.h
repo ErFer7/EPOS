@@ -19,15 +19,19 @@ __BEGIN_SYS
 
 class Thread
 {
-    friend class Init_End;              // context->load()
-    friend class Init_System;           // for init() on CPU != 0
-    friend class Scheduler<Thread>;     // for link()
-    friend class Synchronizer_Common;   // for lock() and sleep()
-    friend class Alarm;                 // for lock()
-    friend class System;                // for init()
-    friend class IC;                    // for link() for priority ceiling
-    friend class Clerk<System>;         // for _statistics
-    friend volatile void * ::_running(); // for running()
+    friend class Init_End;                      // context->load()
+    friend class Init_System;                   // for init() on CPU != 0
+    friend class Scheduler<Thread>;             // for link()
+    friend class Synchronizer_Common;           // for lock() and sleep()
+    friend class Alarm;                         // for lock()
+    friend class System;                        // for init()
+    friend class IC;                            // for link() for priority ceiling
+    friend class Clerk<System>;                 // for _statistics
+    friend class EA_PEDF_RV64;  // FIX: Change this for a generic criterion definition
+    friend volatile void * ::_running();        // for running()
+    template<bool smp> 
+    friend class Periodic_Thread_Configuratoin; // for STACK_SIZE
+
 
 protected:
     static const bool smp = Traits<Thread>::smp;
@@ -35,11 +39,11 @@ protected:
     static const bool preemptive = Traits<Thread>::Criterion::preemptive;
     static const bool multitask = Traits<System>::multitask;
     static const bool reboot = Traits<System>::reboot;
+    static const unsigned int priority_inversion_protocol = Traits<Build>::NONE;  // TODO: Add a trait for this configuration
 
     static const unsigned int QUANTUM = Traits<Thread>::QUANTUM;
     static const unsigned int STACK_SIZE = multitask ? Traits<System>::STACK_SIZE : Traits<Application>::STACK_SIZE;
     static const unsigned int USER_STACK_SIZE = Traits<Application>::STACK_SIZE;
-    static const unsigned int PRIORITY_INVERSION_PROTOCOL = Traits<Build>::NONE;  // TODO: Add a trait for this configuration
 
     typedef CPU::Log_Addr Log_Addr;
     typedef CPU::Context Context;
@@ -147,11 +151,15 @@ protected:
 
     static void prioritize(Queue * queue);
     static void deprioritize(Queue * queue);
-    
+
+    void prepare_migration(const unsigned int & target_cpu, unsigned int & ipi_mask);
+    static void execute_migrations(const unsigned int & ipi_mask);
+
     static void reschedule();
     static void reschedule(unsigned int cpu);
     static void rescheduler(IC::Interrupt_Id interrupt);
     static void time_slicer(IC::Interrupt_Id interrupt);
+    static void monitor_run(IC::Interrupt_Id interrupt);
 
     static void dispatch(Thread * prev, Thread * next, bool charge = true);
 
@@ -183,6 +191,7 @@ protected:
     alignas (int) static bool _not_booting;
     static volatile unsigned int _thread_count;
     static Scheduler_Timer * _timer;
+    static Monitor_Timer * _monitor_timer;
     static Scheduler<Thread> _scheduler;
     static Spin _lock;
 };

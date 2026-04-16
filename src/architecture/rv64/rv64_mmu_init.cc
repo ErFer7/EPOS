@@ -3,7 +3,7 @@
 #include <architecture/mmu.h>
 #include <system.h>
 
-#ifdef __sifive_u__
+#if defined(__sifive_u__) || defined(__visionfive2__)
 
 __BEGIN_SYS
 

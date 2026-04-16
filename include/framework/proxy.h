@@ -124,7 +124,7 @@ public:
  private:
     template<typename ... Tn>
     Result invoke(const Method & m, const Tn & ... an) {
-		if(m >= CREATE && m <= CREATE9) {
+		if((m >= CREATE) && (m <= CREATE9)) {
 			//This will set the object address to be used as id.unit()
 			method(m);
 			out(an ...);

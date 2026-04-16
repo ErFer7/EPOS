@@ -162,7 +162,7 @@ public:
     HA resolve(const PA & pa) {
         db<IP>(TRC) << "ARP::resolve(pa=" << pa << ") => ";
 
-        volatile HA ha = HA(HA::NULL);
+        HA ha = HA(HA::NULL);
 
         lock();
         Element * el = _table.search_key(pa);
@@ -201,13 +201,9 @@ public:
             db<IP>(TRC) << "ARP::resolve(pa=" << pa << ") => ";
         }
 
-        // Even being declared volatile, "ha" gets messed up and a PF occurs without the memcpy
-        HA ha2;
-        memcpy(&ha2, const_cast<HA *>(&ha), sizeof(HA));
+        db<IP>(TRC) << ha << endl;
 
-        db<IP>(TRC) << ha2 << endl;
-
-        return ha2;
+        return ha;
     }
 
 //    PA resolve(const HA & ha) {

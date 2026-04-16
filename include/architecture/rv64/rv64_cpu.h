@@ -4,7 +4,6 @@
 #define __rv64_h
 
 #include <architecture/cpu.h>
-#include <utility/string.h>
 
 __BEGIN_SYS
 
@@ -17,6 +16,7 @@ private:
     static const bool amo = Traits<CPU>::atomic_memory_operations;
     static const bool multicore = Traits<System>::multicore;
     static const bool multitask = Traits<System>::multitask;
+    static const bool fpu = Traits<FPU>::enabled;
 
 public:
     // Bootstrap/service CPU id
@@ -124,7 +124,11 @@ public:
         // Contexts are loaded with [M|S]RET, which gets pc from [M|S]EPC and updates some bits of [M|S]STATUS, that's why _st is initialized with [M|S]PIE and [M|S]PP
         // Kernel threads are created with usp = 0 and have SPP_S so they don't transition to user-level
         // Dummy contexts for the first execution of each thread (both kernel and user) are created with exit = 0 and SPIE cleared (no interrupts until the second context is popped)
-        Context(Log_Addr entry, Log_Addr exit, Log_Addr usp): _pc(entry), _st(supervisor ? ((exit ? SPIE : 0) | (usp ? SPP_U : SPP_S) | SUM) : ((exit ? MPIE : 0) | MPP_M)), _x1(exit), _usp(usp) {
+        Context(Log_Addr entry, Log_Addr exit, Log_Addr usp):
+            _pc(entry),
+            _st((supervisor ? ((exit ? SPIE : 0) | (usp ? SPP_U : SPP_S) | SUM) : ((exit ? MPIE : 0) | MPP_M)) | (fpu ? FS_INIT : 0)),
+            _x1(exit),
+            _usp(usp) {
             if(Traits<Build>::hysterically_debugged || Traits<Thread>::trace_idle) {
                                                                         _x5 =  5;  _x6 =  6;  _x7 =  7;  _x8 =  8;  _x9 =  9;
                 _x10 = 10; _x11 = 11; _x12 = 12; _x13 = 13; _x14 = 14; _x15 = 15; _x16 = 16; _x17 = 17; _x18 = 18; _x19 = 19;
@@ -215,6 +219,39 @@ public:
         Reg _x30;     // t5
         Reg _x31;     // t6
         Reg _usp;     // usp (used with multitasking)
+        Reg _f0;
+        Reg _f1;
+        Reg _f2;
+        Reg _f3;
+        Reg _f4;
+        Reg _f5;
+        Reg _f6;
+        Reg _f7;
+        Reg _f8;
+        Reg _f9;
+        Reg _f10;
+        Reg _f11;
+        Reg _f12;
+        Reg _f13;
+        Reg _f14;
+        Reg _f15;
+        Reg _f16;
+        Reg _f17;
+        Reg _f18;
+        Reg _f19;
+        Reg _f20;
+        Reg _f21;
+        Reg _f22;
+        Reg _f23;
+        Reg _f24;
+        Reg _f25;
+        Reg _f26;
+        Reg _f27;
+        Reg _f28;
+        Reg _f29;
+        Reg _f30;
+        Reg _f31;
+        Reg _fcsr;
     };
 
     // Interrupt Service Routines
@@ -245,7 +282,7 @@ public:
 
     static void smp_barrier(unsigned long cores = CPU::cores()) { CPU_Common::smp_barrier<&finc>(cores, id()); }
 
-    using CPU_Common::clock;
+    static Hertz clock();
     using CPU_Common::min_clock;
     using CPU_Common::max_clock;
     using CPU_Common::bus_clock;
@@ -257,8 +294,87 @@ public:
 
     static void halt() { ASM("wfi"); }
 
-    static void fpu_save();
-    static void fpu_restore();
+    static void fpu_enable() {
+        db<CPU>(TRC) << "CPU::fpu_enable" << endl;
+
+        status(status() & ~FS_OFF);
+        status(status() | FS_INIT);
+        fscsrc();
+    }
+
+    static inline void __attribute__((always_inline)) fpu_save() {
+        ASM("       fsd      f0,  248(sp)            \n"
+            "       fsd      f1,  256(sp)            \n"
+            "       fsd      f2,  264(sp)            \n"
+            "       fsd      f3,  272(sp)            \n"
+            "       fsd      f4,  280(sp)            \n"
+            "       fsd      f5,  288(sp)            \n"
+            "       fsd      f6,  296(sp)            \n"
+            "       fsd      f7,  304(sp)            \n"
+            "       fsd      f8,  312(sp)            \n"
+            "       fsd      f9,  320(sp)            \n"
+            "       fsd      f10, 328(sp)            \n"
+            "       fsd      f11, 336(sp)            \n"
+            "       fsd      f12, 344(sp)            \n"
+            "       fsd      f13, 352(sp)            \n"
+            "       fsd      f14, 360(sp)            \n"
+            "       fsd      f15, 368(sp)            \n"
+            "       fsd      f16, 376(sp)            \n"
+            "       fsd      f17, 384(sp)            \n"
+            "       fsd      f18, 392(sp)            \n"
+            "       fsd      f19, 400(sp)            \n"
+            "       fsd      f20, 408(sp)            \n"
+            "       fsd      f21, 416(sp)            \n"
+            "       fsd      f22, 424(sp)            \n"
+            "       fsd      f23, 432(sp)            \n"
+            "       fsd      f24, 440(sp)            \n"
+            "       fsd      f25, 448(sp)            \n"
+            "       fsd      f26, 456(sp)            \n"
+            "       fsd      f27, 464(sp)            \n"
+            "       fsd      f28, 472(sp)            \n"
+            "       fsd      f29, 480(sp)            \n"
+            "       fsd      f30, 488(sp)            \n"
+            "       fsd      f31, 496(sp)            \n"
+            "       frcsr    x3                      \n"
+            "       sd       x3,  504(sp)            \n");
+    }
+
+    static inline void __attribute__((always_inline)) fpu_restore() {
+        ASM("       ld       x3,  504(sp)            \n"
+            "       fscsr    x3                      \n"
+            "       fld      f0,  248(sp)            \n"
+            "       fld      f1,  256(sp)            \n"
+            "       fld      f2,  264(sp)            \n"
+            "       fld      f3,  272(sp)            \n"
+            "       fld      f4,  280(sp)            \n"
+            "       fld      f5,  288(sp)            \n"
+            "       fld      f6,  296(sp)            \n"
+            "       fld      f7,  304(sp)            \n"
+            "       fld      f8,  312(sp)            \n"
+            "       fld      f9,  320(sp)            \n"
+            "       fld      f10, 328(sp)            \n"
+            "       fld      f11, 336(sp)            \n"
+            "       fld      f12, 344(sp)            \n"
+            "       fld      f13, 352(sp)            \n"
+            "       fld      f14, 360(sp)            \n"
+            "       fld      f15, 368(sp)            \n"
+            "       fld      f16, 376(sp)            \n"
+            "       fld      f17, 384(sp)            \n"
+            "       fld      f18, 392(sp)            \n"
+            "       fld      f19, 400(sp)            \n"
+            "       fld      f20, 408(sp)            \n"
+            "       fld      f21, 416(sp)            \n"
+            "       fld      f22, 424(sp)            \n"
+            "       fld      f23, 432(sp)            \n"
+            "       fld      f24, 440(sp)            \n"
+            "       fld      f25, 448(sp)            \n"
+            "       fld      f26, 456(sp)            \n"
+            "       fld      f27, 464(sp)            \n"
+            "       fld      f28, 472(sp)            \n"
+            "       fld      f29, 480(sp)            \n"
+            "       fld      f30, 488(sp)            \n"
+            "       fld      f31, 496(sp)            \n");
+    }
 
     static void switch_context(Context ** o, Context * n) __attribute__ ((naked));
 
@@ -379,9 +495,8 @@ public:
         // Real context
         ksp -= sizeof(Context);
 
-        // WARN: Experimental: This is a quick fix for the VisionFive 2 board
-        // memset(ksp, 0, sizeof(Context));
-        unsigned char *ptr = static_cast<unsigned char*>(ksp);
+        // Clear the context
+		unsigned char *ptr = static_cast<unsigned char*>(ksp);
         size_t n = sizeof(Context);
         while (n--) *ptr++ = 0;
 
@@ -391,12 +506,6 @@ public:
         if(usp) { // multitask applications
             // Context to switch to user mode
             ksp -= sizeof(Context);
-
-            // WARN: Experimental: This is a quick fix for the VisionFive 2 board
-            // memset(ksp, 0, sizeof(Context));
-            unsigned char *ptr = static_cast<unsigned char*>(ksp);
-            size_t n = sizeof(Context);
-            while (n--) *ptr++ = 0;
 
             ctx = new(ksp) Context(&Context::first_dispatch, 0, 0); // this context will be popped by switch() to reach first_dispatch(), which will activate the thread's context at return
             ctx->_x10 = 0; // zero fr() for the pop(true) issued by first_dispatch()
@@ -413,6 +522,10 @@ public:
     // RISC-V 64 specifics
     static Reg  status()   { return supervisor ? sstatus()   : mstatus(); }
     static void status(Status st) { supervisor ? sstatus(st) : mstatus(st); }
+
+    static Reg  fscsr(Reg s)    { Reg r; ASM("fscsr %0, %1" : "=r"(r) : "r"(s) : "cc"); return r; }
+    static Reg  frcsr() { Reg r; ASM("frcsr %0" : "=r"(r) : : "cc"); return r; }
+    static Reg  fscsrc()    { Reg r; ASM("fscsr %0, zero" : "=r"(r) : : "cc"); return r; }
 
     static Reg  ie()     { return supervisor ? sie()         : mie(); }
     static void ie(Reg r)       { supervisor ? sie(r)        : mie(r); }
@@ -542,7 +655,7 @@ private:
     static unsigned int _bus_clock;
 };
 
-inline void CPU::Context::push(bool interrupt)
+inline void __attribute__((always_inline)) CPU::Context::push(bool interrupt)
 {
 if(interrupt && multitask) {
     // swap(KSP, USP) if coming from user mode (i.e. (sstatus & SSP) == SSP_U)
@@ -599,6 +712,9 @@ if(supervisor) {
         "       sd      x29,  216(sp)           \n"
         "       sd      x30,  224(sp)           \n"
         "       sd      x31,  232(sp)           \n");
+if (fpu) {
+    fpu_save();
+}
 if(multitask) {
     ASM("       csrr     x3, sscratch           \n"     // SSCRATCH holds KSP in user-land and USP in kernel (USP = 0 for kernel threads)
         "       sd       x3,  240(sp)           \n");   // push USP
@@ -608,10 +724,10 @@ if(interrupt) {
 }
 }
 
-inline void CPU::Context::pop(bool interrupt)
+inline void __attribute__((always_inline)) CPU::Context::pop(bool interrupt)
 {
 if(interrupt) {
-   int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
+    int_disable();                                      // atomize Context::pop() by disabling interrupts (SPIE will restore the flag on iret())
 }
 if(multitask) {
     ASM("       ld       x3,  240(sp)           \n"     // pop USP into TMP
@@ -622,6 +738,9 @@ if(supervisor) {
     ASM("       csrw     sepc, x3               \n");   // SEPC = PC
 } else {
     ASM("       csrw     mepc, x3               \n");   // MEPC = PC
+}
+if (fpu) {
+    fpu_restore();
 }
     ASM("       ld       x3,    8(sp)           \n");   // pop ST into TMP
 if(!interrupt) {                                        // MSTATUS.MPP is automatically cleared on the MRET in the ISR, so we need to recover it here
@@ -655,13 +774,13 @@ if(!interrupt) {                                        // MSTATUS.MPP is automa
         "       ld      x28,  208(sp)           \n"
         "       ld      x29,  216(sp)           \n"
         "       ld      x30,  224(sp)           \n"
-        "       ld      x31,  232(sp)           \n"
-        "       addi    sp, sp, %0              \n" : : "i"(sizeof(Context))); // complete the pops above by adjusting SP
+        "       ld      x31,  232(sp)           \n");
 if(supervisor) {
     ASM("       csrw    sstatus, x3             \n");   // SSTATUS = ST
 } else {
     ASM("       csrw    mstatus, x3             \n");   // MSTATUS = ST
 }
+    ASM("       addi    sp, sp, %0              \n" : : "i"(sizeof(Context))); // complete the pops above by adjusting SP
 if(multitask && interrupt) {
     // swap(KSP, USP) if going to user mode (i.e. (sstatus & SSP) == SSP_U)
     ASM("       andi    x3, x3, %0              \n"

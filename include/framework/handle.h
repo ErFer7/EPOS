@@ -19,7 +19,7 @@ template<typename Component>
 class Handled: public Handle<Component>
 {
 public:
-    Handled(): Handle<Component>(Handle<Component>::Private_Handle::HANDLED) {
+    Handled(): Handle<Component>(Handle<Component>::HANDLED) {
         db<Framework>(TRC) << "Handled(this=" << this << ")" << endl;
     }
 
@@ -50,7 +50,7 @@ class Handle
 private:
     typedef Stub<Component, Traits<Component>::ASPECTS::Length || (Traits<Build>::SMOD == Traits<Build>::KERNEL)> _Stub;
 
-    enum class Private_Handle{ HANDLED };
+    enum Private_Handle{ HANDLED };
 
 private:
     Handle(const Private_Handle & h) { db<Framework>(TRC) << "Handle(HANDLED) => [stub=" << _stub << "]" << endl; }
@@ -79,6 +79,11 @@ public:
 
     const Id & id() const { return _stub->id(); }
 
+// GCC seems not to understand that _stub is previously initialized in by the respective constructors
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+
     // Process management
     int priority() { return _stub->priority(); }
     void priority(int p) { _stub->priority(p); }
@@ -96,7 +101,7 @@ public:
     Log_Addr code() const { return _stub->code(); }
     Log_Addr data() const { return _stub->data(); }
     Handle<Thread> * main() const { return new (_stub->main()) Handled<Thread>; }
-
+    
     // Memory Management
     Phy_Addr pd() { return _stub->pd(); }
     Log_Addr attach(Handle<Segment> * seg) { return _stub->attach(*seg->_stub); }
@@ -148,6 +153,8 @@ public:
     int read(Tn ... an) { return _stub->read(an ...);}
     template<typename ... Tn>
     int write(Tn ... an) { return _stub->write(an ...);}
+
+#pragma GCC diagnostic pop
 
 private:
     _Stub * _stub;

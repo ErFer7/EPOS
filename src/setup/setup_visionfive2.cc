@@ -1,15 +1,19 @@
 // EPOS SiFive-U (RISC-V) SETUP
 
-// If multitasking is enabled, configure the machine in supervisor mode and activate paging. Otherwise, keep the machine in machine mode.
-
+#include "machine/riscv/visionfive2/visionfive2_cache.h"
+#include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
 #define __setup__
 
 #include <architecture.h>
 #include <machine.h>
 #include <utility/elf.h>
 #include <utility/string.h>
+#include "machine/riscv/visionfive2/visionfive2_pmic.h"
+#include "machine/riscv/visionfive2/visionfive2_hardware_clock.h"
 
 extern "C" {
+    char _end;
+
     void _start();
 
     // SETUP entry point is in .init (and not in .text), so it will be linked first and will be the first function after the ELF header in the image
@@ -28,9 +32,8 @@ extern OStream kout, kerr;
 class SV32_MMU;
 class SV39_MMU;
 
-class Setup
-{
-private:
+class Setup {
+  private:
     // System Traits
     static const bool multitask = Traits<System>::multitask;
 
@@ -177,9 +180,8 @@ Setup::Setup()
         paging_ready = true;
 
     } else { // additional CPUs
-
         db<Setup>(TRC) << "Setup(bi=" << reinterpret_cast<void *>(bi) << ",sp=" << CPU::sp() << ")" << endl;
-    
+
         if(Traits<Machine>::supervisor) {
             // Wait for the Boot CPU to setup page tables
             while(!paging_ready);
@@ -202,14 +204,21 @@ void Setup::setup_flat_paging()
     static const unsigned long PD_ENTRIES = (Math::max(RAM_TOP, MIO_TOP) - Math::min(RAM_BASE, MIO_BASE) + sizeof(MMU::Huge_Page) - 1) / sizeof(MMU::Huge_Page);
 
     Page_Directory * pd = reinterpret_cast<Page_Directory *>(FLAT_MEM_MAP);
+
+    // Fix for the VisionFive2: clear the directories beforehand
+    for(unsigned int i = 0; i < MMU::PD_ENTRIES; i++)
+        (*pd)[i] = 0;
+
     Phy_Addr page = Math::min(RAM_BASE, MIO_BASE);
     for(unsigned int i = 0; i < PD_ENTRIES; i++, page += sizeof(MMU::Huge_Page))
         (*pd)[i] = (page >> 2) | MMU::Page_Flags::FLAT_MEM_PD;
 
     db<Setup>(INF) << "PD[" << pd << "]=" << *pd << endl;
 
+    unsigned long free_base = reinterpret_cast<unsigned long>(&_end);
+
     // Free chunks (passed to MMU::init())
-    si->pmm.free1_base = MMU::align_page(FREE_BASE);
+    si->pmm.free1_base = MMU::align_page(free_base);
     si->pmm.free1_top = MMU::align_page(FREE_TOP);
 }
 
@@ -383,8 +392,8 @@ void Setup::say_hi()
     kout << "\n*** This is EPOS!\n" << endl;
     kout << "Setting up this machine as follows: " << endl;
     kout << "  Mode:         " << ((Traits<Build>::SMOD == Traits<Build>::LIBRARY) ? "library" : (Traits<Build>::SMOD == Traits<Build>::BUILTIN) ? "built-in" : "kernel") << endl;
-    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << Traits<CPU>::CLOCK / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
-    kout << "  Machine:      SiFive-U" << endl;
+    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << HardwareClock::get_cpu_clock() / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
+    kout << "  Machine:      VisionFive 2" << endl;
 #ifdef __library__
     kout << "  Memory:       " << (RAM_TOP + 1 - RAM_BASE) / 1024 << " KB [" << reinterpret_cast<void *>(RAM_BASE) << ":" << reinterpret_cast<void *>(RAM_TOP) << "]" << endl;
     kout << "  User memory:  " << (FREE_TOP - FREE_BASE) / 1024 << " KB [" << reinterpret_cast<void *>(FREE_BASE) << ":" << reinterpret_cast<void *>(FREE_TOP) << "]" << endl;
@@ -750,47 +759,56 @@ __END_SYS
 
 using namespace EPOS::S;
 
-void _entry() // machine mode
+void _entry() // Machine mode
 {
     typedef IF<Traits<CPU>::WORD_SIZE == 32, SV32_MMU, SV39_MMU>::Result MMU; // architecture.h will use No_MMU if multitasking is disable, but we need the correct MMU for the Flat Memory Model.
 
-    if(CPU::mhartid() == 0 || CPU::mhartid() > Traits<Build>::CPUS)
-        CPU::halt();
+    if (CPU::mhartid() == 0) CPU::halt();
 
     CPU::mstatusc(CPU::MIE);                            // disable interrupts (they will be reenabled at Init_End)
+    CPU::tp(CPU::mhartid() - 1);                        // tp will be CPU::id() for supervisor mode; we won't count core 0, which is an heterogeneous S7
 
-    CPU::tp(CPU::mhartid() - 1);
-    CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE - sizeof(long)); // set the stack pointer, thus creating a stack for SETUP
+    if (CPU::id() >= Traits<Build>::CPUS) CPU::halt();
 
-    if(CPU::id() == CPU::BSP)
-        Machine::clear_bss();
+    CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE * (CPU::id() + 1) - sizeof(long)); // set the stack pointer, thus creating a stack for SETUP
+    CPU::mscratch(CPU::sp());
 
-    if(Traits<Machine>::supervisor) {
-        CPU::mtvec(CPU::INT_DIRECT, Memory_Map::INT_M2S);   // setup a machine mode interrupt handler to forward timer interrupts (which cannot be delegated via mideleg)
-        CPU::mideleg(CPU::SSI | CPU::STI | CPU::SEI);       // delegate supervisor interrupts to supervisor mode
-        CPU::medeleg(0xf1ff);                               // delegate all exceptions to supervisor mode but ecalls
-        CPU::mie(CPU::MSI | CPU::MTI | CPU::MEI);           // enable interrupt generation by at machine level before going into supervisor mode
-        CPU::mstatus(CPU::MPP_S | CPU::MPIE | CPU::MXR);    // prepare jump into supervisor mode at MRET with interrupts enabled at machine level
-        CPU::mstatusc(CPU::SIE);                            // disable interrupts (they will be reenabled at Init_End)
-        CPU::sstatuss(CPU::SUM);                            // allows User Memory access in supervisor mode
+    if (CPU::id() == Traits<Machine>::BSP) Machine::clear_bss();
+
+    if (Traits<Machine>::supervisor) {
+        CPU::satp(0);
+        CPU::mtvec(CPU::INT_DIRECT, _int_m2s);
+        CPU::mideleg(CPU::SSI | CPU::STI | CPU::SEI);
+        CPU::medeleg(0xf1ff);
+        CPU::mie(CPU::MTI);
+        CPU::mstatuss(CPU::MPP_S | CPU::MPIE);
+        CPU::mstatusc(CPU::SPIE);
         CPU::pmpcfg0(0b11111);                              // configure PMP region 0 as (L=unlocked [0], [00], A = NAPOT [11], X [1], W [1], R [1])
         CPU::pmpaddr0((1ULL << MMU::LA_BITS) - 1);          // comprising the whole memory space
     } else {
-        CPU::satp(0);
-        CPU::mie(0);                                        // disable interrupts at CLINT (each device will enable the necessary ones)
-        CPU::mstatus(CPU::MPP_M);                           // continue in machine mode at MRET
+        CPU::mie(0);
+        CPU::mstatus(CPU::MPP_M);
     }
 
     CLINT::mtimecmp(-1ULL);                                 // configure MTIMECMP so it won't trigger a timer interrupt before we can setup_m2s()
-
     CPU::mepc(CPU::Reg(&_setup));                           // entry = _setup
     CPU::mret();                                            // enter supervisor mode at setup (mepc) with interrupts enabled (mstatus.mpie = true)
 }
+
 
 void _setup() // supervisor mode
 {
     kerr << endl;
     kout << endl;
+
+    if (CPU::id() == Traits<Machine>::BSP) {
+        Cache::init();
+        PMIC::init();
+        HardwareClock::init();
+        Temperature_Sensor::init();
+    } else {
+        for (volatile int i = 0; i < 1000000; i++);
+    }
 
     Setup setup;
 }
@@ -800,11 +818,11 @@ void _setup() // supervisor mode
 void _int_m2s()
 {
     // Save context
-    ASM("       csrw    mscratch, sp            \n");
+    ASM("       csrw    mscratch, sp            \n");   // We'll need more than MSCRATCH to save the context, so will trick PC, SP and TP (which must be restored later)
 if(Traits<CPU>::WORD_SIZE == 32) {
-    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page))
-        "       slli     tp, tp,  8             \n"
-        "       sub      sp, sp, tp             \n"     // SP -= 256 * CPU::id()
+    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page)), that is, the top of the last page contains the stacks
+        "       slli     tp, tp,  8             \n"     // TP is CPU::id(), each CPU will get a private 256 bytes stack, so we multiply TP by 256
+        "       sub      sp, sp, tp             \n"     // SP -= TP
         "       sw       a0,  -8(sp)            \n"
         "       sw       a1, -12(sp)            \n"
         "       sw       a2, -16(sp)            \n"
@@ -814,9 +832,9 @@ if(Traits<CPU>::WORD_SIZE == 32) {
         "       sw       a6, -32(sp)            \n"
         "       sw       a7, -36(sp)            \n");
 } else {
-    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page))
-        "       slli     tp, tp,  8             \n"
-        "       sub      sp, sp, tp             \n"     // SP -= 256 * CPU::id()
+    ASM("       auipc    sp,      1             \n"     // SP = PC + 1 << 2 (INT_M2S + 4 + sizeof(Page)), that is, the top of the last page contains the stacks
+        "       slli     tp, tp,  8             \n"     // TP is CPU::id(), each CPU will get a private 256 bytes stack, so we multiply TP by 256
+        "       sub      sp, sp, tp             \n"     // SP -= TP
         "       sd       a0, -12(sp)            \n"
         "       sd       a1, -20(sp)            \n"
         "       sd       a2, -28(sp)            \n"
@@ -824,7 +842,8 @@ if(Traits<CPU>::WORD_SIZE == 32) {
         "       sd       a4, -44(sp)            \n"
         "       sd       a5, -52(sp)            \n");
 }
-    CPU::tp(CPU::mhartid() - 1);
+    ASM("       srli     tp, tp, 8              \n"); // restore TP
+
     CPU::Reg id = CPU::mcause();
 
     if((id & CLINT::INT_MASK) == CLINT::IRQ_MAC_SOFT) {
@@ -841,7 +860,7 @@ if(Traits<CPU>::WORD_SIZE == 32) {
 
 //    CPU::mips(1 << ((id & CLINT::INT_MASK) - 2));       // forward desired interrupts to supervisor mode
 //    CPU::mstatuss(CPU::SUM | CPU::MXR | CPU::MPP_S);                 // FIXME: SUM is being cleared somewhere else and here seams not to be the right place to handle this
-    
+
     // Restore context
 if(Traits<CPU>::WORD_SIZE == 32) {
     ASM("       lw       a0,  -8(sp)            \n"

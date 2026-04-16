@@ -10,6 +10,8 @@
 #include <utility/math.h>
 #include <utility/convert.h>
 #include <utility/fann.h>
+#include "process.h"
+#include "system/config.h"
 
 __BEGIN_SYS
 
@@ -55,12 +57,16 @@ public:
     // Policy events
     typedef int Event;
     enum {
-        CREATION        = 1 << 0,
-        FINISH          = 1 << 1,
-        DISPATCH        = 1 << 2,
-        RETREAT         = 1 << 3,
-        JOB_RELEASE     = 1 << 4,
-        JOB_FINISH      = 1 << 5
+        CREATION             = 1 << 0,
+        FINISH               = 1 << 1,
+        DISPATCH             = 1 << 2,
+        RETREAT              = 1 << 3,
+        JOB_RELEASE          = 1 << 4,
+        JOB_FINISH           = 1 << 5,
+        JOB_EXECUTION_START  = 1 << 6,
+        JOB_EXECUTION_FINISH = 1 << 7,
+        JOB_ALARM_HANDLE     = 1 << 8,
+        TIMER_INTERRUPTION   = 1 << 9,
     };
 
     // Policy operations
@@ -72,6 +78,14 @@ public:
         UPDATE          = 1 << 19,
         REBALANCE       = 1 << 20,
         HALT            = 1 << 21
+    };
+
+    // INFO: Temporary job status
+    typedef int JobStatus;
+    enum {
+        UNINITIALIZED = 1 << 0,
+        RUNNING = 1 << 1,
+        FINISHED = 1 << 2
     };
 
     // Policy traits
@@ -93,6 +107,10 @@ public:
         Tick thread_last_preemption;            // tick in which the thread left the CPU by the last time
 
         // Job related statistics
+        // INFO: Temporary metrics used until the overall RT metrics are fixed
+        Tick job_last_preemption;            // tick in which the thread left the CPU by the last time
+        Tick job_execution_start;                         // tick in which the last job of a periodic thread started (different from "thread_last_dispatch" since jobs can be preempted)
+        Tick job_sleep_time;
         Tick job_release;                       // tick in which the last job of a periodic thread was made ready for execution
         Tick job_start;                         // tick in which the last job of a periodic thread started (different from "thread_last_dispatch" since jobs can be preempted)
         Tick job_finish;                        // tick in which the last job of a periodic thread finished (i.e. called _alarm->p() at wait_netxt(); different from "thread_last_preemption" since jobs can be preempted)
@@ -112,6 +130,13 @@ public:
         Tick thread_last_preemption;            // tick in which the thread left the CPU by the last time
 
         // Job related statistics
+        // INFO: Temporary metrics used until the overall RT metrics are fixed
+        Tick job_last_preemption;            // tick in which the thread left the CPU by the last time
+        Tick job_execution_start;                         // tick in which the last job of a periodic thread started (different from "thread_last_dispatch" since jobs can be preempted)
+        Tick job_execution_block_initial_time;
+        Tick job_partial_utilization;
+        unsigned int deadline_misses;
+
         Tick job_release;                       // tick in which the last job of a periodic thread was made ready for execution
         Tick job_start;                         // tick in which the last job of a periodic thread started (different from "thread_last_dispatch" since jobs can be preempted)
         Tick job_finish;                        // tick in which the last job of a periodic thread finished (i.e. called _alarm->p() at wait_netxt(); different from "thread_last_preemption" since jobs can be preempted)
@@ -120,12 +145,32 @@ public:
         unsigned int jobs_finished;             // number of jobs of a thread that finished execution so far (i.e. the number of times alarm->p() was called at wait_next())
 
         static Tick cpu_time[Traits<Build>::CPUS];
+
+        Real_Statistics():
+            thread_creation(0),
+            thread_destruction(0),
+            thread_execution_time(0),
+            thread_last_dispatch(0),
+            thread_last_preemption(0),
+            job_last_preemption(0),
+            job_execution_start(0),
+            job_execution_block_initial_time(0),
+            job_partial_utilization(0),
+            deadline_misses(0),
+            job_release(0),
+            job_start(0),
+            job_finish(0),
+            job_utilization(0),
+            jobs_released(0),
+            jobs_finished(0) {}
     };
 
-    typedef IF<Traits<System>::monitored, Real_Statistics, Dummy_Statistics>::Result Statistics;
+    typedef IF<true, Real_Statistics, Dummy_Statistics>::Result Statistics;
 
 protected:
     Scheduling_Criterion_Common() {}
+
+    Scheduling_Criterion_Common(const Scheduling_Criterion_Common &scheduling_criterion_common) {}
 
 public:
     Microsecond period() { return 0;}
@@ -156,6 +201,8 @@ class Priority: public Scheduling_Criterion_Common
 public:
     template <typename ... Tn>
     Priority(int i = NORMAL, Tn & ... an): _priority(i) {}
+
+    Priority(const Priority &priority): Scheduling_Criterion_Common(priority), _priority(priority._priority) {}
 
     operator const volatile int() const volatile { return _priority; }
 
@@ -203,7 +250,16 @@ public:
     static const bool preemptive = true;
 
 protected:
-    RT_Common(int i): Priority(i), _period(0), _deadline(0), _capacity(0) {} // aperiodic
+    RT_Common(int i): Priority(i), _period(0), _deadline(0), _capacity(0), _statistics(Statistics()), _job_status(UNINITIALIZED) {} // aperiodic
+
+    RT_Common(const RT_Common &rt_common) :
+        Priority(rt_common),
+        _period(rt_common._period),
+        _deadline(rt_common._deadline),
+        _capacity(rt_common._capacity),
+        _statistics(rt_common._statistics),
+        _job_status(rt_common._job_status) {}
+
     RT_Common(int i, Microsecond p, Microsecond d, Microsecond c): Priority(i), _period(ticks(p)), _deadline(ticks(d ? d : p)), _capacity(ticks(c)) {}
 
 public:
@@ -226,6 +282,7 @@ protected:
     Tick _deadline;
     Tick _capacity;
     Statistics _statistics;
+    JobStatus _job_status;
 };
 
 // Rate Monotonic
@@ -269,6 +326,9 @@ public:
 
 public:
     EDF(int p = APERIODIC): RT_Common(p) {}
+
+    EDF(const EDF &edf) : RT_Common(edf) {}
+
     EDF(Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN);
 
     void handle(Event event);
@@ -293,6 +353,8 @@ class Variable_Queue_Scheduler
 {
 protected:
     Variable_Queue_Scheduler(unsigned int queue): _queue(queue) {};
+
+    Variable_Queue_Scheduler(const Variable_Queue_Scheduler &variable_queue_scheduler) : _queue(variable_queue_scheduler._queue) {}
 
     unsigned int queue() const volatile { return _queue; }
     void queue(unsigned int q) { _queue = q; }
@@ -398,6 +460,8 @@ public:
     PEDF(int p = APERIODIC)
     : EDF(p), Variable_Queue_Scheduler(((_priority == IDLE) || (_priority == MAIN)) ? CPU::id() : 0) {}
 
+    PEDF(const PEDF &pedf): EDF(pedf), Variable_Queue_Scheduler(pedf) {}
+
     PEDF(const Microsecond & d, const Microsecond & p = SAME, const Microsecond & c = UNKNOWN, unsigned int cpu = ANY)
     : EDF(d, p, c), Variable_Queue_Scheduler((cpu != ANY) ? cpu : ++_next_queue %= CPU::cores()) {}
 
@@ -406,6 +470,504 @@ public:
 };
 
 #ifdef __PMU_H
+// NOTE: Experimental Monitored PEDF scheduler that will eventually be the EA_PEDF
+class EA_PEDF_RV64: public PEDF
+{
+    friend class Thread;
+    typedef TSC::Time_Stamp Time_Stamp;
+    typedef Timer::Tick Tick;
+    typedef Simple_List<Thread> Thread_List;
+
+    typedef int LogMode;
+    enum {
+        RAW,
+        RATE,
+    };
+
+    static const unsigned long TIME_SPAN = (Traits<Build>::EXPECTED_SIMULATION_TIME != 0) ? Traits<Build>::EXPECTED_SIMULATION_TIME : Traits<System>::LIFE_SPAN;
+    static const unsigned long ALLOCATION_SAFETY_MARGIN = 100;
+
+    static const bool PREDICT = true;
+    static const bool TRAIN = true;
+    static const bool BALANCE = true;
+    static const bool TRAIN_ACTIVITY_WEIGHTS = true;
+    static const bool SAFE = true;
+    static const bool PROFILE_TIME = true;
+
+    static constexpr float MIN_FREQUENCY = 375999999.0f;
+    static constexpr float MAX_FREQUENCY = 1503999999.0f;
+
+    static const unsigned int MIN_SAFE_FREQUENCY_LEVEL = 0;
+
+    static const int L2_PMU_EVENT_START = 61;
+
+    static const unsigned long long COUNTER_MAX = -1ULL;
+
+    static const unsigned int MAX_ANN_DATASET_BUFFER_SIZE = 16;
+    static constexpr float ANN_DEVIATION_THRESHOLD = 0.02;
+    static constexpr float SAFETY_MARGIN = 0.05;
+    static const unsigned int MAX_TRAINS = 8;
+
+    // ANN config
+    static const unsigned int INPUTS = 11;
+    static const unsigned int PMU_INPUTS = 9;
+
+    static constexpr System_Event SYSTEM_EVENTS[] = { JOB_UTILIZATION, CPU_CLOCK, DEADLINE_MISSES, CORE };
+
+    static constexpr LogMode SYSTEM_EVENTS_MODE[] = { RAW, RAW, RAW, RAW };
+
+    static constexpr PMU_Event PMU_EVENTS[] = { CPU_CYCLES,
+                                                INSTRUCTIONS_RETIRED,
+
+                                                CONDITIONAL_BRANCHES,
+                                                ARCHITECTURE_DEPENDENT_EVENT47,
+
+                                                ARCHITECTURE_DEPENDENT_EVENT89,
+                                                ARCHITECTURE_DEPENDENT_EVENT68,
+                                                ARCHITECTURE_DEPENDENT_EVENT109,
+                                                ARCHITECTURE_DEPENDENT_EVENT114,
+                                                ARCHITECTURE_DEPENDENT_EVENT101,
+                                                ARCHITECTURE_DEPENDENT_EVENT85
+                                              };
+
+    static constexpr LogMode PMU_EVENTS_MODE[] = { RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                   RATE,
+                                                 };
+
+    static const int IGNORED_INPUT = -1;
+
+    static constexpr int SYSTEM_ANN_INPUT_MAP[] = { 0, 1, IGNORED_INPUT, IGNORED_INPUT };
+
+    static constexpr int PMU_ANN_INPUT_MAP[] = { 2, IGNORED_INPUT, 3, 4, 5, 6, 7, 8, 9, 10 };
+
+    static constexpr float IGNORED_COUNTER = -1.0f;
+
+    static constexpr float PMU_INITIAL_MIN[] = {
+        169477288.0f,
+        IGNORED_COUNTER,
+        2329530.0f,
+        1020.0f,
+        0.004457745804562451f,
+        0.0020260700555943074f,
+        1.2520594362810815e-05f,
+        0.0f,
+        1.2520594362810815e-05f,
+        0.0f
+    };
+
+    static constexpr float PMU_INITIAL_MAX[] = {
+        331253683.0f,
+        IGNORED_COUNTER,
+        53351144.0f,
+        3862.0f,
+        0.15916128666228754f,
+        0.030284566859623045f,
+        0.07070924125343803f,
+        1.5538039719837356e-06f,
+        0.010806419744832008f,
+        6.429533677174079e-07f
+    };
+
+    static constexpr float MIGRATION_OPTIMIZATION_THRESHOLD_INCREASE_STEP = 0.15f;
+    static constexpr float ACTIVITY_TRAINING_LEARNING_RATE = 0.7f;
+    static constexpr float MIGRATION_MIN_ENHANCEMENT_THRESHOLD = 0.05f;
+
+    struct Data {
+        Time_Stamp timestamp;
+        unsigned long long value;
+    };
+
+    struct Data_Buffer {
+        Event event;
+        LogMode log_mode;
+        unsigned int max_size;
+        unsigned int captures;
+        unsigned long long last_value;
+        unsigned long long partial_diff;
+        int ann_input_index;
+        Data *buffer;
+
+        Data_Buffer():
+            event(0),
+            log_mode(0),
+            max_size(0),
+            captures(0),
+            last_value(0),
+            partial_diff(0),
+            ann_input_index(0),
+            buffer(nullptr) {}
+
+        Data_Buffer(const Event & event, const LogMode & log_mode, const int & ann_input_index, const unsigned int & max_buffer_size):
+            event(event),
+            log_mode(log_mode),
+            max_size(max_buffer_size),
+            captures(0),
+            last_value(0),
+            partial_diff(0),
+            ann_input_index(ann_input_index),
+            buffer(new (SYSTEM) Data[max_buffer_size]) {
+        }
+
+        inline void read_start(const unsigned long long & value) {
+            if (log_mode == RATE) {
+                last_value = value;
+                partial_diff = 0;
+            }
+        }
+
+        inline void read_retreat(const unsigned long long & value) {
+            if (log_mode == RATE) {
+                unsigned long long value_diff = value >= last_value ? value - last_value : (COUNTER_MAX - last_value) + value + 1;
+                partial_diff += value_diff;
+            }
+        }
+
+        inline void read_dispatch(const unsigned long long & value) {
+            if (log_mode == RATE) {
+                last_value = value;
+            }
+        }
+
+        inline void read_finish(const Time_Stamp & timestamp, const unsigned long long & value) {
+            if (captures >= max_size) {
+                return;
+            }
+
+            Data *data = &buffer[captures++];
+
+            unsigned long long prev_value = log_mode == RATE ? last_value : 0;
+            unsigned long long value_diff = value >= prev_value ? value - prev_value : (COUNTER_MAX - prev_value) + value + 1;
+
+            data->timestamp = timestamp;
+            data->value = value_diff + (log_mode == RATE ? partial_diff : 0);
+        }
+
+        inline unsigned long long last_data_value() {
+            return buffer[captures - 1].value;
+        }
+
+        inline float accumulated_collection(const Tick & period) {
+            float value_acc = 0.0f;
+
+            if (captures == 0) return value_acc;
+
+            unsigned int collection_count = _hyperperiod / period;
+            int collection_end = collection_count < captures ? static_cast<int>(captures - collection_count) : 0;
+
+            for (int i = static_cast<int>(captures - 1); i >= collection_end; i--) {
+                value_acc += static_cast<float>(buffer[i].value);
+            }
+
+            return value_acc;
+        }
+    };
+
+    struct ANN_Dataset {
+        int start;
+        int end;
+        unsigned int size;
+        float inputs[MAX_ANN_DATASET_BUFFER_SIZE][INPUTS];
+        unsigned int hardware_levels[MAX_ANN_DATASET_BUFFER_SIZE];
+        EA_PEDF_RV64 * criteria[MAX_ANN_DATASET_BUFFER_SIZE];
+
+        ANN_Dataset(): start(0), end(0), size(0) {}
+
+        inline void push(const float (&values)[INPUTS], unsigned int hardware_level, EA_PEDF_RV64 * criterion) {
+            for (unsigned int i = 0; i < INPUTS; i++) {
+                inputs[end][i] = values[i];
+            }
+
+            hardware_levels[end] = hardware_level;
+            criteria[end] = criterion;
+            end = next_index(end);
+
+            if (size == MAX_ANN_DATASET_BUFFER_SIZE) {
+                start = next_index(start);
+            } else {
+                size++;
+            }
+        }
+
+        inline unsigned int first_index() {
+            return start;
+        }
+
+        inline unsigned int last_index() {
+            return prev_index(end);
+        }
+
+        static inline int next_index(int i) {
+            return (i + 1) % MAX_ANN_DATASET_BUFFER_SIZE;
+        }
+
+        static inline int prev_index(int i) {
+            return (i - 1 < 0) ? MAX_ANN_DATASET_BUFFER_SIZE - 1 : i - 1;
+        }
+
+        inline float output(int i) {
+            return criteria[i]->_ann_expected_output[hardware_levels[i] - 1].get();
+        }
+    };
+
+    template<typename Type>
+    struct Average_Value {
+        Type sum;
+        Type count;
+        Type average;
+
+        Average_Value(): sum(0), count(0), average(0) {}
+
+        inline void push(const Type & value) {
+            sum += value;
+            count++;
+            average = sum / count;
+        }
+
+        inline Type get() {
+            return average;
+        }
+    };
+
+    struct Activity {
+        Activity() { reset(); }
+
+        Activity(const Activity &a) {
+            for(unsigned int i = 0; i < PMU_INPUTS; i++)
+                vector[i] = a.vector[i];
+        }
+
+        inline void reset() {
+            for(unsigned int i = 0; i < PMU_INPUTS; i++)
+                vector[i] = 0;
+        }
+
+        inline float & operator[](unsigned int index) {
+            return vector[index];
+        }
+
+        inline void operator=(const Activity & a) {
+            for(unsigned int i = 0; i < PMU_INPUTS; i++)
+                vector[i] = a.vector[i];
+        }
+
+        float vector[PMU_INPUTS];
+    };
+
+    // TODO: Change these structs to classes
+    struct Average_Time {
+        Tick start_time;
+        Average_Value<Tick> average;
+
+        Average_Time(): start_time(0), average(Average_Value<Tick>()) {}
+
+        inline void start() {
+            start_time = TSC::time_stamp();
+        }
+
+        inline void stop() {
+            average.push(TSC::time_stamp() - start_time);
+        }
+
+        inline Tick get() {
+            return average.get();
+        }
+    };
+
+public:
+    EA_PEDF_RV64(int p = APERIODIC): PEDF(p), _monitored(false) {}
+
+    EA_PEDF_RV64(const EA_PEDF_RV64 &criterion): PEDF(criterion), _monitored(criterion._monitored), _target_migration_cpu(criterion._target_migration_cpu) {
+        if (_monitored) {
+            for (unsigned int i = 0; i < _system_buffer_count; i++) {
+                _system_buffers[i] = criterion._system_buffers[i];
+            }
+
+            for (unsigned int i = 0; i < _pmu_buffer_count; i++) {
+                _pmu_buffers[i] = criterion._pmu_buffers[i];
+            }
+
+            _thread = criterion._thread;
+
+            if (PREDICT) {
+                _predicted_utilization_buffer = criterion._predicted_utilization_buffer;
+
+                for (unsigned int i = 0; i < INPUTS; i++) {
+                    _ann_input[i] = criterion._ann_input[i];
+                }
+
+                _ann_output = criterion._ann_output;
+
+                if (TRAIN) {
+                    for (unsigned int i = 0; i < 4; i++) {
+                        _ann_expected_output[i] = criterion._ann_expected_output[i];
+                    }
+                }
+
+                if (BALANCE) {
+                    _activity_sum = criterion._activity_sum;
+
+                    for (unsigned int i = 0; i < Traits<Build>::CPUS; i++) {
+                        _migration_locked[i] = criterion._migration_locked[i];
+                    }
+                }
+            }
+        }
+    }
+
+    EA_PEDF_RV64(const Microsecond & d, const Microsecond & p = SAME, const Microsecond & c = UNKNOWN, unsigned int cpu = ANY, bool monitored = false, Thread *thread = nullptr);
+
+    using PEDF::queue;
+
+    inline void target_migration_cpu(int target_cpu) {
+        _target_migration_cpu = target_cpu;
+    }
+
+    inline int target_migration_cpu() {
+        return _target_migration_cpu;
+    }
+
+    static void init();
+
+    inline static void enable() {
+        kout << "EA_PEDF_RV64::enable()" << endl;
+
+        _enabled = true;
+        reset_hyperperiod(1);
+    }
+
+    inline static void disable() {
+        kout << "EA_PEDF_RV64::disable()" << endl;
+
+        _enabled = false;
+    }
+
+    void handle(Event event);
+
+    void print_data();
+
+    static void print_times();
+
+private:
+    template<unsigned int CHANNEL>
+    static void init_system_monitoring();
+
+    template<unsigned int CHANNEL>
+    static void init_pmu_monitoring();
+
+    template<unsigned int CHANNEL>
+    void allocate_system_buffers(const unsigned int max_buffer_size);
+
+    template<unsigned int CHANNEL>
+    void allocate_pmu_buffers(const unsigned int max_buffer_size);
+
+    static inline Microsecond count2us(Time_Stamp t) {
+        return Convert::count2us<Hertz, Time_Stamp, Microsecond>(TSC::frequency(), t);
+    }
+
+    static inline Tick us2count(Microsecond us) {
+        return Convert::us2count<TSC::Time_Stamp, Time_Base>(TSC::frequency(), us);
+    }
+
+    static inline Microsecond now() {
+        return count2us(TSC::time_stamp());
+    }
+
+    static inline bool reached_hyperperiod() {
+        return TSC::time_stamp() > _next_hyperperiod;
+    }
+
+    static inline void reset_hyperperiod(unsigned int ignored_hyperperiods = 0) {
+        _next_hyperperiod = TSC::time_stamp() + _hyperperiod * (ignored_hyperperiods + 1);
+    }
+
+    static void collect_data();
+
+    static void handle_deadline_misses();
+
+    static void train();
+
+    static void predict();
+
+    static void balance_load();
+
+    static float activity_variance();
+
+    static inline float normalize_min_max(float value, float min, float max) { return (value - min) / (max - min); }
+
+private:
+    bool _monitored;
+
+    Data_Buffer _system_buffers[COUNTOF(SYSTEM_EVENTS)];
+    Data_Buffer _pmu_buffers[COUNTOF(PMU_EVENTS)];
+    Data_Buffer _predicted_utilization_buffer;
+    Thread *_thread;
+
+    float _ann_input[INPUTS];
+    float _ann_output;
+    Average_Value<float> _ann_expected_output[4];
+
+    float _activity_sum;
+    bool _migration_locked[Traits<Build>::CPUS];
+    int _target_migration_cpu;
+
+    unsigned long long _last_hyperperiod_deadline_misses;
+
+    static bool _enabled;
+
+    static Clerk<System> *_system_clerks[Traits<Build>::CPUS][COUNTOF(SYSTEM_EVENTS)];
+    static Clerk<PMU> *_pmu_clerks[Traits<Build>::CPUS][COUNTOF(PMU_EVENTS)];
+    static unsigned int _system_buffer_count;
+    static unsigned int _pmu_buffer_count;
+
+    static unsigned long long _hyperperiod;
+    static unsigned long long _next_hyperperiod;
+    static float _pmu_min_values[Traits<Build>::CPUS][COUNTOF(PMU_EVENTS)];
+    static float _pmu_max_values[Traits<Build>::CPUS][COUNTOF(PMU_EVENTS)];
+    static Thread_List _thread_list;
+    static struct FANN::fann *_ann[Traits<Build>::CPUS];
+    static float _core_utilization[Traits<Build>::CPUS];
+    static float _predicted_core_utilization[Traits<Build>::CPUS];
+
+    static bool _decreased_frequency;  // TODO: Check if this can be safely removed
+    static bool _train_ann[Traits<Build>::CPUS];
+    static ANN_Dataset _ann_training_dataset[Traits<Build>::CPUS];
+
+    static bool _balanced;
+    static bool _revoke;
+    static float _activity_weights[PMU_INPUTS];
+    static Activity _activity_vectors[Traits<Build>::CPUS];
+    static Activity _last_activity_vectors[Traits<Build>::CPUS];
+    static float _activity_cpu[Traits<Build>::CPUS];
+    static float _last_activity_cpu[Traits<Build>::CPUS];
+    static float _last_activity_variance;
+    static float _migration_optimization_threshold;
+    static unsigned int _pre_migration_frequency_level;
+    static bool _train_activity;
+    static unsigned int _last_migration_from;
+    static unsigned int _last_migration_to;
+    static EA_PEDF_RV64 *_last_migrated;
+    static EA_PEDF_RV64 *_last_swapped;
+
+    static bool _on_cooldown;
+    static unsigned int _initial_cooldown_counter;
+
+    static bool _has_missed_deadlines;
+
+    static Average_Time _hyperperiod_time;
+    static Average_Time _data_collection_time;
+    static Average_Time _training_time;
+    static Average_Time _prediction_time;
+    static Average_Time _balancing_time;
+};
+
 // Energy-Aware ANN - Partitioned Earliest Deadline First (multicore)
 class EA_PEDF: public PEDF
 {
@@ -654,6 +1216,10 @@ public Multihead_Scheduling_List<T> {};
 
 template<typename T>
 class Scheduling_Queue<T, PEDF>:
+public Scheduling_Multilist<T> {};
+
+template<typename T>
+class Scheduling_Queue<T, EA_PEDF_RV64>:
 public Scheduling_Multilist<T> {};
 
 template<typename T>

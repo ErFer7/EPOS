@@ -59,8 +59,8 @@ int main()
     cout << "  extra segment 2 => " << extra2 << " done!" << endl;
 
     cout << "Clearing segments:";
-    memset(extra1, 0, ES1_SIZE);
-    memset(extra2, 0, ES2_SIZE);
+    memset(reinterpret_cast<void *>(extra1), 0, ES1_SIZE);
+    memset(reinterpret_cast<void *>(extra2), 0, ES2_SIZE);
     cout << "  done!" << endl;
 
     cout << "Detaching segments:";

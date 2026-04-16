@@ -13,13 +13,13 @@ template<> struct Traits<Build>: public Traits_Tokens
     static const unsigned int ARCHITECTURE = RV64;
     static const unsigned int MACHINE = RISCV;
     static const unsigned int MODEL = VisionFive2;
-    static const unsigned int CPUS = 1;//(MODEL == Legacy_PC) ? 8 : ((MODEL == Raspberry_Pi3) || (MODEL == Realview_PBX) || (MODEL == Zynq) || (MODEL == SiFive_U)) ? 4 : 1;
+    static const unsigned int CPUS = (MODEL == Legacy_PC) ? 8 : ((MODEL == Raspberry_Pi3) || (MODEL == Realview_PBX) || (MODEL == Zynq) || (MODEL == SiFive_U) || MODEL == VisionFive2) ? 4 : 1;
     static const unsigned int NETWORKING = STANDALONE;
     static const unsigned int EXPECTED_SIMULATION_TIME = 60; // s (0 => not simulated)
 
     // Default flags
     static const bool enabled = true;
-    static const bool monitored = false;//((MODEL != eMote3) && (MODEL != LM3S811) && (MODEL != SiFive_E));
+    static const bool monitored = ((MODEL != eMote3) && (MODEL != LM3S811) && (MODEL != SiFive_E));
     static const bool debugged = true;
     static const bool hysterically_debugged = false;
 };

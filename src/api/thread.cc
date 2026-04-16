@@ -12,6 +12,7 @@ extern OStream kout;
 bool Thread::_not_booting;
 volatile unsigned int Thread::_thread_count;
 Scheduler_Timer * Thread::_timer;
+Monitor_Timer * Thread::_monitor_timer;
 Scheduler<Thread> Thread::_scheduler;
 Spin Thread::_lock;
 
@@ -96,8 +97,8 @@ Thread::~Thread()
     }
 
     if(multitask) {
-       _task->dismiss(this);
-       delete _user_stack;
+        _task->dismiss(this);
+        delete _user_stack;
     }
 
     if(_joining)
@@ -332,10 +333,10 @@ void Thread::wakeup_all(Queue * q)
 
 void Thread::prioritize(Queue * q)
 {
-    if(PRIORITY_INVERSION_PROTOCOL == Traits<Build>::NONE)
-        return;
-
     assert(locked()); // locking handled by caller
+
+    if(priority_inversion_protocol == Traits<Build>::NONE)
+       return;
 
     db<Thread>(TRC) << "Thread::prioritize(q=" << q << ") [running=" << running() << "]" << endl;
 
@@ -361,10 +362,10 @@ void Thread::prioritize(Queue * q)
 
 void Thread::deprioritize(Queue * q)
 {
-    if(PRIORITY_INVERSION_PROTOCOL == Traits<Build>::NONE)
-        return;
-    
     assert(locked()); // locking handled by caller
+
+    if(priority_inversion_protocol == Traits<Build>::NONE)
+        return;
 
     db<Thread>(TRC) << "Thread::deprioritize(q=" << q << ") [running=" << running() << "]" << endl;
 
@@ -387,6 +388,40 @@ void Thread::deprioritize(Queue * q)
 }
 
 
+void Thread::prepare_migration(const unsigned int & target_cpu, unsigned int & ipi_mask) {
+    assert(locked());
+
+    State current_state = state();
+    Criterion *current_criterion = &criterion();
+    unsigned long current_cpu = current_criterion->queue();
+
+    if (current_state == RUNNING) {
+        current_criterion->target_migration_cpu(target_cpu);
+        ipi_mask |= (1 << current_cpu);
+    } else if (current_state == READY) {
+        _scheduler.suspend(this);
+        current_criterion->queue(target_cpu);
+        _link.rank(*current_criterion);
+        _scheduler.resume(this);
+
+        ipi_mask |= (1 << current_cpu);
+        ipi_mask |= (1 << target_cpu);
+    } else if (current_state == WAITING || current_state == SUSPENDED) {
+        current_criterion->queue(target_cpu);
+        _link.rank(*current_criterion);
+    }
+}
+
+
+void Thread::execute_migrations(const unsigned int & ipi_mask) {
+    for (unsigned int cpu = 0; cpu < Traits<Build>::CPUS; cpu++) {
+        if ((ipi_mask & (1 << cpu)) && (cpu != CPU::id())) {
+            IC::ipi(cpu, IC::INT_RESCHEDULER);
+        }
+    }
+}
+
+
 void Thread::reschedule()
 {
     if(!Criterion::timed || Traits<Thread>::hysterically_debugged)
@@ -395,6 +430,22 @@ void Thread::reschedule()
     assert(locked()); // locking handled by caller
 
     Thread * prev = running();
+
+    Criterion *current_criterion = &prev->criterion();
+    int target_cpu = current_criterion->target_migration_cpu();
+
+    if (target_cpu != -1) {
+        current_criterion->target_migration_cpu(-1);
+        prev->_state = READY;
+
+        _scheduler.suspend(prev);
+        current_criterion->queue(target_cpu);
+        prev->_link.rank(*current_criterion);
+        _scheduler.resume(prev);
+
+        IC::ipi(target_cpu, IC::INT_RESCHEDULER);
+    }
+
     Thread * next = _scheduler.choose();
 
     dispatch(prev, next);
@@ -425,6 +476,7 @@ void Thread::rescheduler(IC::Interrupt_Id i)
 void Thread::time_slicer(IC::Interrupt_Id i)
 {
     lock();
+    running()->criterion().handle(Criterion::TIMER_INTERRUPTION);
     reschedule();
     unlock();
 }
@@ -439,10 +491,13 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
     if(charge && Criterion::timed)
         _timer->restart();
 
-    if(monitored)
-        Monitor::run();
+    // if(monitored)
+    //     Monitor::run();
 
     if(prev != next) {
+        prev->criterion().handle(Criterion::RETREAT);
+        next->criterion().handle(Criterion::DISPATCH);
+
         if(prev->_state == RUNNING)
             prev->_state = READY;
         next->_state = RUNNING;
@@ -471,9 +526,9 @@ void Thread::dispatch(Thread * prev, Thread * next, bool charge)
         // disrupting the context (it doesn't make a difference for Intel, which already saves
         // parameters on the stack anyway).
         while(!next->_context);
-        CPU::Context *c = next->_context;
+        CPU::Context * c = next->_context;
         next->_context = nullptr;
-        CPU::switch_context(const_cast<CPU::Context**>(&prev->_context), c);
+        CPU::switch_context(const_cast<CPU::Context **>(&prev->_context), c);
 
 //        assert(CPU::int_disabled() || (running()->criterion() == IDLE));
 
@@ -509,6 +564,13 @@ int Thread::idle()
     Machine::reboot();
 
     return 0;
+}
+
+void Thread::monitor_run(IC::Interrupt_Id interrupt) {
+    lock();
+    if(monitored)
+        Monitor::run();
+    unlock();
 }
 
 __END_SYS

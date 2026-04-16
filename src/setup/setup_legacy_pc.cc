@@ -174,14 +174,19 @@ Setup::Setup(char * boot_image)
         db<Setup>(INF) << "Setup::sp=" << CPU::sp() << endl;
         db<Setup>(INF) << "Setup::cr0=" << reinterpret_cast<void *>(CPU::cr0()) << endl;
         db<Setup>(INF) << "Setup::cr3=" << reinterpret_cast<void *>(CPU::cr3()) << endl;
-
+        db<Setup>(TRC) << "Setup::enable_paging()" << endl;
         enable_paging();
 
+        // Adjust pointers that will still be used to their logical addresses
+        VGA::init(Memory_Map::VGA); // Display can be Serial_Display, so VGA here!
+        APIC::remap(Memory_Map::APIC);
+        
         // Load EPOS parts (e.g. INIT, SYSTEM, APP) and adjust pointers that will still be used to their logical addresses
         load_parts();
 
         // Configure a TSS for system calls and inter-level interrupt handling
-        setup_tss();
+        if(multitask)
+            setup_tss();
 
         // Signalize other CPUs that paging is up
         paging_ready = true;
@@ -195,7 +200,8 @@ Setup::Setup(char * boot_image)
         enable_paging();
 
         // Configure a TSS for system calls and inter-level interrupt handling for this CPU
-        setup_tss();
+        if(multitask)
+            setup_tss();
     }
 
     CPU::smp_barrier(si->bm.n_cpus);
@@ -681,12 +687,6 @@ void Setup::setup_sys_pd()
 
 void Setup::enable_paging()
 {
-    db<Setup>(TRC) << "Setup::enable_paging()" << endl;
-    if(Traits<Setup>::hysterically_debugged) {
-        db<Setup>(INF) << "Setup::pc=" << CPU::pc() << endl;
-        db<Setup>(INF) << "Setup::sp=" << CPU::sp() << endl;
-    }
-
     // Set IDTR (limit = 1 x sizeof(Page))
     CPU::idtr(sizeof(Page) - 1, IDT);
 
@@ -719,11 +719,6 @@ void Setup::enable_paging()
 
     // Flush TLB to ensure we've got the right memory organization
     MMU::flush_tlb();
-
-    if(Traits<Setup>::hysterically_debugged) {
-        db<Setup>(INF) << "Setup::pc=" << CPU::pc() << endl;
-        db<Setup>(INF) << "Setup::sp=" << CPU::sp() << endl;
-    }
 }
 
 
@@ -760,10 +755,6 @@ void Setup::setup_tss()
 void Setup::load_parts()
 {
     db<Setup>(TRC) << "Setup::load_parts()" << endl;
-
-    // Adjust pointers that will still be used to their logical addresses
-    VGA::init(Memory_Map::VGA); // Display can be Serial_Display, so VGA here!
-    APIC::remap(Memory_Map::APIC);
 
     // Relocate System_Info
     if(sizeof(System_Info) > sizeof(Page))
@@ -1084,7 +1075,8 @@ void _entry()
 
         // Move the boot image to after SETUP, so there will be nothing else below SETUP to be preserved
         // SETUP code + data + 1 stack per CPU
-        register char * dst = MMU::align_page(entry + size + sizeof(MMU::Page) * Traits<Machine>::CPUS);
+        register char * dst = MMU::align_page(entry + size + 2 * sizeof(MMU::Page) * (Traits<Machine>::CPUS));
+        assert((dst + si->bm.img_size) < reinterpret_cast<char *>(Memory_Map::INIT)); // check if it wouldn't overwrite INIT
         memcpy(dst, bi, si->bm.img_size);
 
         // Passes a pointer to the just allocated stack pool to other CPUs
@@ -1133,7 +1125,7 @@ void _entry()
     // SP = "entry" + "size" + #CPU * sizeof(Page)
     // Be careful: we'll loose our old stack now, so everything we still
     // need to reach Setup() must be in regs or globals!
-    register char * sp = const_cast<char *>(Stacks) - sizeof(MMU::Page) * APIC::id();
+    register char * sp = const_cast<char *>(Stacks) - 2 * sizeof(MMU::Page) * APIC::id();
     ASM("movl %0, %%esp" : : "r" (sp));
 
     // Pass the boot image to SETUP

@@ -16,9 +16,8 @@ protected:
     TSC_Common() {}
 
 public:
-    static Microsecond period(Hertz frequency) { return Microsecond(1000000) / Microsecond(frequency); }
-    static Microsecond time(Time_Stamp ts, Hertz frequency) { return Microsecond(ts) * period(frequency); }
-    static Time_Stamp ts(Microsecond time, Hertz frequency) { return (time + period(frequency) / 2) / period(frequency); }
+    static Microsecond time(Time_Stamp ts, Hertz frequency) { return (Microsecond(ts) * 1000000ULL + (frequency / 2)) / frequency; }
+    static Time_Stamp ts(Microsecond time, Hertz frequency) { return (Time_Stamp(time) * frequency + 500000ULL) / 1000000ULL; }
 };
 
 __END_SYS

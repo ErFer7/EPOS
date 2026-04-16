@@ -5,6 +5,7 @@
 #include <system.h>
 #include <process.h>
 #include <clerk.h>
+#include "machine/riscv/riscv_timer.h"
 
 __BEGIN_SYS
 
@@ -23,8 +24,12 @@ void Thread::init()
     if(smp)
         IC::enable(IC::INT_RESCHEDULER);
 
-   if(monitored)
+    if(monitored) {
         Monitor::init();
+
+        if(CPU::id() == CPU::BSP)
+            _monitor_timer = new (SYSTEM) Monitor_Timer(1000, monitor_run);
+    }
 
     Criterion::init();
 

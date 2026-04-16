@@ -257,50 +257,9 @@ public:
         config(baud_rate, data_bits, parity, stop_bits);
     }
 
-    void config(unsigned int baud_rate, unsigned int data_bits, unsigned int parity, unsigned int stop_bits) {
-//        // Disable all interrupts
-//        reg(IER) = 0;
-//
-//        // Set clock divisor
-//        unsigned int div = CLOCK / baud_rate;
-//        dlab(true);
-//        reg(DIV_LSB) = div;
-//        reg(DIV_MSB) = div >> 8;
-//        dlab(false);
-//
-//        // Set data word length (5, 6, 7 or 8)
-//        Reg8 lcr = data_bits - 5;
-//
-//        // Set parity (0 [no], 1 [odd], 2 [even])
-//        if(parity) {
-//            lcr |= PARITY_MASK;
-//            lcr |= (parity - 1) << 4;
-//        }
-//
-//        // Set stop-bits (1, 2 or 3 [1.5])
-//        lcr |= (stop_bits > 1) ? STOP_BITS_MASK : 0;
-//
-//        reg(LCR) = lcr;
-//
-//        // Enables Tx and Rx FIFOs, clear them, set trigger to 14 bytes
-//        reg(FCR) = 0xc7;
-//
-//        // Set DTR, RTS and OUT2 of MCR
-//        reg(MCR) = reg(MCR) | 0x0b;
-    }
+    void config(unsigned int baud_rate, unsigned int data_bits, unsigned int parity, unsigned int stop_bits) {}
 
-    void config(unsigned int * baud_rate, unsigned int * data_bits, unsigned int * parity, unsigned int * stop_bits) {
-        // Get clock divisor
-        dlab(true);
-        *baud_rate = CLOCK / (Reg32(reg(DIV_MSB) << 8) | Reg32(reg(DIV_LSB)));
-        dlab(false);
-
-        *data_bits = Reg32(reg(LCR) & DATA_BITS_MASK) + DEFAULT_DATA_BITS;
-
-        *parity = (Reg32(reg(LCR)) & PARITY_MASK) >> PARITY_MASK;
-
-        *stop_bits = (Reg32(reg(LCR) & STOP_BITS_MASK) >> STOP_BITS_MASK) + 1;
-    }
+    void config(unsigned int * baud_rate, unsigned int * data_bits, unsigned int * parity, unsigned int * stop_bits) {}
 
     Reg8 rxd() { return reg(RXD); }
     void txd(Reg8 c) { reg(TXD) = c; }
@@ -317,12 +276,7 @@ public:
 
     void flush() { while(!(reg(LSR) & TEMPTY_REG)); }
 
-    void reset() {
-        // Reconfiguring the UART implicitly resets it
-        unsigned int b, db, p, sb;
-        config(&b, &db, &p, &sb);
-        config(b, db, p, sb);
-    }
+    void reset() {}
 
     void loopback(bool flag) {
         Reg8 mask = 0xff;

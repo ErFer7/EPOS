@@ -1,0 +1,29 @@
+# Binaries
+app/*/*
+
+# Added application files
+!app/*/*.h
+!app/*/*.cc
+!app/*/makefile
+
+# Objects
+*.o
+
+# Configurations
+*.cfg
+
+# Binaries
+*.bin
+
+# Image
+img/*
+!img/makefile
+*.img
+
+# IDE files
+.vscode
+.cproject
+.project
+.cache
+build
+.clang-format

@@ -47,5 +47,8 @@
 #include <machine/nic.h>
 #include __NIC_H
 #endif
+#ifdef __PMIC_H
+#include <machine/pmic.h>
+#endif
 
 #endif

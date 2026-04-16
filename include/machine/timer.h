@@ -40,9 +40,8 @@ public:
 
     void handler(Handler handler);
 
-    static Microsecond period(Hertz frequency) { return Microsecond(1000000) / Microsecond(frequency); }
-    static Microsecond time(Tick ticks, Hertz frequency) { return Microsecond(ticks) * period(frequency); }
-    static Tick ticks(Microsecond time, Hertz frequency) { return (time + period(frequency) / 2) / period(frequency); }
+    static Microsecond time(Tick ticks, Hertz frequency) { return (Microsecond(ticks) * 1000000ULL + (frequency / 2)) / frequency; }
+    static Tick ticks(Microsecond time, Hertz frequency) { return (static_cast<unsigned long long>(time) * frequency + 500000ULL) / 1000000ULL; }
 };
 
 __END_SYS

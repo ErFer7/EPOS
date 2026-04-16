@@ -44,7 +44,6 @@ CLEANDIR        = rm -rf
 INSTALL         = install
 LINK            = ln -sf
 #QEMU_DEBUG      = -D $(addsuffix .log,$(APPLICATION)) -d int,mmu
-# QEMU_DEBUG      = -serial pty
 SHELL           = bash
 TCPDUMP         = tcpdump -tttttennvvvXXr
 TEE             = tee

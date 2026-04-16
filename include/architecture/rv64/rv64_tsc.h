@@ -40,6 +40,12 @@ public:
     static Microsecond time(Time_Stamp ts) { return TSC_Common::time(ts, CLOCK); }
     static Time_Stamp ts(Microsecond time) { return TSC_Common::ts(time, CLOCK); }
 
+    static inline void usleep(Microsecond time) {
+        Time_Stamp sleep_ticks = time_stamp() + ts(time);
+
+        while (time_stamp() < sleep_ticks);
+    }
+
 private:
     static void init() {}
 

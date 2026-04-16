@@ -20,7 +20,7 @@ class Timer: private Timer_Common, private CLINT
 
 protected:
     static const bool multicore = Traits<System>::multicore;
-    static const unsigned int CHANNELS = 2;
+    static const unsigned int CHANNELS = 3;
     static const Hertz FREQUENCY = Traits<Timer>::FREQUENCY;
 
     typedef IC_Common::Interrupt_Id Interrupt_Id;
@@ -32,7 +32,8 @@ public:
     // Channels
     enum {
         SCHEDULER,
-        ALARM
+        ALARM,
+        MONITOR
     };
 
     static const Hertz CLOCK = Traits<Timer>::CLOCK;
@@ -107,6 +108,12 @@ class Alarm_Timer: public Timer
 {
 public:
     Alarm_Timer(Handler handler): Timer(ALARM, FREQUENCY, handler) {}
+};
+
+class Monitor_Timer: public Timer
+{
+public:
+    Monitor_Timer(Hertz frequency, Handler handler): Timer(MONITOR, frequency, handler) {}
 };
 
 __END_SYS

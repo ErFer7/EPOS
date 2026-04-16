@@ -116,10 +116,10 @@ void run(int test)
         cout << "T[" << i << "] p=" << set[i].p << " d=" << set[i].d << " c=" << set[i].c << " a=" << set[i].affinity << endl;
         if(i == lowest_priority_task)
             // p,d,c,act,t,cpu
-            threads[i] = new Periodic_Thread(RTConf(us(set[i].p), us(set[i].d), us(set[i].c), 0, ITERATIONS, set[i].affinity, Thread::READY, Thread::Criterion(us(set[i].p), us(set[i].d), us(set[i].c), set[i].affinity), Color(i + 1)),
+            threads[i] = new Periodic_Thread(RTConf(us(set[i].p), us(set[i].d), us(set[i].c), 0, ITERATIONS, set[i].affinity, Thread::READY, Color(i + 1)),
                                              set[i].f, (unsigned int)((set[i].c / 1730) * 10), i);
         else
-            threads[i] = new Periodic_Thread(RTConf(us(set[i].p), us(set[i].d), us(set[i].c), 0, ITERATIONS, set[i].affinity, Thread::READY, Thread::Criterion(us(set[i].p), us(set[i].d), us(set[i].c), set[i].affinity), Color(i + 1)),
+            threads[i] = new Periodic_Thread(RTConf(us(set[i].p), us(set[i].d), us(set[i].c), 0, ITERATIONS, set[i].affinity, Thread::READY, Color(i + 1)),
                                              set[i].f, (i == 12) ? (unsigned int)(set[i].c / 540) : (unsigned int)((set[i].c / 540) * 3), i);
     }
 

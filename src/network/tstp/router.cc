@@ -47,7 +47,7 @@ void TSTP::Router::update(Data_Observed<Buffer> * obs, Buffer * buf)
                 Buffer * send_buf = alloc(buf->size());
 
                 // Copy frame contents
-                memcpy(send_buf->frame(), buf->frame(), buf->size());
+                memcpy(reinterpret_cast<void *>(send_buf->frame()), buf->frame(), buf->size());
 
                 // Copy buffer metadata
                 send_buf->size(buf->size());

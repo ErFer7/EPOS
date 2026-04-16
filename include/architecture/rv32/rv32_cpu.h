@@ -116,8 +116,8 @@ public:
 
     public:
         Context() {}
-        // Contexts are loaded with [m|s]ret, which gets pc from [m|s]epc and updates some bits of [m|s]status, that's why _st is initialized with [M|S]PIE and [M|S]PP
-        // Kernel threads are created with usp = 0 and have SPP_S set
+        // Contexts are loaded with [M|S]RET, which gets pc from [M|S]EPC and updates some bits of [M|S]STATUS, that's why _st is initialized with [M|S]PIE and [M|S]PP
+        // Kernel threads are created with usp = 0 and have SPP_S so they don't transition to user-level
         // Dummy contexts for the first execution of each thread (both kernel and user) are created with exit = 0 and SPIE cleared (no interrupts until the second context is popped)
         Context(Log_Addr entry, Log_Addr exit, Log_Addr usp): _pc(entry), _st(supervisor ? ((exit ? SPIE : 0) | (usp ? SPP_U : SPP_S) | SUM) : ((exit ? MPIE : 0) | MPP_M)), _x1(exit), _usp(usp) {
             if(Traits<Build>::hysterically_debugged || Traits<Thread>::trace_idle) {
