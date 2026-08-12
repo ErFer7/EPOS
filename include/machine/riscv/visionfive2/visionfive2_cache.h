@@ -23,7 +23,6 @@ class Cache {
     static const unsigned long L2_CACHE_LINE_SIZE = 64;
 
    public:
-    // FIX: Something here isn't being properly enabled
     static void init() {
         unsigned int config = reg32(CONFIG);
         unsigned int banks = masked(config, 0, 7);
@@ -36,9 +35,15 @@ class Cache {
 
         reg32(L2_WAYS) = ways - 1;
 
-        // for (unsigned long i = 0x800; i <= 0x8d0; i += 8) {
-        //     reg64(i) |= 0xffff;
-        // }
+        for (unsigned long i = 0x800; i <= 0x8d0; i += 8) {
+            reg32(i) = 0xffff;
+        }
+
+        // Enable the prefetcher for all cores
+        // reg32(0x2032000, 0) |= 1 | 1 << 28;
+        // reg32(0x2034000, 0) |= 1 | 1 << 28;
+        // reg32(0x2036000, 0) |= 1 | 1 << 28;
+        // reg32(0x2038000, 0) |= 1 | 1 << 28;
     }
 
     static void flush(const void *const ptr, unsigned int size) {
@@ -60,6 +65,10 @@ class Cache {
 
     static volatile Reg32 &reg32(unsigned int offset) {
         return reinterpret_cast<volatile Reg32 *>(Memory_Map::L2_CACHE_BASE)[offset / sizeof(Reg32)];
+    }
+
+    static volatile Reg32 &reg32(unsigned long base, unsigned int offset) {
+        return reinterpret_cast<volatile Reg32 *>(base)[offset / sizeof(Reg32)];
     }
 
     static constexpr Reg32 mask(unsigned int mask_low = 0, unsigned int mask_high = 31) {

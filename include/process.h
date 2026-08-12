@@ -152,8 +152,8 @@ protected:
     static void prioritize(Queue * queue);
     static void deprioritize(Queue * queue);
 
-    void prepare_migration(const unsigned int & target_cpu, unsigned int & ipi_mask);
-    static void execute_migrations(const unsigned int & ipi_mask);
+    // void prepare_migration(const unsigned int & target_cpu, unsigned int & ipi_mask);
+    // static void execute_migrations(const unsigned int & ipi_mask);
 
     static void reschedule();
     static void reschedule(unsigned int cpu);

@@ -94,7 +94,11 @@ private:
         L2_INNER_PROBEBLOCK_TON_STORE_MISS        = 1 << 21 | 3,
 
         // L2 Hardware Prefetcher Events (L2pmeventX[7:0] = 4)
-        L2_DEMAND_MISS_HIT_MSHR_ALLOC_HINT        = 1 <<  8 | 4
+        L2_DEMAND_MISS_HIT_MSHR_ALLOC_HINT        = 1 <<  8 | 4,
+
+        // Combined L2 cache miss
+        L2_CACHE_MISS                             = L2_OUTER_ACQUIREBLOCK_NTOB_L2_MISS | L2_OUTER_ACQUIREBLOCK_NTOT_L2_MISS,
+        L1_BY_L2                                  = 0
     };
 
 public:
@@ -222,6 +226,8 @@ public:
                     return "PMU::DATA_TLB_MISS";
                 case L2_TLB_MISS:
                     return "PMU::L2_TLB_MISS";
+                case L1_CACHE_MISS:
+                    return "PMU::L1_CACHE_MISS";
                 default:
                     return "PMU::UNDEFINED_EVENT";
             }
@@ -336,6 +342,10 @@ public:
                 return "L2_PMU::L2_INNER_PROBEBLOCK_TON_STORE_MISS";
             case L2_DEMAND_MISS_HIT_MSHR_ALLOC_HINT:
                 return "L2_PMU::L2_DEMAND_MISS_HIT_MSHR_ALLOC_HINT";
+            case L2_CACHE_MISS:
+                return "L2_PMU::L2_CACHE_MISS";
+            case L1_BY_L2:
+                return "L2_PMU::L1_BY_L2";
             default:
                 return "L2_PMU::UNDEFINED_EVENT";
         }

@@ -102,7 +102,6 @@ class HardwareClock {
         enable();
         reset();
         set_cpu_clock_frequency_level(MAX, true);
-        // reg_masked_write(sys_crg_base, DDR_BUS, 1, 24, 29);
     }
 
     static Hertz read_pll(unsigned int pll) {

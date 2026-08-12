@@ -387,39 +387,38 @@ void Thread::deprioritize(Queue * q)
     }
 }
 
-
-void Thread::prepare_migration(const unsigned int & target_cpu, unsigned int & ipi_mask) {
-    assert(locked());
-
-    State current_state = state();
-    Criterion *current_criterion = &criterion();
-    unsigned long current_cpu = current_criterion->queue();
-
-    if (current_state == RUNNING) {
-        current_criterion->target_migration_cpu(target_cpu);
-        ipi_mask |= (1 << current_cpu);
-    } else if (current_state == READY) {
-        _scheduler.suspend(this);
-        current_criterion->queue(target_cpu);
-        _link.rank(*current_criterion);
-        _scheduler.resume(this);
-
-        ipi_mask |= (1 << current_cpu);
-        ipi_mask |= (1 << target_cpu);
-    } else if (current_state == WAITING || current_state == SUSPENDED) {
-        current_criterion->queue(target_cpu);
-        _link.rank(*current_criterion);
-    }
-}
-
-
-void Thread::execute_migrations(const unsigned int & ipi_mask) {
-    for (unsigned int cpu = 0; cpu < Traits<Build>::CPUS; cpu++) {
-        if ((ipi_mask & (1 << cpu)) && (cpu != CPU::id())) {
-            IC::ipi(cpu, IC::INT_RESCHEDULER);
-        }
-    }
-}
+// void Thread::prepare_migration(const unsigned int & target_cpu, unsigned int & ipi_mask) {
+//     assert(locked());
+//
+//     State current_state = state();
+//     Criterion *current_criterion = &criterion();
+//     unsigned long current_cpu = current_criterion->queue();
+//
+//     if (current_state == RUNNING) {
+//         current_criterion->target_migration_cpu(target_cpu);
+//         ipi_mask |= (1 << current_cpu);
+//     } else if (current_state == READY) {
+//         _scheduler.suspend(this);
+//         current_criterion->queue(target_cpu);
+//         _link.rank(*current_criterion);
+//         _scheduler.resume(this);
+//
+//         ipi_mask |= (1 << current_cpu);
+//         ipi_mask |= (1 << target_cpu);
+//     } else if (current_state == WAITING || current_state == SUSPENDED) {
+//         current_criterion->queue(target_cpu);
+//         _link.rank(*current_criterion);
+//     }
+// }
+//
+//
+// void Thread::execute_migrations(const unsigned int & ipi_mask) {
+//     for (unsigned int cpu = 0; cpu < Traits<Build>::CPUS; cpu++) {
+//         if ((ipi_mask & (1 << cpu)) && (cpu != CPU::id())) {
+//             IC::ipi(cpu, IC::INT_RESCHEDULER);
+//         }
+//     }
+// }
 
 
 void Thread::reschedule()
@@ -431,20 +430,20 @@ void Thread::reschedule()
 
     Thread * prev = running();
 
-    Criterion *current_criterion = &prev->criterion();
-    int target_cpu = current_criterion->target_migration_cpu();
-
-    if (target_cpu != -1) {
-        current_criterion->target_migration_cpu(-1);
-        prev->_state = READY;
-
-        _scheduler.suspend(prev);
-        current_criterion->queue(target_cpu);
-        prev->_link.rank(*current_criterion);
-        _scheduler.resume(prev);
-
-        IC::ipi(target_cpu, IC::INT_RESCHEDULER);
-    }
+    // Criterion *current_criterion = &prev->criterion();
+    // int target_cpu = current_criterion->target_migration_cpu();
+    //
+    // if (target_cpu != -1) {
+    //     current_criterion->target_migration_cpu(-1);
+    //     prev->_state = READY;
+    //
+    //     _scheduler.suspend(prev);
+    //     current_criterion->queue(target_cpu);
+    //     prev->_link.rank(*current_criterion);
+    //     _scheduler.resume(prev);
+    //
+    //     IC::ipi(target_cpu, IC::INT_RESCHEDULER);
+    // }
 
     Thread * next = _scheduler.choose();
 

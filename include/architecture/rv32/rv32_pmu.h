@@ -64,7 +64,10 @@ public:
         DATA_CACHE_WRITE_BACK                           = 1 << 10 | 2,
         INSTRUCTION_TLB_MISS                            = 1 << 11 | 2,
         DATA_TLB_MISS                                   = 1 << 12 | 2,
-        L2_TLB_MISS                                     = 1 << 13 | 2
+        L2_TLB_MISS                                     = 1 << 13 | 2,
+
+        // Combined cache miss events
+        L1_CACHE_MISS                                   = INSTRUCTION_CACHE_MISS | DATA_CACHE_MISS_OR_MEMORY_MAPPED_IO_ACCESS
     };
 
 public:

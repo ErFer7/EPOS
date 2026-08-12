@@ -26,6 +26,7 @@ template<bool smp = Traits<Thread>::smp>
 struct Periodic_Thread_Configuratoin: public Thread::Configuration {
     Periodic_Thread_Configuratoin(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE, Thread *thread = nullptr)
     : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu, true, thread), cl, t, ss), activation(a), times(n) {}
+    // : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu), cl, t, ss), activation(a), times(n) {}
 
     Microsecond activation;
     unsigned int times;

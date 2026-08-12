@@ -21,10 +21,12 @@ typedef TSC::Time_Stamp Time_Stamp;
 // Configuration
 const bool MEASURE_TIME = true;
 const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 10;  // in seconds
-const bool DVFS_CHANGE = false;
+const bool DVFS_CHANGE = true;
 const unsigned int DVFS_CHANGES = 4;
 const unsigned int DVFS_CHANGE_ITERATION = TEST_DURATION / DVFS_CHANGES;
-const unsigned int SELECTED_TASKSET = 1;
+const bool ENABLE_EA_PEDF = true;
+const bool PRINT_TASK_DATA = true;
+const unsigned int SELECTED_TASKSET = 2;
 const unsigned int ITERATION_CHANGE_BEHAVIOR = 90;
 const unsigned int CACHE_LINE_SIZE = 64;
 const unsigned int L1_CACHE_SIZE = 32 * 1024;
@@ -84,7 +86,7 @@ constexpr static StressTask taskset_4[] = {
     {2000000, 2000000, 400000, 3, DISPARITY, DISPARITY_IT_DURATION},     // 20 - disp
 };  // HP = 2
 
-// Low utilization taskset 1 (Can get to DVFS level 1)
+// Low utilization taskset 1 (Can get to DVFS level 0)
 constexpr static StressTask taskset_5[] = {
     {1000000, 1000000, 50000, 1, BANDWIDTH_HEAVY, BANDWIDTH_IT_DURATION},  // 10 - band
     {1000000, 1000000, 50000, 1, DISPARITY, DISPARITY_IT_DURATION},        // 10 - disp
@@ -96,36 +98,34 @@ constexpr static StressTask taskset_5[] = {
     {1000000, 1000000, 50000, 3, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
 };  // HP = 1
 
-// Super low utilization taskset 1 (Can get to DVFS level ?)
+// Low utilization taskset 2 (Can get to DVFS level 0)
 constexpr static StressTask taskset_6[] = {
-    {1000000, 1000000, 12500, 1, BANDWIDTH_HEAVY, BANDWIDTH_IT_DURATION},  // 10 - band
-    {1000000, 1000000, 12500, 1, DISPARITY, DISPARITY_IT_DURATION},        // 10 - disp
+    {500000, 500000, 25000, 1, BANDWIDTH_HEAVY, BANDWIDTH_IT_DURATION},  // 10 - band
+    {1000000, 1000000, 50000, 1, DISPARITY, DISPARITY_IT_DURATION},       // 10 - disp
 
-    {1000000, 1000000, 12500, 2, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
-    {1000000, 1000000, 12500, 2, CPU_HUNGRY, CPU_IT_DURATION},       // 10 - cpu
+    {2000000, 2000000, 100000, 2, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
+    {500000, 500000, 17500, 2, CPU_HUNGRY, CPU_IT_DURATION},          // 10 - cpu
 
-    {1000000, 1000000, 12500, 3, CPU_HUNGRY, CPU_IT_DURATION},       // 10 - cpu
-    {1000000, 1000000, 12500, 3, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
-};  // HP = 1
+    {250000, 250000, 10000, 3, CPU_HUNGRY, CPU_IT_DURATION},       // 10 - cpu
+    {500000, 500000, 50000, 3, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
+};  // HP = 2
 
-// // Low utilization taskset 2
-// constexpr static StressTask taskset_6[] = {
-//     {6500000, 500000, 25000, 1, BANDWIDTH_HEAVY, BANDWIDTH_IT_DURATION},  // 10 - band
-//     {1000000, 1000000, 50000, 1, DISPARITY, DISPARITY_IT_DURATION},      // 10 - disp
-//
-//     {2000000, 2000000, 100000, 2, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
-//     {500000, 500000, 17500, 2, CPU_HUNGRY, CPU_IT_DURATION},          // 10 - cpu
-//
-//     {250000, 250000, 10000, 3, CPU_HUNGRY, CPU_IT_DURATION},        // 10 - cpu
-//     {500000, 500000, 50000, 3, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
-// };  // HP = 2
+// Overhead measuring taskset
+constexpr static StressTask taskset_7[] = {
+    {1000000, 1000000, 200000, 1, BANDWIDTH_HEAVY, BANDWIDTH_IT_DURATION},  // 10 - band
+
+    {1000000, 1000000, 200000, 2, DISPARITY, DISPARITY_IT_DURATION},  // 10 - disp
+
+    {1000000, 1000000, 200000, 3, CPU_HUNGRY, CPU_IT_DURATION},       // 10 - cpu
+};  // HP = 2
 
 constexpr static Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)},
                                        {taskset_2, sizeof(taskset_2) / sizeof(StressTask)},
                                        {taskset_3, sizeof(taskset_3) / sizeof(StressTask)},
                                        {taskset_4, sizeof(taskset_4) / sizeof(StressTask)},
                                        {taskset_5, sizeof(taskset_5) / sizeof(StressTask)},
-                                       {taskset_6, sizeof(taskset_6) / sizeof(StressTask)}};
+                                       {taskset_6, sizeof(taskset_6) / sizeof(StressTask)},
+                                       {taskset_7, sizeof(taskset_7) / sizeof(StressTask)}};
 
 constexpr static Taskset taskset = tasksets[SELECTED_TASKSET - 1];
 constexpr static unsigned int task_count = taskset.size;
@@ -209,7 +209,8 @@ int main() {
     for (unsigned int i = 0; i < task_count; i++) {
         threads[i]->resume();
     }
-    // Thread::Criterion::enable();
+
+    if (ENABLE_EA_PEDF) Thread::Criterion::enable();
 
     cout << "Done" << endl;
 
@@ -218,7 +219,7 @@ int main() {
         // Monitor::disable_captures();
     }
 
-    // Thread::Criterion::disable();
+    if (ENABLE_EA_PEDF) Thread::Criterion::disable();
 
     freq->join();
 
@@ -251,14 +252,13 @@ int main() {
         }
     }
 
-    cout << "Average criterion times:" << endl;
-    Thread::Criterion::print_times();
+    if (PRINT_TASK_DATA) {
+        cout << "Collected task data:" << endl;
 
-    cout << "Collected task data:" << endl;
-
-    for (unsigned int i = 0; i < task_count; i++) {
-        cout << "Task data [" << i << "]: " << endl;
-        threads[i]->criterion().print_data();
+        for (unsigned int i = 0; i < task_count; i++) {
+            cout << "Task data [" << i << "]: " << endl;
+            threads[i]->criterion().print_data();
+        }
     }
 
     free_taskset();

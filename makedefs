@@ -155,8 +155,8 @@ riscv_NIC               = cadence_gem
 endif
 
 ifeq ($(MMOD),visionfive2)
-riscv_CC_FLAGS      := -march=rv64g -mabi=lp64d -Wl, -mno-relax -mcmodel=medany -g
-riscv_AS_FLAGS      := -march=rv64g -mabi=lp64d -g
+riscv_CC_FLAGS      := -march=rv64gc -mabi=lp64d -Wl, -mno-relax -mcmodel=medany -g
+riscv_AS_FLAGS      := -march=rv64gc -mabi=lp64d -g
 riscv_LD_FLAGS      := -m elf64lriscv_lp64f --no-relax -g
 riscv_EMULATOR      := qemu-system-riscv64 $(QEMU_DEBUG) -machine sifive_u -smp $(shell expr $(CPUS) + 1) -m $(RAM_SIZE_MB) -serial mon:stdio -bios none -nographic -no-reboot $(BOOT_ROM) -kernel 
 riscv_DEBUGGER      := riscv64-linux-gnu-gdb

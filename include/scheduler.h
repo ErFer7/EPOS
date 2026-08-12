@@ -487,17 +487,19 @@ class EA_PEDF_RV64: public PEDF
     static const unsigned long TIME_SPAN = (Traits<Build>::EXPECTED_SIMULATION_TIME != 0) ? Traits<Build>::EXPECTED_SIMULATION_TIME : Traits<System>::LIFE_SPAN;
     static const unsigned long ALLOCATION_SAFETY_MARGIN = 100;
 
-    static const bool PREDICT = true;
-    static const bool TRAIN = true;
-    static const bool BALANCE = true;
-    static const bool TRAIN_ACTIVITY_WEIGHTS = true;
-    static const bool SAFE = true;
-    static const bool PROFILE_TIME = true;
+    static const unsigned int PERIODIC_SAMPLING_FREQUENCY = 40;
+    static const unsigned long long PERIODIC_SAMPLING_PERIOD = 1000000 / PERIODIC_SAMPLING_FREQUENCY;
+
+    static const bool PREDICT = false;
+    static const bool TRAIN = false;
+    static const bool BALANCE = false;
+    static const bool TRAIN_ACTIVITY_WEIGHTS = false;
+    static const bool SAFE = false;
 
     static constexpr float MIN_FREQUENCY = 375999999.0f;
     static constexpr float MAX_FREQUENCY = 1503999999.0f;
 
-    static const unsigned int MIN_SAFE_FREQUENCY_LEVEL = 0;
+    static const unsigned int MIN_FREQUENCY_LEVEL = 0;
 
     static const int L2_PMU_EVENT_START = 61;
 
@@ -509,8 +511,8 @@ class EA_PEDF_RV64: public PEDF
     static const unsigned int MAX_TRAINS = 8;
 
     // ANN config
-    static const unsigned int INPUTS = 11;
-    static const unsigned int PMU_INPUTS = 9;
+    static const unsigned int INPUTS = 12;
+    static const unsigned int PMU_INPUTS = 10;
 
     static constexpr System_Event SYSTEM_EVENTS[] = { JOB_UTILIZATION, CPU_CLOCK, DEADLINE_MISSES, CORE };
 
@@ -519,16 +521,17 @@ class EA_PEDF_RV64: public PEDF
     static constexpr PMU_Event PMU_EVENTS[] = { CPU_CYCLES,
                                                 INSTRUCTIONS_RETIRED,
 
-                                                CONDITIONAL_BRANCHES,
-                                                ARCHITECTURE_DEPENDENT_EVENT47,
+                                                L1_CACHE_MISSES,
+                                                BRANCH_DIRECTION_MISPREDICTIONS,
 
-                                                ARCHITECTURE_DEPENDENT_EVENT89,
-                                                ARCHITECTURE_DEPENDENT_EVENT68,
-                                                ARCHITECTURE_DEPENDENT_EVENT109,
-                                                ARCHITECTURE_DEPENDENT_EVENT114,
-                                                ARCHITECTURE_DEPENDENT_EVENT101,
-                                                ARCHITECTURE_DEPENDENT_EVENT85
-                                              };
+                                                ARCHITECTURE_DEPENDENT_EVENT86,   // L2_INNER_ACQUIREBLOCK_HIT_L2
+                                                ARCHITECTURE_DEPENDENT_EVENT76,   // L2_INNER_RELEASEDATA_TTON
+                                                ARCHITECTURE_DEPENDENT_EVENT115,  // L2_CACHE_MISS
+                                                ARCHITECTURE_DEPENDENT_EVENT114,  // L2_DEMAND_MISS_HIT_MSHR_ALLOC_HINT
+                                                ARCHITECTURE_DEPENDENT_EVENT113   // L2_INNER_PROBEBLOCK_TON_STORE_MISS
+                                                };
+
+    static constexpr unsigned int PMU_EVENTS_COUNT = COUNTOF(PMU_EVENTS);
 
     static constexpr LogMode PMU_EVENTS_MODE[] = { RATE,
                                                    RATE,
@@ -539,52 +542,54 @@ class EA_PEDF_RV64: public PEDF
                                                    RATE,
                                                    RATE,
                                                    RATE,
-                                                   RATE,
-                                                 };
+                                                   };
 
     static const int IGNORED_INPUT = -1;
 
     static constexpr int SYSTEM_ANN_INPUT_MAP[] = { 0, 1, IGNORED_INPUT, IGNORED_INPUT };
 
-    static constexpr int PMU_ANN_INPUT_MAP[] = { 2, IGNORED_INPUT, 3, 4, 5, 6, 7, 8, 9, 10 };
+    static constexpr int PMU_ANN_INPUT_MAP[] = { 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
     static constexpr float IGNORED_COUNTER = -1.0f;
 
     static constexpr float PMU_INITIAL_MIN[] = {
-        169477288.0f,
-        IGNORED_COUNTER,
-        2329530.0f,
-        1020.0f,
-        0.004457745804562451f,
-        0.0020260700555943074f,
-        1.2520594362810815e-05f,
+        166835028.0f,
+        18665160.0f,
+        665.0f,
+        55.0f,
+        1871375.0f,
+        1192910.0f,
+        2061.0f,
+        3483.0f,
         0.0f,
-        1.2520594362810815e-05f,
-        0.0f
+        957.0f
     };
 
     static constexpr float PMU_INITIAL_MAX[] = {
-        331253683.0f,
-        IGNORED_COUNTER,
-        53351144.0f,
-        3862.0f,
-        0.15916128666228754f,
-        0.030284566859623045f,
-        0.07070924125343803f,
-        1.5538039719837356e-06f,
-        0.010806419744832008f,
-        6.429533677174079e-07f
+        500293481.0f,
+        325733612.0f,
+        3271570.0f,
+        220655.0f,
+        6732361.0f,
+        3374726.0f,
+        1281490.0f,
+        271980.0f,
+        37.0f,
+        40711.0f
     };
 
     static constexpr float MIGRATION_OPTIMIZATION_THRESHOLD_INCREASE_STEP = 0.15f;
+    static constexpr float MIGRATION_OPTIMIZATION_SOFT_THRESHOLD_INCREASE_STEP = 0.05f;
     static constexpr float ACTIVITY_TRAINING_LEARNING_RATE = 0.7f;
     static constexpr float MIGRATION_MIN_ENHANCEMENT_THRESHOLD = 0.05f;
 
+    template<typename Type>
     struct Data {
         Time_Stamp timestamp;
-        unsigned long long value;
+        Type value;
     };
 
+    template<typename Type>
     struct Data_Buffer {
         Event event;
         LogMode log_mode;
@@ -593,7 +598,7 @@ class EA_PEDF_RV64: public PEDF
         unsigned long long last_value;
         unsigned long long partial_diff;
         int ann_input_index;
-        Data *buffer;
+        Data<Type> *buffer;
 
         Data_Buffer():
             event(0),
@@ -613,38 +618,38 @@ class EA_PEDF_RV64: public PEDF
             last_value(0),
             partial_diff(0),
             ann_input_index(ann_input_index),
-            buffer(new (SYSTEM) Data[max_buffer_size]) {
+            buffer(new (SYSTEM) Data<Type>[max_buffer_size]) {
         }
 
-        inline void read_start(const unsigned long long & value) {
+        inline void read_start(const Type & value) {
             if (log_mode == RATE) {
                 last_value = value;
                 partial_diff = 0;
             }
         }
 
-        inline void read_retreat(const unsigned long long & value) {
+        inline void read_retreat(const Type & value) {
             if (log_mode == RATE) {
                 unsigned long long value_diff = value >= last_value ? value - last_value : (COUNTER_MAX - last_value) + value + 1;
                 partial_diff += value_diff;
             }
         }
 
-        inline void read_dispatch(const unsigned long long & value) {
+        inline void read_dispatch(const Type & value) {
             if (log_mode == RATE) {
                 last_value = value;
             }
         }
 
-        inline void read_finish(const Time_Stamp & timestamp, const unsigned long long & value) {
+        inline void read_finish(const Time_Stamp & timestamp, const Type & value) {
             if (captures >= max_size) {
                 return;
             }
 
-            Data *data = &buffer[captures++];
+            Data<Type> *data = &buffer[captures++];
 
-            unsigned long long prev_value = log_mode == RATE ? last_value : 0;
-            unsigned long long value_diff = value >= prev_value ? value - prev_value : (COUNTER_MAX - prev_value) + value + 1;
+            Type prev_value = log_mode == RATE ? last_value : 0;
+            Type value_diff = value >= prev_value ? value - prev_value : (COUNTER_MAX - prev_value) + value + 1;
 
             data->timestamp = timestamp;
             data->value = value_diff + (log_mode == RATE ? partial_diff : 0);
@@ -713,6 +718,8 @@ class EA_PEDF_RV64: public PEDF
         }
 
         inline float output(int i) {
+            if (hardware_levels[i] == 0) return 1.0f;
+
             return criteria[i]->_ann_expected_output[hardware_levels[i] - 1].get();
         }
     };
@@ -733,6 +740,31 @@ class EA_PEDF_RV64: public PEDF
 
         inline Type get() {
             return average;
+        }
+    };
+
+    struct Variance {
+        float average;
+        unsigned int count;
+        float square_sum;
+
+        Variance(): average(0.0f), count(0), square_sum(0.0f) {}
+
+        inline void push(const float & value) {
+            count++;
+            float old_average = average;
+            average += (value - average) / count;
+            square_sum += (value - old_average) * (value - average);
+        }
+
+        inline float get() {
+            return square_sum / count;
+        }
+
+        inline void reset() {
+            average = 0.0f;
+            count = 0;
+            square_sum = 0.0f;
         }
     };
 
@@ -761,26 +793,6 @@ class EA_PEDF_RV64: public PEDF
         float vector[PMU_INPUTS];
     };
 
-    // TODO: Change these structs to classes
-    struct Average_Time {
-        Tick start_time;
-        Average_Value<Tick> average;
-
-        Average_Time(): start_time(0), average(Average_Value<Tick>()) {}
-
-        inline void start() {
-            start_time = TSC::time_stamp();
-        }
-
-        inline void stop() {
-            average.push(TSC::time_stamp() - start_time);
-        }
-
-        inline Tick get() {
-            return average.get();
-        }
-    };
-
 public:
     EA_PEDF_RV64(int p = APERIODIC): PEDF(p), _monitored(false) {}
 
@@ -790,11 +802,16 @@ public:
                 _system_buffers[i] = criterion._system_buffers[i];
             }
 
-            for (unsigned int i = 0; i < _pmu_buffer_count; i++) {
+            for (unsigned int i = 0; i < PMU_EVENTS_COUNT; i++) {
                 _pmu_buffers[i] = criterion._pmu_buffers[i];
+                _last_periodic_pmu_sample[i] = criterion._last_periodic_pmu_sample[i];
+                _job_pmu_variance[i] = criterion._job_pmu_variance[i];
+                _pmu_variance_buffer[i] = criterion._pmu_variance_buffer[i];
             }
 
+            _l1_by_l2_buffer = criterion._l1_by_l2_buffer;
             _thread = criterion._thread;
+            _first_periodic_sample = criterion._first_periodic_sample;
 
             if (PREDICT) {
                 _predicted_utilization_buffer = criterion._predicted_utilization_buffer;
@@ -841,6 +858,7 @@ public:
 
         _enabled = true;
         reset_hyperperiod(1);
+        _hyperperiod += 500;
     }
 
     inline static void disable() {
@@ -852,8 +870,6 @@ public:
     void handle(Event event);
 
     void print_data();
-
-    static void print_times();
 
 private:
     template<unsigned int CHANNEL>
@@ -885,8 +901,16 @@ private:
     }
 
     static inline void reset_hyperperiod(unsigned int ignored_hyperperiods = 0) {
-        _next_hyperperiod = TSC::time_stamp() + _hyperperiod * (ignored_hyperperiods + 1);
+        _next_hyperperiod += _hyperperiod * (ignored_hyperperiods + 1);
     }
+
+    static inline void cooldown(unsigned int hyperperiods = 1) {
+        _cooldown = hyperperiods;
+    }
+
+    void collect_periodic_data();
+
+    void reset_periodic_data_collection();
 
     static void collect_data();
 
@@ -905,9 +929,16 @@ private:
 private:
     bool _monitored;
 
-    Data_Buffer _system_buffers[COUNTOF(SYSTEM_EVENTS)];
-    Data_Buffer _pmu_buffers[COUNTOF(PMU_EVENTS)];
-    Data_Buffer _predicted_utilization_buffer;
+    Data_Buffer<unsigned long long> _system_buffers[COUNTOF(SYSTEM_EVENTS)];
+    Data_Buffer<unsigned long long> _pmu_buffers[PMU_EVENTS_COUNT];
+    Data_Buffer<float> _l1_by_l2_buffer;
+
+    bool _first_periodic_sample;
+    unsigned long _last_periodic_pmu_sample[PMU_EVENTS_COUNT];
+    Variance _job_pmu_variance[PMU_EVENTS_COUNT];
+    Data_Buffer<float> _pmu_variance_buffer[PMU_EVENTS_COUNT];
+
+    Data_Buffer<unsigned long long> _predicted_utilization_buffer;
     Thread *_thread;
 
     float _ann_input[INPUTS];
@@ -923,14 +954,15 @@ private:
     static bool _enabled;
 
     static Clerk<System> *_system_clerks[Traits<Build>::CPUS][COUNTOF(SYSTEM_EVENTS)];
-    static Clerk<PMU> *_pmu_clerks[Traits<Build>::CPUS][COUNTOF(PMU_EVENTS)];
+    static Clerk<PMU> *_pmu_clerks[Traits<Build>::CPUS][PMU_EVENTS_COUNT];
     static unsigned int _system_buffer_count;
-    static unsigned int _pmu_buffer_count;
+
+    static unsigned long long _next_periodic_sampling;
 
     static unsigned long long _hyperperiod;
     static unsigned long long _next_hyperperiod;
-    static float _pmu_min_values[Traits<Build>::CPUS][COUNTOF(PMU_EVENTS)];
-    static float _pmu_max_values[Traits<Build>::CPUS][COUNTOF(PMU_EVENTS)];
+    static float _pmu_min_values[Traits<Build>::CPUS][PMU_EVENTS_COUNT];
+    static float _pmu_max_values[Traits<Build>::CPUS][PMU_EVENTS_COUNT];
     static Thread_List _thread_list;
     static struct FANN::fann *_ann[Traits<Build>::CPUS];
     static float _core_utilization[Traits<Build>::CPUS];
@@ -956,16 +988,9 @@ private:
     static EA_PEDF_RV64 *_last_migrated;
     static EA_PEDF_RV64 *_last_swapped;
 
-    static bool _on_cooldown;
-    static unsigned int _initial_cooldown_counter;
+    static unsigned int _cooldown;
 
     static bool _has_missed_deadlines;
-
-    static Average_Time _hyperperiod_time;
-    static Average_Time _data_collection_time;
-    static Average_Time _training_time;
-    static Average_Time _prediction_time;
-    static Average_Time _balancing_time;
 };
 
 // Energy-Aware ANN - Partitioned Earliest Deadline First (multicore)
