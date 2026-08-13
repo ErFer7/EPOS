@@ -2,7 +2,7 @@
 
 include ../../makedefs
 
-OBJS := tc2026.o rijndael_enc.o rijndael_enc_libc.o aes.o input_small.o kalman.o bandwidth.o
+OBJS := tc2026.o rijndael_enc.o rijndael_enc_libc.o aes.o input_small.o kalman.o
 
 all: install
 

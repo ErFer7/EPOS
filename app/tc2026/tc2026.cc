@@ -7,9 +7,7 @@
 #include <utility/ostream.h>
 #include <utility/random.h>
 
-#include "bandwidth.h"
 #include "kalman.h"
-// #include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
 #include "tc2026_traits.h"
 
 using namespace EPOS;
@@ -30,7 +28,7 @@ constexpr float BANDWIDTH_IT_DURATION = 2000.0f;
 constexpr static StressTask taskset_1[] = {
     {1000000, 1000000, 200000, 1, RIJNDAEL, AES_IT_DURATION},  // 20 - band
     {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
-    {1000000, 1000000, 200000, 3, BANDWIDTH, BANDWIDTH_IT_DURATION}, // FIX: This benchmark is failing
+    {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
 };  // HP = 1
 
 constexpr static Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)}};
@@ -46,8 +44,7 @@ Time_Stamp iteration_wcet[task_count];
 Random *rand;
 unsigned int current_iteration[task_count];
 Thread *threads[task_count];
-
-unsigned int *buffers[task_count];
+void *benchmarks[task_count];
 
 // Functions
 inline Time_Stamp get_time();
@@ -67,6 +64,9 @@ inline void init_thread(Microsecond activation);
 template <>
 inline void init_thread<task_count>(Microsecond activation);
 
+template <>
+inline void init_thread<task_count>(Microsecond activation) {}
+
 template <unsigned int ID>
 void run_func();
 
@@ -77,24 +77,20 @@ int rijndael_enc_return();
 void kalman_init();
 void kalman_main();
 
-void bandwidth_init(unsigned int *buffer, const unsigned int &size);
-void bandwidth_main(unsigned int *buffer, const unsigned int &size);
-
 int main() {
     cout << "TC 2026 Research Experiment Benchmark\n"
          << "Running experiments with the following configurations:\n"
          << ">  Test duration: " << TEST_DURATION << '\n'
          << ">  RNG Seed: " << SEED << '\n'
          << ">  Selected taskset: " << SELECTED_TASKSET << '\n'
-         << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n' << endl;
-         // << ">  CPU voltage: " << PMIC::get_cpu_voltage() << "mV" << '\n'
-         // << ">  DDR Clock: " << Clock_Tree::get_ddr_clock() / 1000000 << "MHz" << endl;
+         << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n'
+         << endl;
+    // << ">  CPU voltage: " << PMIC::get_cpu_voltage() << "mV" << '\n'
+    // << ">  DDR Clock: " << Clock_Tree::get_ddr_clock() / 1000000 << "MHz" << endl;
 
     Monitor::print_monitor_info();
 
     rand->seed(SEED);
-
-    init_taskset();
 
     Time_Stamp tsc0 = get_time() + Convert::us2count<Time_Stamp, Time_Base>(TSC::frequency(), 10000);
 
@@ -165,30 +161,6 @@ constexpr int calc_iter_per_job(int i) {
 
 constexpr int calc_jobs(int i) { return (TEST_DURATION * 1000000) / taskset.tasks[i].period; }
 
-void init_taskset() {
-    cout << "Taskset initialization..." << endl;
-
-    for (unsigned int i = 0; i < task_count; i++) {
-        switch (taskset.tasks[i].task) {
-            case RIJNDAEL:
-                rijndael_enc_init();
-                break;
-            case KALMAN:
-                kalman_init();
-                break;
-            case BANDWIDTH: {
-                for (unsigned int i = 0; i < task_count; i++) {
-                    bandwidth_init(buffers[i], L2_CACHE_SIZE);
-                }
-            }
-            default:
-                break;
-        }
-    }
-
-    cout << "Done." << endl;
-}
-
 void free_taskset() {
     cout << "Taskset deallocation..." << endl;
 
@@ -206,15 +178,21 @@ void free_taskset() {
     cout << "Done." << endl;
 }
 
-template <int ID>
+template <unsigned int ID>
 inline void init_thread(Microsecond activation) {
+    constexpr auto task = taskset.tasks[ID].task;
+    using Traits = Benchmark_Traits<task>;
+    using Benchmark = typename Traits::Type;
+
+    Benchmark *benchmark = Traits::create();
+    benchmark->init();
+    benchmarks[ID] = benchmark;
+
     constexpr int job = calc_jobs(ID);
 
     cout << ">  Thread[" << ID << "]: period = " << taskset.tasks[ID].period
          << ", deadline = " << taskset.tasks[ID].deadline << ", wcet = " << taskset.tasks[ID].wcet
          << ", activation = " << activation << ", times = " << job << ", cpu = " << taskset.tasks[ID].cpu << endl;
-
-    current_iteration[ID] = 0;
 
     threads[ID] = new RT_Thread(&run_func<ID>,
                                 taskset.tasks[ID].period,
@@ -227,28 +205,18 @@ inline void init_thread(Microsecond activation) {
     init_thread<ID + 1>(activation);
 }
 
-template <>
-inline void init_thread<task_count>(Microsecond activation) {}
-
 template <unsigned int ID>
 void run_func() {
+    constexpr auto task = taskset.tasks[ID].task;
+    using Benchmark = typename Benchmark_Traits<task>::Type;
+    Benchmark *benchmark = static_cast<Benchmark *>(benchmarks[ID]);
+
     unsigned int my_iter_per_job = calc_iter_per_job(ID);
 
     Time_Stamp init = get_time();
 
     for (unsigned int iterations = 0; iterations < my_iter_per_job; iterations++) {
-        switch (taskset.tasks[ID].task) {
-            case RIJNDAEL:
-                rijndael_enc_main();
-                break;
-            case KALMAN:
-                kalman_main();
-                break;
-            case BANDWIDTH:
-                bandwidth_main(buffers[ID], L2_CACHE_SIZE);
-            default:
-                break;
-        }
+        benchmark->run();
     }
 
     Time_Stamp job_runtime = get_time() - init;
@@ -270,7 +238,8 @@ void run_func() {
 int log_status() {
     for (unsigned int i = 0; i < TEST_DURATION; i++) {
         // cout << ">  Iteration [" << i << "], Clock: " << HardwareClock::get_cpu_clock() << "Hz"
-        //     << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' << endl;
+        //     << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' <<
+        //     endl;
         cout << ">  Iteration [" << i << ']' << endl;
 
         Delay(1000000);
