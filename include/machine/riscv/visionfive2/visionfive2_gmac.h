@@ -4,7 +4,7 @@
 #include <machine/ic.h>
 #include <network/ethernet.h>
 
-#include "visionfive2_cache.h"
+#include <machine/cache.h>
 
 __BEGIN_SYS
 

@@ -1,4 +1,7 @@
-#include <machine/riscv/visionfive2/visionfive2_gmac.h>
+#ifdef __NIC_H
+
+#include <machine/riscv/visionfive2/visionfive2_gmac.h>  // TODO: Change to #include <machine/nic.h> and check it
+
 
 __BEGIN_SYS
 
@@ -83,3 +86,5 @@ DWC_Ether_QoS::Buffer *DWC_Ether_QoS::alloc(const Address &dst, const Protocol &
 void DWC_Ether_QoS::free(Buffer *buf) { db<DWC_Ether_QoS>(TRC) << "DWC_Ether_QoS::free(buf=" << buf << ")" << endl; }
 
 __END_SYS
+
+#endif

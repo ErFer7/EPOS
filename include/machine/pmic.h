@@ -1,4 +1,4 @@
-// EPOS PWM Mediator Common package
+// EPOS PMIC Mediator Common package
 
 #ifndef __pmic_h
 #define __pmic_h
@@ -7,14 +7,16 @@
 
 __BEGIN_SYS
 
-class PMIC_Common
-{
-protected:
+class PMIC_Common {
+  public:
+    typedef unsigned int Milivolts;
+
+  protected:
     PMIC_Common() {}
 
-public:
-    static unsigned int get_cpu_voltage();
-    static void set_cpu_voltage();
+  public:
+    static unsigned int cpu_voltage();
+    static void cpu_voltage(Milivolts voltage, bool force = false);
 };
 
 __END_SYS

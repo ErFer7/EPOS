@@ -1,54 +1,58 @@
 #pragma once
 
-#include "architecture/cpu.h"
-#include "machine/riscv/visionfive2/visionfive2_memory_map.h"
-#include "system/traits.h"
+#include <machine/cache.h>
+#include <architecture/cpu.h>
+#include <system/memory_map.h>
 
 __BEGIN_SYS
 
 extern OStream kout;
 
-class Cache {
+class Cache : Cache_Common {
     typedef CPU::Reg8 Reg8;
     typedef CPU::Reg16 Reg16;
     typedef CPU::Reg32 Reg32;
     typedef CPU::Reg64 Reg64;
 
     enum {
-        CONFIG = 0x000,
-        L2_WAYS = 0x008,
+        CONFIG   = 0x000,
+        L2_WAYS  = 0x008,
         L2_FLUSH = 0x200,
     };
 
+    static const bool enable_prefetcher = false;
+
     static const unsigned long L2_CACHE_LINE_SIZE = 64;
 
-   public:
+  public:
     static void init() {
-        unsigned int config = reg32(CONFIG);
-        unsigned int banks = masked(config, 0, 7);
-        unsigned int ways = masked(config, 8, 15);
-        unsigned int lg_sets = masked(config, 16, 23);
+        unsigned int config         = reg32(CONFIG);
+        unsigned int banks          = masked(config, 0, 7);
+        unsigned int ways           = masked(config, 8, 15);
+        unsigned int lg_sets        = masked(config, 16, 23);
         unsigned int lg_block_bytes = masked(config, 24, 31);
 
-        kout << "Cache info: Banks: " << banks << ", Ways: " << ways << ", lgSets: " << lg_sets
-             << ", lgBlockBytes: " << lg_block_bytes << endl;
-
         reg32(L2_WAYS) = ways - 1;
+
+        db<Cache>(INF) << "Cache info: Banks: " << banks << ", Ways: " << ways << ", lgSets: " << lg_sets
+                       << ", lgBlockBytes: " << lg_block_bytes << endl;
 
         for (unsigned long i = 0x800; i <= 0x8d0; i += 8) {
             reg32(i) = 0xffff;
         }
 
         // Enable the prefetcher for all cores
-        // reg32(0x2032000, 0) |= 1 | 1 << 28;
-        // reg32(0x2034000, 0) |= 1 | 1 << 28;
-        // reg32(0x2036000, 0) |= 1 | 1 << 28;
-        // reg32(0x2038000, 0) |= 1 | 1 << 28;
+        if constexpr (enable_prefetcher) {
+            reg32(0x2032000, 0) |= 1 | 1 << 28;
+            reg32(0x2034000, 0) |= 1 | 1 << 28;
+            reg32(0x2036000, 0) |= 1 | 1 << 28;
+            reg32(0x2038000, 0) |= 1 | 1 << 28;
+        }
     }
 
     static void flush(const void *const ptr, unsigned int size) {
         unsigned long line = reinterpret_cast<unsigned long>(ptr);
-        unsigned long end = line + size;
+        unsigned long end  = line + size;
         barrier();
         for (; line < end; line += L2_CACHE_LINE_SIZE) {
             reg64(L2_FLUSH) = line;
@@ -58,7 +62,7 @@ class Cache {
 
     static void barrier() { asm volatile("fence iorw, iorw" ::: "memory"); }
 
-   private:
+  private:
     static volatile Reg64 &reg64(unsigned int offset) {
         return *reinterpret_cast<volatile Reg64 *>(Memory_Map::L2_CACHE_BASE + offset);
     }

@@ -1,34 +1,28 @@
+// EPOS VisionFive2 (RISC-V) Clock Tree Mediator Declarations
+
 #pragma once
 
-#include "architecture/cpu.h"
-#include "machine/riscv/visionfive2/visionfive2_memory_map.h"
-#include "machine/riscv/visionfive2/visionfive2_pmic.h"
-#include "system/traits.h"
+#include <architecture/cpu.h>
+#include <machine/clock_tree.h>
+#include <system/config.h>
+#include <system/memory_map.h>
+#include <utility/debug.h>
 
 __BEGIN_SYS
 
-extern OStream kout;
+class Clock_Tree : Clock_Tree_Common {
+    friend class DVFS;
 
-class HardwareClock {
+   private:
     typedef CPU::Reg8 Reg8;
     typedef CPU::Reg16 Reg16;
     typedef CPU::Reg32 Reg32;
-    typedef PMIC::Milivolts Milivolts;
 
-   public:
-    static const unsigned int MAX = 3;
-    static const unsigned int MIN = 0;
-
-    static constexpr Hertz FREQUENCY_LEVELS[] = {375000000, 500000000, 750000000, 1500000000};
-   private:
     static const unsigned long sys_crg_base = Memory_Map::SYS_CRG_BASE;
     static const unsigned long aon_crg_base = Memory_Map::SYS_AON_BASE;
     static const unsigned long sys_con_base = Memory_Map::SYS_CON_BASE;
 
     static const Hertz osc = Traits<Machine>::OSC;
-
-    static const Milivolts MAX_VOLTAGE = 1040;
-    static const Milivolts MIN_VOLTAGE = 800;
 
     // Offsets
     enum SysCrg {
@@ -50,6 +44,9 @@ class HardwareClock {
         GMAC0_PTP = 0x1b4,
         GMAC_PHY = 0x1b8,
         GMAC0_GTXC = 0x1bc,
+        CAN0_CTRL_CLK_APB = 0x1cc,
+        CAN0_CTRL_CLK_TIMER = 0x1d0,
+        CAN0_CTRL_CLK_CORE = 0x1d4,
         TIMER_APB = 0x1f0,
         TIMER0 = 0x1f4,
         TIMER1 = 0x1f8,
@@ -88,6 +85,10 @@ class HardwareClock {
     };
 
     enum ResetBit {
+        // Reset 3
+        RSTN_U0_CAN_CTRL_APB = 1 << 15,
+        RSTN_U0_CAN_CTRL_CORE = 1 << 16,
+        RSTN_U0_CAN_CTRL_TIMER = 1 << 17,
         TIMER_RSTN_APB = 1 << 21,
         TIMER_RSTN_TIMER0 = 1 << 22,
         TIMER_RSTN_TIMER1 = 1 << 23,
@@ -99,120 +100,39 @@ class HardwareClock {
 
    public:
     static void init() {
-        enable();
-        reset();
-        set_cpu_clock_frequency_level(MAX, true);
-    }
+        divisor(CAN0_CTRL_CLK_CORE, 15);
 
-    static Hertz read_pll(unsigned int pll) {
-        if (pll > 2)
-            return 0;
+        enable(sys_crg_base, CAN0_CTRL_CLK_APB);
+        enable(sys_crg_base, CAN0_CTRL_CLK_TIMER);
+        enable(sys_crg_base, CAN0_CTRL_CLK_CORE);
 
-        unsigned int pll_fbdiv_mask_low = pll == 0 ? 0 : 17;
-        unsigned int pll_fbdiv_mask_high = pll_fbdiv_mask_low + 11;
-
-        Reg32 pll_fbdiv = reg_masked_read(sys_con_base, SAIF_SYSCFG_28 + pll * 8, pll_fbdiv_mask_low, pll_fbdiv_mask_high);
-        Reg32 saif_syscfg = reg(sys_con_base, SAIF_SYSCFG_32 + pll * 8);
-        Reg32 pll_frac = masked(saif_syscfg, 0, 23);
-        Reg32 pll_postdiv1_shift = masked(saif_syscfg, 28, 29);
-        Reg32 pll_prediv = reg_masked_read(sys_con_base, SAIF_SYSCFG_36 + pll * 8, 0, 5);
-
-        Reg32 pll_postdiv1 = 1 << pll_postdiv1_shift;
-        Hertz osc_per_prediv = osc / pll_prediv;
-        Hertz vco = (osc_per_prediv * pll_fbdiv) + ((osc_per_prediv * pll_frac) >> 24);
-
-        return vco / pll_postdiv1;
-    }
-
-    static Hertz get_cpu_clock() {
-        Reg8 clk_mux_sel = reg_masked_read(sys_crg_base, CPU_ROOT, 24, 29);
-
-        Hertz base_clock = clk_mux_sel == 1U ? read_pll(0) : osc;
-
-        Reg32 clk_cpu_div = reg_masked_read(sys_crg_base, CPU_DIV, 0, 23);
-
-        return base_clock / clk_cpu_div;
-    }
-
-    static Hertz get_ddr_clock() {
-        Reg8 clk_mux_sel = reg_masked_read(sys_crg_base, DDR_BUS, 24, 29);
-
-        if (clk_mux_sel == 0) {
-            return osc / 2;
-        }
-
-        return read_pll(1) >> clk_mux_sel;
-    }
-
-    static unsigned int get_cpu_clock_frequency_level() {
-        return _current_frequency_level;
-    }
-
-    // Only multiples of the highest frequency are allowed
-    static void set_cpu_clock_frequency_level(unsigned int frequency_level, bool force_vdd_change = false) {
-        if (frequency_level == _current_frequency_level && !force_vdd_change) {
-            return;
-        }
-
-        Hertz frequency = FREQUENCY_LEVELS[frequency_level];
-        Reg8 div = FREQUENCY_LEVELS[3] / frequency;
-
-        if (div == 0U) div = 1U;
-        if (div > 7U) div = 7U;
-
-        if (force_vdd_change) {
-            if (frequency_level == MAX) {
-                scale_up(frequency_level, div, MAX_VOLTAGE);
-
-                return;
-            }
-
-            _current_frequency_level = frequency_level;
-            scale_down(frequency_level, div, MIN_VOLTAGE);
-
-            return;
-        }
-
-        if (frequency_level == MAX) {
-            if (_current_frequency_level < MAX) {
-                scale_up(frequency_level, div, MAX_VOLTAGE);
-
-                return;
-            }
-        }
-
-        if (_current_frequency_level == MAX) {
-            scale_down(frequency_level, div, MIN_VOLTAGE);
-
-            return;
-        }
-
-        reg(sys_crg_base, CPU_DIV) = div;
-
-        _current_frequency_level = frequency_level;
-    }
-
-   private:
-    static void enable() {
         for (int offset = GMAC5_AXI_64_AHB; offset <= GMAC0_GTXC; offset += 4) {
-            reg(sys_crg_base, offset) |= CLOCK_ENABLE;
+            enable(sys_crg_base, offset);
         }
 
         for (int offset = AHB_GMAC5_CLOCK; offset <= GMAC5_AXI64_CLOCK_RECEIVING_INVERTER; offset += 4) {
-            reg(aon_crg_base, offset) |= CLOCK_ENABLE;
+            enable(aon_crg_base, offset);
         }
 
-        reg(sys_crg_base, TIMER_APB) |= CLOCK_ENABLE;
-        reg(sys_crg_base, TIMER0) |= CLOCK_ENABLE;
-        reg(sys_crg_base, TIMER1) |= CLOCK_ENABLE;
-        reg(sys_crg_base, TIMER2) |= CLOCK_ENABLE;
-        reg(sys_crg_base, TIMER3) |= CLOCK_ENABLE;
+        enable(sys_crg_base, TIMER_APB);
+        enable(sys_crg_base, TIMER0);
+        enable(sys_crg_base, TIMER1);
+        enable(sys_crg_base, TIMER2);
+        enable(sys_crg_base, TIMER3);
 
-        reg(sys_crg_base, TEMPERATURE_SENSOR_APB) |= CLOCK_ENABLE;
-        reg(sys_crg_base, TEMPERATURE_SENSOR) |= CLOCK_ENABLE;
-    }
+        enable(sys_crg_base, TEMPERATURE_SENSOR_APB);
+        enable(sys_crg_base, TEMPERATURE_SENSOR);
 
-    static void reset() {
+        // TODO: Use the improved reset
+        reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) |= RSTN_U0_CAN_CTRL_APB;
+        reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) &= ~RSTN_U0_CAN_CTRL_APB;
+
+        reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) |= RSTN_U0_CAN_CTRL_CORE;
+        reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) &= ~RSTN_U0_CAN_CTRL_CORE;
+
+        reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) |= RSTN_U0_CAN_CTRL_TIMER;
+        reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) &= ~RSTN_U0_CAN_CTRL_TIMER;
+
         reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) |= TIMER_RSTN_APB;
         reg(sys_crg_base, RESET3_ADDRESS_SELECTOR) &= ~TIMER_RSTN_APB;
 
@@ -239,6 +159,57 @@ class HardwareClock {
 
         // reg(aon_crg_base, RESET_ASSERT_ADDRESS_SELECTOR) |= 0x3;
         // reg(aon_crg_base, RESET_ASSERT_ADDRESS_SELECTOR) &= ~0x3;
+    }
+
+    static Hertz read_pll(unsigned int pll) {
+        if (pll > 2) return 0;
+
+        unsigned int pll_fbdiv_mask_low = pll == 0 ? 0 : 17;
+        unsigned int pll_fbdiv_mask_high = pll_fbdiv_mask_low + 11;
+
+        Reg32 pll_fbdiv =
+            reg_masked_read(sys_con_base, SAIF_SYSCFG_28 + pll * 8, pll_fbdiv_mask_low, pll_fbdiv_mask_high);
+        Reg32 saif_syscfg = reg(sys_con_base, SAIF_SYSCFG_32 + pll * 8);
+        Reg32 pll_frac = masked(saif_syscfg, 0, 23);
+        Reg32 pll_postdiv1_shift = masked(saif_syscfg, 28, 29);
+        Reg32 pll_prediv = reg_masked_read(sys_con_base, SAIF_SYSCFG_36 + pll * 8, 0, 5);
+
+        Reg32 pll_postdiv1 = 1 << pll_postdiv1_shift;
+        Hertz osc_per_prediv = osc / pll_prediv;
+        Hertz vco = (osc_per_prediv * pll_fbdiv) + ((osc_per_prediv * pll_frac) >> 24);
+
+        return vco / pll_postdiv1;
+    }
+
+    static Hertz cpu_clock() {
+        Reg8 clk_mux_sel = reg_masked_read(sys_crg_base, CPU_ROOT, 24, 29);
+
+        Hertz base_clock = clk_mux_sel == 1U ? read_pll(0) : osc;
+
+        Reg32 clk_cpu_div = reg_masked_read(sys_crg_base, CPU_DIV, 0, 23);
+
+        return base_clock / clk_cpu_div;
+    }
+
+    static Hertz ddr_clock() {
+        Reg8 clk_mux_sel = reg_masked_read(sys_crg_base, DDR_BUS, 24, 29);
+
+        if (clk_mux_sel == 0) {
+            return osc / 2;
+        }
+
+        return read_pll(1) >> clk_mux_sel;
+    }
+
+   private:
+    inline static void cpu_div(Reg8 div) { reg_masked_write(sys_crg_base, CPU_DIV, div, 0, 23); }
+
+    static void enable(unsigned long base, unsigned int clock) { reg(base, clock) |= CLOCK_ENABLE; }
+
+    static void divisor(unsigned int div, unsigned int value) {
+        // TODO: Replace with a masked write
+        reg(sys_crg_base, div) &= ~0xFFFFFF;
+        reg(sys_crg_base, div) |= value;
     }
 
     static volatile Reg32 &reg(unsigned long base, unsigned int offset) {
@@ -277,23 +248,6 @@ class HardwareClock {
         current |= (value << mask_low) & mask_value;
         *address = current;
     }
-
-    inline static void scale_up(unsigned int i, Reg8 div, PMIC::Milivolts voltage) {
-        PMIC::set_cpu_voltage(voltage);
-        reg_masked_write(sys_crg_base, CPU_DIV, div, 0, 23);
-
-        _current_frequency_level = i;
-    }
-
-    inline static void scale_down(unsigned int i, Reg8 div, PMIC::Milivolts voltage) {
-        reg_masked_write(sys_crg_base, CPU_DIV, div, 0, 23);
-        PMIC::set_cpu_voltage(voltage);
-
-        _current_frequency_level = i;
-    }
-
-   private:
-    static unsigned int _current_frequency_level;
 };
 
 __END_SYS

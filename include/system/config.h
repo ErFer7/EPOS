@@ -223,8 +223,12 @@ namespace EPOS {
 #define __PMU_H                 __HEADER_ARCH(pmu)
 #define __UART_H                __HEADER_MACH(uart)
 #define __SPI_H                 __HEADER_MACH(spi)
+#define __CAN_H                 <machine/riscv/visionfive2/visionfive2_can.h>
+#define __Cache_H               <machine/riscv/visionfive2/visionfive2_cache.h>
 #define __I2C_H                 <machine/riscv/visionfive2/visionfive2_i2c.h>
 #define __PMIC_H                <machine/riscv/visionfive2/visionfive2_pmic.h>
+#define __CLK_H                 <machine/riscv/visionfive2/visionfive2_clock_tree.h>
+#define __DVFS_H                <machine/riscv/visionfive2/visionfive2_dvfs.h>
 
 #ifndef __standalone__
 #define __NIC_H                 <machine/riscv/visionfive2/visionfive2_gmac.h>

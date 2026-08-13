@@ -22,7 +22,7 @@ public:
     static const unsigned long NOT_USED         = -1UL;
 
     // RISC-V mode for library
-    static const bool supervisor = false; // Run EPOS library in machine mode (works in supervisor as well)
+    static const bool supervisor = !library; // Run EPOS library in machine mode (works in supervisor as well)
 
     // CPU numbering
     static const unsigned long CPU_OFFSET       = 1; // We skip core zero, which is a E CPU without MMU
@@ -44,7 +44,7 @@ public:
     // Physical Memory at Boot
     static const unsigned long BOOT             = NOT_USED;
     static const unsigned long SETUP            = library ? NOT_USED : RAM_BASE; // RAM_BASE (wil  l be part of the free memory at INIT, using a logical address identical to physical eliminate SETUP relocation)
-    static const unsigned long IMAGE            = library ? NOT_USED : 0x80100000; // RAM_BASE + 1 MB (will be part of the free memory at INIT, defines the maximum image size; if larger than 3 MB then adjust at SETUP)
+    static const unsigned long IMAGE            = library ? NOT_USED : 0x40100000; // RAM_BASE + 1 MB (will be part of the free memory at INIT, defines the maximum image size; if larger than 3 MB then adjust at SETUP)
 
     // Logical Memory
 #ifdef __rv32__

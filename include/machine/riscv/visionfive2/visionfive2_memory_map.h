@@ -31,25 +31,21 @@ struct Memory_Map {
         BIOS_BASE       = 0x00001000,  // BIOS ROM
         TEST_BASE       = 0x00100000,  // SiFive test engine
         RTC_BASE        = 0x00101000,  // Goldfish RTC
-        UART0_BASE      = 0x10000000,  // SiFive UART
         CLINT_BASE      = 0x02000000,  // SiFive CLINT
         TIMER_BASE      = 0x02004000,  // CLINT Timer
+        L2_CACHE_BASE   = 0x02010000,  // VisionFive2 cache controller
         PLIC_BASE       = 0x0c000000,  // SiFive PLIC
+        UART0_BASE      = 0x10000000,  // SiFive UART
         PRCI_BASE       = 0x10000000,  // VisionFive2 Power, Reset, Clock, Interrupt
-        GPIO_BASE       = 0x10060000,  // VisionFive2 GPIO
-        OTP_BASE        = 0x10070000,  // VisionFive2 OTP
-        ETH_BASE        = 0x16030000,  // VisionFive2 Ethernet
-        FLASH_BASE      = 0x20000000,  // Virt / VisionFive2 Flash
         SPI0_BASE       = 0x10060000,  // VisionFive2 QSPI 0
         SPI1_BASE       = 0x10070000,  // VisionFive2 QSPI 1
         SPI2_BASE       = 0x10080000,  // VisionFive2 QSPI 2
         I2C5_BASE       = 0x12050000,  // VisionFive2 I2C5
         SYS_CRG_BASE    = 0x13020000,  // VisionFive2 System CRG
         SYS_CON_BASE    = 0x13030000,  // VisionFive2 System CON
+        ETH_BASE        = 0x16030000,  // VisionFive2 Ethernet
         SYS_AON_BASE    = 0x17000000,  // VisionFive2 System AON
-        L2PM_BASE       = 0x02010000,  // L2 Cache PMU
-        TEMP_BASE       = 0x120e0000,  // VisionFive2 temperature sensor
-        L2_CACHE_BASE   = 0x02010000,  // VisionFive2 cache controller
+        FLASH_BASE      = 0x20000000,  // Virt / VisionFive2 Flash
 
         // Physical Memory at Boot
         BOOT            = Traits<Machine>::BOOT,

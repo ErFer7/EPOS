@@ -66,6 +66,9 @@ class Scratchpad;
 class Watchdog;
 class GPIO;
 class I2C;
+class PMIC;
+class Clock_Tree;
+class Cache;
 class ADC;
 class FPGA;
 template<unsigned int KEY_SIZE> class HWAES;
@@ -82,6 +85,8 @@ class GEM;
 class DWC_Ether_QoS;
 class IEEE802_15_4_NIC;
 class Ethernet_NIC;
+
+class DVFS;
 
 // Transducer Mediators (i.e. sensors and actuators)
 class Transducers;

@@ -9,17 +9,17 @@ __BEGIN_SYS
 template<> struct Traits<Build>: public Traits_Tokens
 {
     // Basic configuration
-    static const unsigned int SMOD = LIBRARY;
+    static const unsigned int SMOD = KERNEL;
     static const unsigned int ARCHITECTURE = RV64;
     static const unsigned int MACHINE = RISCV;
-    static const unsigned int MODEL = VisionFive2;
+    static const unsigned int MODEL = SiFive_U;
     static const unsigned int CPUS = (MODEL == Legacy_PC) ? 8 : ((MODEL == Raspberry_Pi3) || (MODEL == Realview_PBX) || (MODEL == Zynq) || (MODEL == SiFive_U) || MODEL == VisionFive2) ? 4 : 1;
     static const unsigned int NETWORKING = STANDALONE;
     static const unsigned int EXPECTED_SIMULATION_TIME = 60; // s (0 => not simulated)
 
     // Default flags
     static const bool enabled = true;
-    static const bool monitored = ((MODEL != eMote3) && (MODEL != LM3S811) && (MODEL != SiFive_E));
+    static const bool monitored = false;
     static const bool debugged = true;
     static const bool hysterically_debugged = false;
 };
@@ -219,14 +219,63 @@ template<> struct Traits<Monitor>: public Traits<Build>
 {
     static const bool enabled = monitored;
 
-    static constexpr System_Event       SYSTEM_EVENTS[]                 = { ELAPSED_TIME, DEADLINE_MISSES, CPU_EXECUTION_TIME, THREAD_EXECUTION_TIME, RUNNING_THREAD };
-    static constexpr Hertz              SYSTEM_EVENTS_FREQUENCIES[]     = {            1,               1,                  1,                     1,              1 }; // in Hz
+    static constexpr System_Event       SYSTEM_EVENTS[]                 = { RUNNING_THREAD,
+                                                                            JOB_UTILIZATION,
+                                                                            CPU_CLOCK,
+                                                                          };
+    static constexpr Hertz              SYSTEM_EVENTS_FREQUENCIES[]     = { 34,
+                                                                            34,
+                                                                            34,
+                                                                          }; // in Hz
+    // FIX: Temporary solution
+    static constexpr unsigned long long SYSTEM_EVENTS_CORES[]        = { 0b1110,
+                                                                         0b1110,
+                                                                         0b0001,
+                                                                       };
 
-    static constexpr PMU_Event          PMU_EVENTS[]                    = { INSTRUCTIONS_RETIRED, BRANCHES, CACHE_MISSES };
-    static constexpr Hertz              PMU_EVENTS_FREQUENCIES[]        = {                     1,        1,            1}; // in Hz
+    // Reading PMU while in QEMU is only available with KVM enabled, thus, if this feature is not available
+    // the execution will stop at the first Monitor::run() with Monitor::_enable set to true due to PMU::read() execution (PMU::config works fine)
+    // (after the execution of Monitor::enable_captures(), which only this test is using)
+    // This code is functional when running this application in a real machine (or enabling the KVM feature) 
+    static constexpr PMU_Event          PMU_EVENTS[]                    = { CPU_CYCLES,
+                                                                            INSTRUCTIONS_RETIRED,
 
-    static constexpr Transducer_Event   TRANSDUCER_EVENTS[]             = { CPU_VOLTAGE, CPU_TEMPERATURE };
-    static constexpr Hertz              TRANSDUCER_EVENTS_FREQUENCIES[] = {           1,               1 }; // in Hz
+                                                                            L1_DATA_CACHE_WRITEBACKS,
+                                                                            ARCHITECTURE_DEPENDENT_EVENT60,
+
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT113,
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT114,
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT101,
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT106,
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT109,
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT112
+                                                                          };
+    static constexpr Hertz              PMU_EVENTS_FREQUENCIES[]        = { 34,
+                                                                            34,
+                                                                            34,
+                                                                            34,
+                                                                            // 34,
+                                                                            // 34,
+                                                                            // 34,
+                                                                            // 34,
+                                                                            // 34,
+                                                                            // 34
+                                                                          }; // in Hz
+    // FIX: Temporary solution
+    static constexpr unsigned long long PMU_EVENTS_CORES[]              = { 0b1111,
+                                                                            0b1111,
+                                                                            0b1111,
+                                                                            0b1111,
+                                                                            // 0b0001,
+                                                                            // 0b0001,
+                                                                            // 0b0001,
+                                                                            // 0b0001,
+                                                                            // 0b0001,
+                                                                            // 0b0001,
+                                                                          };
+
+    static constexpr Transducer_Event   TRANSDUCER_EVENTS[]             = { };
+    static constexpr Hertz              TRANSDUCER_EVENTS_FREQUENCIES[] = { }; // in Hz
 };
 
 __END_SYS

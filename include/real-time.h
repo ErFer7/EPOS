@@ -23,18 +23,18 @@ typedef Thread Aperiodic_Thread;
 
 // Periodic Thread Configuration
 template<bool smp = Traits<Thread>::smp>
-struct Periodic_Thread_Configuratoin: public Thread::Configuration {
-    Periodic_Thread_Configuratoin(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE, Thread *thread = nullptr)
-    : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu, true, thread), cl, t, ss), activation(a), times(n) {}
-    // : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu), cl, t, ss), activation(a), times(n) {}
+struct Periodic_Thread_Configuration: public Thread::Configuration {
+    Periodic_Thread_Configuration(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE, Thread *thread = nullptr)
+    // : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu, true, thread), cl, t, ss), activation(a), times(n) {}
+    : Thread::Configuration(s, Thread::Criterion(p, d, c, cpu), cl, t, ss), activation(a), times(n) {}
 
     Microsecond activation;
     unsigned int times;
 };
 
 template<>
-struct Periodic_Thread_Configuratoin<false>: public Thread::Configuration {
-    Periodic_Thread_Configuratoin(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE)
+struct Periodic_Thread_Configuration<false>: public Thread::Configuration {
+    Periodic_Thread_Configuration(Microsecond p, Microsecond d = Thread::Criterion::SAME, Microsecond c = Thread::Criterion::UNKNOWN, Microsecond a = Thread::Criterion::NOW, const unsigned int n = INFINITE, unsigned int cpu = Thread::Criterion::ANY, Thread::State s = Thread::READY, Color cl = WHITE, Task * t = 0, unsigned int ss = Thread::STACK_SIZE)
     : Thread::Configuration(s, Thread::Criterion(p, d, c), cl, t, ss), activation(a), times(n) {}
 
     Microsecond activation;
@@ -82,7 +82,7 @@ protected:
     typedef IF<Criterion::dynamic | Traits<System>::monitored, Dynamic_Handler, Static_Handler>::Result Handler;
 
 public:
-    typedef Periodic_Thread_Configuratoin<Thread::smp> Configuration;
+    typedef Periodic_Thread_Configuration<Thread::smp> Configuration;
 
 public:
     template<typename ... Tn>
@@ -132,7 +132,8 @@ class RT_Thread: public Periodic_Thread
 public:
     RT_Thread(void (* function)(), Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN, Microsecond a = NOW, int n = INFINITE, unsigned int cpu = ANY, Color cl = WHITE, Task * t = 0, unsigned int ss = STACK_SIZE)
     : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss, this), &entry, this, function, a, n) {
-        // resume();
+        // TODO: REMEMBER THIS!!!
+        resume();
     }
 
 private:

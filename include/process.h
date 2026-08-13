@@ -30,7 +30,7 @@ class Thread
     friend class EA_PEDF_RV64;  // FIX: Change this for a generic criterion definition
     friend volatile void * ::_running();        // for running()
     template<bool smp> 
-    friend class Periodic_Thread_Configuratoin; // for STACK_SIZE
+    friend class Periodic_Thread_Configuration; // for STACK_SIZE
 
 
 protected:

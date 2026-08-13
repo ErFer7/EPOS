@@ -4,13 +4,14 @@
 #define __rv64_pmu_h
 
 #include <architecture/cpu.h>
-#include "machine/riscv/visionfive2/visionfive2_memory_map.h"
 #define __pmu_common_only__
 #include <architecture/pmu.h>
 #undef __pmu_common_only__
 #define __rv32_pmu_common_only__
 #include <architecture/rv32/rv32_pmu.h>
 #undef __rv32_pmu_common_only__
+
+#include <system/memory_map.h>
 
 __BEGIN_SYS
 
@@ -22,15 +23,15 @@ private:
     typedef CPU::Reg Reg;
 
     enum : Reg {
-        L2PM_EVENT_CONTROL  = 0x2000,
-        L2PM_EVENT_COUNTERS = 0x3000
+        L2_PMU_EVENT_CONTROL  = 0x2000,
+        L2_PMU_COUNTERS       = 0x3000
     };
 
-    static const unsigned int L2_PMU_CHANNELS = 64;
-    static const unsigned int L2_PMU_EVENTS_START = 61;
+    static const unsigned int L2_PMU_CHANNELS = Traits<Build>::MODEL == Traits_Tokens::VisionFive2 ? 64 : 0;
+    static const unsigned int L2_PMU_EVENTS_START = Traits<Build>::MODEL == Traits_Tokens::VisionFive2 ? 61 : -1U;
     static const unsigned int PMU_CHANNEL_LIMIT = 4;
-    static const unsigned int L2_PMU_CHANNEL_START = PMU_CHANNEL_LIMIT + 1;
-    static const unsigned int L2_PMU_CHANNEL_LIMIT = L2_PMU_CHANNEL_START + 6;
+    static const unsigned int L2_PMU_CHANNEL_START = Traits<Build>::MODEL == Traits_Tokens::VisionFive2 ? PMU_CHANNEL_LIMIT + 1 : -1U;
+    static const unsigned int L2_PMU_CHANNEL_LIMIT = Traits<Build>::MODEL == Traits_Tokens::VisionFive2 ? L2_PMU_CHANNEL_START + 6 : -1U;
 
     // L2PM events
     enum {
@@ -107,24 +108,23 @@ public:
     static void config(Channel channel, const Event event, Flags flags = NONE) {
         assert((channel < CHANNELS) && (event < EVENTS));
 
-        if (CPU::id() == 0)
-            kout << "PMU::config(c="
-                 << channel
-                 << ",e="
-                 << event
-                 << ",ee="
-                 << get_event_code(event)
-                 << ",f="
-                 << flags
-                 << ")"
-                 << endl;
+        if (CPU::id() == 0) {
+            db<PMU>(TRC) << "PMU::config(c="
+                << channel
+                << ",e="
+                << event
+                << ",f="
+                << flags
+                << ")"
+                << endl;
+        }
 
-        if(((channel == 0) && (_events[event] != 0)) || ((channel == 1) && (_events[event] != 1)) || ((channel == 2) && (_events[event] != 2))) {
+        if((channel == 0 && _events[event] != 0) || (channel == 1 && _events[event] != 1) || (channel == 2 && _events[event] != 2)) {
             db<PMU>(WRN) << "PMU::config: channel " << channel << " is fixed in this architecture and cannot be reconfigured!" << endl;
             return;
         }
 
-        if((channel >= FIXED)) {
+        if(channel >= FIXED) {
             if (event < L2_PMU_EVENTS_START) {
                 if (_events[event] != UNSUPORTED_EVENT && channel <= PMU_CHANNEL_LIMIT) {
                     mhpmevent(_events[event], channel);
@@ -380,7 +380,7 @@ public:
 
     static void init() {}
 
-private:
+protected:
     static Reg mcounteren(){ Reg reg; ASM("csrr %0, mcounteren" : "=r"(reg) :); return reg;}
     static void mcounteren(Reg reg){    ASM("csrw mcounteren, %0" : : "r"(reg));}
 
@@ -780,34 +780,33 @@ private:
     }
 
     static Reg l2pmevent(Channel channel) {
-        if (channel >= L2_PMU_CHANNELS)
+        if (channel > L2_PMU_CHANNEL_LIMIT)
             db<PMU>(ERR) << "PMU::l2pmevent(c=" << channel<< "): Tried to read beyond the maximum offset!" << endl;
 
-        return reg_l2_cache(L2PM_EVENT_CONTROL + (channel * 8));
+        return reg_l2_pmu(L2_PMU_EVENT_CONTROL + (channel * 8));
     }
 
     static void l2pmevent(Reg reg, Channel channel) {
-        if (channel >= L2_PMU_CHANNELS)
+        if (channel > L2_PMU_CHANNEL_LIMIT)
             db<PMU>(ERR) << "PMU::l2pmevent(r=" << reg << "c=" << channel << "): Tried to write beyond the maximum offset!" << endl;
 
-        reg_l2_cache(L2PM_EVENT_CONTROL + (channel * 8)) = reg;
+        reg_l2_pmu(L2_PMU_EVENT_CONTROL + (channel * 8)) = reg;
     }
 
     static Reg l2pmcounter(Channel channel) {
-        if (channel >= L2_PMU_CHANNELS)
+        if (channel > L2_PMU_CHANNEL_LIMIT)
             db<PMU>(ERR) << "PMU::l2pmcounter(c=" << channel<< "): Tried to read beyond the maximum offset!" << endl;
 
-        return reg_l2_cache(L2PM_EVENT_COUNTERS + (channel * 8));
+        return reg_l2_pmu(L2_PMU_EVENT_CONTROL + (channel * 8));
     }
 
-    static volatile Reg &reg_l2_cache(Reg o) {
-        return reinterpret_cast<volatile Reg *>(Memory_Map::L2PM_BASE)[o / sizeof(Reg)];
+    static volatile Reg &reg_l2_pmu(Reg o) {
+        return reinterpret_cast<volatile Reg *>(Memory_Map::L2_CACHE_BASE)[o / sizeof(Reg)];
     }
 
 protected:
     static const Event _l2pm_events[EVENTS];
 };
-
 
 class PMU: public RV64_PMU
 {
@@ -842,3 +841,4 @@ private:
 __END_SYS
 
 #endif
+

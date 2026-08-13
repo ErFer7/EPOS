@@ -35,6 +35,7 @@ public:
         UART0_BASE      = 0x10010000,   // SiFive UART
         CLINT_BASE      = 0x02000000,   // SiFive CLINT
         TIMER_BASE      = 0x02004000,   // CLINT Timer
+        L2_CACHE_BASE   = 0x08000000,  // VisionFive2 cache controller
         PLIC_BASE       = 0x0c000000,   // SiFive PLIC
         PRCI_BASE       = 0x10000000,   // SiFive-U Power, Reset, Clock, Interrupt
         GPIO_BASE       = 0x10060000,   // SiFive-U GPIO

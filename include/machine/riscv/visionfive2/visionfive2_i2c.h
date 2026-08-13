@@ -7,8 +7,6 @@
 
 __BEGIN_SYS
 
-extern OStream kout;
-
 class I2C : public I2C_Common {
     typedef CPU::Reg32 Reg32;
     typedef CPU::Reg16 Reg16;
@@ -44,7 +42,7 @@ class I2C : public I2C_Common {
     // IC_DATA_CMD Bits
     enum {
         IC_DATA_CMD_READ = 1U << 8U,  // 1 = Read, 0 = Write
-        IC_DATA_CMD_STOP = 1U << 9U,  // Issue STOP after this byte
+        IC_DATA_CMD_STOP = 1U << 9U,
     };
 
     // IC_STATUS Bits
@@ -165,7 +163,7 @@ class I2C : public I2C_Common {
 
         while (!(reg(IC_STATUS) & IC_STATUS_TFNF)) {
             if (--timeout <= 0) {
-                kout << "Failed I2C: " << reg(0x80) << endl;
+                db<I2C>(WRN) << "Failed I2C: " << reg(0x80) << endl;
 
                 return false;
             }
@@ -179,7 +177,7 @@ class I2C : public I2C_Common {
 
         while (!(reg(IC_STATUS) & IC_STATUS_RFNE)) {
             if (--timeout <= 0) {
-                kout << "Failed I2C: " << reg(0x80) << endl;
+                db<I2C>(WRN) << "Failed I2C: " << reg(0x80) << endl;
 
                 return false;
             }

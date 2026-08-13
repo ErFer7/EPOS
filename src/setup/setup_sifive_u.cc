@@ -789,8 +789,8 @@ void _entry() // machine mode
 
 void _setup() // supervisor mode
 {
-    kerr << endl;
-    kout << endl;
+    // kerr << endl;
+    // kout << endl;
 
     Setup setup;
 }

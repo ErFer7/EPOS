@@ -43,7 +43,7 @@ public:
             CT   = 1 << 8, // Contiguous (reserved for use by supervisor RSW)
             MIO  = 1 << 9, // I/O (reserved for use by supervisor RSW)
 
-            IAD  = (Traits<Build>::MODEL == Traits<Build>::SiFive_U || Traits<Build>::MODEL == Traits<Build>::VisionFive2) ? A | D : 0, // SiFive-U RV64 MMU can't handle A and D and requires it to be set
+            IAD  = (Traits<Build>::MODEL == Traits<Build>::SiFive_U || Traits<Build>::MODEL == Traits<Build>::VisionFive2) ? A | D : 0, // SiFive-U and VisionFive2 RV64 MMU can't handle A and D and requires it to be set
 
             APP  = (V | R | W | X | U | IAD),
             APPC = (V | R |     X | U | IAD),

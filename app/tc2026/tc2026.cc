@@ -9,7 +9,7 @@
 
 #include "bandwidth.h"
 #include "kalman.h"
-#include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
+// #include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
 #include "tc2026_traits.h"
 
 using namespace EPOS;
@@ -29,8 +29,8 @@ constexpr float BANDWIDTH_IT_DURATION = 2000.0f;
 
 constexpr static StressTask taskset_1[] = {
     {1000000, 1000000, 200000, 1, RIJNDAEL, AES_IT_DURATION},  // 20 - band
-    {1000000, 1000000, 200000, 2, KALMAN, KALMAN_IT_DURATION},
-    {1000000, 1000000, 200000, 3, BANDWIDTH, BANDWIDTH_IT_DURATION},
+    {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
+    {1000000, 1000000, 200000, 3, BANDWIDTH, BANDWIDTH_IT_DURATION}, // FIX: This benchmark is failing
 };  // HP = 1
 
 constexpr static Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)}};
@@ -86,9 +86,9 @@ int main() {
          << ">  Test duration: " << TEST_DURATION << '\n'
          << ">  RNG Seed: " << SEED << '\n'
          << ">  Selected taskset: " << SELECTED_TASKSET << '\n'
-         << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n'
-         << ">  CPU voltage: " << PMIC::get_cpu_voltage() << "mV" << '\n'
-         << ">  DDR Clock: " << HardwareClock::get_ddr_clock() / 1000000 << "MHz" << endl;
+         << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n' << endl;
+         // << ">  CPU voltage: " << PMIC::get_cpu_voltage() << "mV" << '\n'
+         // << ">  DDR Clock: " << Clock_Tree::get_ddr_clock() / 1000000 << "MHz" << endl;
 
     Monitor::print_monitor_info();
 
@@ -102,6 +102,8 @@ int main() {
     init_thread<0>(10000);
     cout << "Done" << endl;
 
+    // TODO: Remeber the resume on RT!
+
     // Monitor::enable_captures();
 
     cout << "Current time: " << us(tsc0) << endl;
@@ -112,9 +114,11 @@ int main() {
     for (unsigned int i = 0; i < task_count; i++) {
         threads[i]->join();
         // Monitor::disable_captures();
+        cout << "Joined task [" << i << ']' << endl;
     }
 
     logger->join();
+    cout << "Joined logger" << endl;
 
     Time_Stamp times = get_time() - tsc0;
 
@@ -265,8 +269,9 @@ void run_func() {
 
 int log_status() {
     for (unsigned int i = 0; i < TEST_DURATION; i++) {
-        cout << ">  Iteration [" << i << "], Clock: " << HardwareClock::get_cpu_clock() << "Hz"
-             << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' << endl;
+        // cout << ">  Iteration [" << i << "], Clock: " << HardwareClock::get_cpu_clock() << "Hz"
+        //     << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' << endl;
+        cout << ">  Iteration [" << i << ']' << endl;
 
         Delay(1000000);
     }

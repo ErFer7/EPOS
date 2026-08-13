@@ -110,7 +110,10 @@ public:
         // INFO: Temporary metrics used until the overall RT metrics are fixed
         Tick job_last_preemption;            // tick in which the thread left the CPU by the last time
         Tick job_execution_start;                         // tick in which the last job of a periodic thread started (different from "thread_last_dispatch" since jobs can be preempted)
-        Tick job_sleep_time;
+        Tick job_execution_block_initial_time;
+        Tick job_partial_utilization;
+        unsigned int deadline_misses;
+
         Tick job_release;                       // tick in which the last job of a periodic thread was made ready for execution
         Tick job_start;                         // tick in which the last job of a periodic thread started (different from "thread_last_dispatch" since jobs can be preempted)
         Tick job_finish;                        // tick in which the last job of a periodic thread finished (i.e. called _alarm->p() at wait_netxt(); different from "thread_last_preemption" since jobs can be preempted)
@@ -165,7 +168,7 @@ public:
             jobs_finished(0) {}
     };
 
-    typedef IF<true, Real_Statistics, Dummy_Statistics>::Result Statistics;
+    typedef IF<Traits<Build>::monitored, Real_Statistics, Dummy_Statistics>::Result Statistics;
 
 protected:
     Scheduling_Criterion_Common() {}
@@ -221,6 +224,8 @@ public:
 public:
     template <typename ... Tn>
     RR(int i = NORMAL, Tn & ... an): Priority(i) {}
+
+    RR(const RR &rr) : Priority(rr) {}
 };
 
 // First-Come, First-Served (FIFO)
@@ -234,6 +239,8 @@ public:
 public:
     template <typename ... Tn>
     FCFS(int i = NORMAL, Tn & ... an);
+
+    FCFS(const FCFS &fcfs) : Priority(fcfs) {}
 };
 
 
@@ -294,6 +301,8 @@ public:
 public:
     RM(int p = APERIODIC): RT_Common(p) {}
     RM(Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN): RT_Common(int(ticks(p)), p, d, c) {}
+
+    RM(const RM &rm) : RT_Common(rm) {}
 };
 
 // Deadline Monotonic
@@ -305,6 +314,8 @@ public:
 public:
     DM(int p = APERIODIC): RT_Common(p) {}
     DM(Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN): RT_Common(int(ticks(d ? d : p)), p, d, c) {}
+
+    DM(const DM &dm) : RT_Common(dm) {}
 };
 
 // Laxity Monotonic
@@ -316,6 +327,8 @@ public:
 public:
     LM(int p = APERIODIC): RT_Common(p) {}
     LM(Microsecond p, Microsecond d, Microsecond c): RT_Common(int(ticks((d ? d : p) - c)), p, d, c) {}
+
+    LM(const LM &lm) : RT_Common(lm) {}
 };
 
 // Earliest Deadline First
@@ -343,6 +356,8 @@ public:
 public:
     LLF(int p = APERIODIC): RT_Common(p) {}
     LLF(Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN);
+
+    LLF(const LLF &llf) : RT_Common(llf) {}
 
     void handle(Event event);
 };
@@ -375,6 +390,8 @@ public:
     template <typename ... Tn>
     GRR(int p = NORMAL, Tn & ... an): RR(p) {}
 
+    GRR(const GRR &grr) : RR(grr) {}
+
     static unsigned int current_head() { return CPU::id(); }
 };
 
@@ -391,6 +408,8 @@ public:
     Fixed_CPU(int p = NORMAL, unsigned int cpu = ANY, Tn & ... an)
     : Priority(p), Variable_Queue_Scheduler(((_priority == IDLE) || (_priority == MAIN)) ? CPU::id() : (cpu != ANY) ? cpu : ++_next_queue %= CPU::cores()) {}
 
+    Fixed_CPU(const Fixed_CPU &fixed_cpu) : Priority(fixed_cpu), Variable_Queue_Scheduler(fixed_cpu) {}
+
     using Variable_Queue_Scheduler::queue;
     static unsigned int current_queue() { return CPU::id(); }
 };
@@ -406,6 +425,8 @@ public:
     template <typename ... Tn>
     CPU_Affinity(int p = NORMAL, unsigned int cpu = ANY, Tn & ... an)
     : Priority(p), Variable_Queue_Scheduler(((_priority == IDLE) || (_priority == MAIN)) ? CPU::id() : (cpu != ANY) ? cpu : ++_next_queue %= CPU::cores()) {}
+
+    CPU_Affinity(const CPU_Affinity &cpu_affinity) : Priority(cpu_affinity), Variable_Queue_Scheduler(cpu_affinity) {}
 
     void handle(Event event);
 
@@ -425,10 +446,12 @@ public:
 
 public:
     PRM(int p = APERIODIC)
-: RM(p), Variable_Queue_Scheduler(((_priority == IDLE) || (_priority == MAIN)) ? CPU::id() : 0) {}
+    : RM(p), Variable_Queue_Scheduler(((_priority == IDLE) || (_priority == MAIN)) ? CPU::id() : 0) {}
 
     PRM(const Microsecond & d, const Microsecond & p = SAME, const Microsecond & c = UNKNOWN, unsigned int cpu = ANY)
     : RM(d, p, c), Variable_Queue_Scheduler((cpu != ANY) ? cpu : ++_next_queue %= CPU::cores()) {}
+
+    PRM(const PRM &prm) : Variable_Queue_Scheduler(prm) {}
 
     using Variable_Queue_Scheduler::queue;
     static unsigned int current_queue() { return CPU::id(); }
@@ -444,6 +467,8 @@ public:
     GEDF(int p = APERIODIC): EDF(p) {}
     GEDF(const Microsecond & d, const Microsecond & p = SAME, const Microsecond & c = UNKNOWN, unsigned int cpu = ANY)
     : EDF(d, p, c) {}
+
+    GEDF(const GEDF &gedf) : EDF(gedf) {}
 
     unsigned int queue() const { return current_head(); }
     void queue(unsigned int q) {}
@@ -1207,6 +1232,8 @@ public:
 
     CEDF(const Microsecond & d, const Microsecond & p = SAME, const Microsecond & c = UNKNOWN, unsigned int cpu = ANY)
     : EDF(d, p, c), Variable_Queue_Scheduler((cpu != ANY) ? cpu / HEADS : ++_next_queue %= CPU::cores() / HEADS) {}
+
+    CEDF(const CEDF &cedf) : Variable_Queue_Scheduler(cedf) {}
 
     using Variable_Queue_Scheduler::queue;
 

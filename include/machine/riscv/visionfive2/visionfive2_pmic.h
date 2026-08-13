@@ -1,4 +1,4 @@
-// EPOS VisionFive 2 (RISC-V) I2C Mediator Declarations
+// EPOS VisionFive 2 (RISC-V) PMIC Mediator Declarations
 
 #pragma once
 
@@ -8,12 +8,7 @@
 
 __BEGIN_SYS
 
-extern OStream kout;
-
 class PMIC : public PMIC_Common {
-   public:
-    typedef unsigned int Milivolts;
-
    private:
     typedef CPU::Reg32 Reg32;
     typedef CPU::Reg8 Reg8;
@@ -37,7 +32,7 @@ class PMIC : public PMIC_Common {
     // The most recent versions of U-boot already configure the GPIO pins in IOMUX for the PMIC connection with I2C
     static void init() {}
 
-    static Milivolts get_cpu_voltage() {
+    static Milivolts cpu_voltage() {
         const char reg = REG_DCDC2_VOLTAGE;
         char val = 0;
 
@@ -58,7 +53,11 @@ class PMIC : public PMIC_Common {
         }
     }
 
-    static void set_cpu_voltage(Milivolts voltage) {
+    static void cpu_voltage(Milivolts voltage, bool force = false) {
+        if (!force && voltage == _voltage) {
+            return;
+        }
+
         if (voltage < MIN_CPU_VOLTAGE) voltage = MIN_CPU_VOLTAGE;
         if (voltage > MAX_CPU_VOLTAGE) voltage = MAX_CPU_VOLTAGE;
 
@@ -77,12 +76,12 @@ class PMIC : public PMIC_Common {
 
         I2C::write(PMIC_I2C_ADDR, payload, 2, true);
         TSC::usleep(2);
+
+        _voltage = voltage;
     }
 
    private:
-    static volatile Reg32 &reg_sys_crg(unsigned int o) {
-        return reinterpret_cast<volatile Reg32 *>(0x13020000)[o / sizeof(Reg32)];
-    }
+    static inline Milivolts _voltage = 900;
 };
 
 __END_SYS

@@ -1,7 +1,7 @@
 // EPOS RISC-V 64 CPU Mediator Implementation
 
 #include <architecture/rv64/rv64_cpu.h>
-#include <machine/riscv/visionfive2/visionfive2_hardware_clock.h>  // TODO: Refactor this later
+#include <machine/clock_tree.h>
 #include <system.h>
 
 __BEGIN_SYS
@@ -80,7 +80,10 @@ void CPU::switch_context(Context ** o, Context * n)     // "o" is in a0 and "n" 
 }
 
 Hertz CPU::clock() {
-    return HardwareClock::get_cpu_clock();
+#ifdef __CLK_H
+    return Clock_Tree::get_cpu_clock();
+#endif
+    return Traits<CPU>::CLOCK;
 }
 
 __END_SYS

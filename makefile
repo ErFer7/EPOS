@@ -50,7 +50,7 @@ TEE             = tee
 ifndef DISPLAY
 TERM            = sh -c
 else
-TERM            = xterm -e
+TERM            = kitty -e
 endif
 TOUCH           = touch
 

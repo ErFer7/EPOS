@@ -10,7 +10,7 @@
 #include <time.h>
 #include <transducer.h>
 #include <process.h>
-#include "machine/riscv/visionfive2/visionfive2_hardware_clock.h"
+#include <machine/clock_tree.h>
 #include "system/traits.h"
 #include <machine/pmic.h>
 
@@ -345,9 +345,11 @@ public:
         case Event::JOB_UTILIZATION_PER_PERIOD:
             return t->criterion().period() ? (count2us(t->criterion().statistics().job_utilization) * 100) / t->criterion().period() : 0;
         case Event::CPU_CLOCK:
-            return HardwareClock::get_cpu_clock();
+            return CPU::clock();
+#ifdef __PMIC_H
         case Event::CPU_VOLTAGE:
             return PMIC::get_cpu_voltage();
+#endif
         case Event::CORE:
             return CPU::id();
         default:
