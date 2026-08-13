@@ -57,7 +57,7 @@ TOUCH           = touch
 # Tools and flags to compile system tools
 TCC             = gcc -ansi -c -Werror
 TCCFLAGS        = -Wall -O -I$(INC)
-TCXX            = g++ -c -ansi -fno-exceptions -std=c++14
+TCXX            = g++ -c -ansi -fno-exceptions -std=c++17
 TCXXFLAGS       = -Wall -O -I$(INC)
 TCPP            = gcc -E
 TCPPFLAGS       = -I$(INC)
