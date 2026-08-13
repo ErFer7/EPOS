@@ -8,12 +8,13 @@
 #include <utility/random.h>
 
 #include "bandwidth.h"
+#include "h264_dec.h"
 
 using namespace EPOS;
 
 OStream cout;
 
-enum BenchmarkType { RIJNDAEL, KALMAN, BANDWIDTH_L1, BANDWIDTH_L2 };
+enum BenchmarkType { RIJNDAEL, KALMAN, BANDWIDTH_L1, BANDWIDTH_L2, H264DEC };
 
 struct StressTask {
     const unsigned int period;
@@ -44,6 +45,12 @@ struct BenchmarkTraits<BANDWIDTH_L2> {
     static Type *create() { return new Type(Bandwidth::L2_CACHE_SIZE); }
 };
 
+template <>
+struct BenchmarkTraits<H264DEC> {
+    using Type = H264Dec;
+    static Type *create() { return new Type(); }
+};
+
 // template <> struct Benchmark_Traits<RIJNDAEL> {
 //     using Type = Rijndael;
 //     static Type* create() { return new Type(); } // Default constructor
@@ -62,6 +69,7 @@ class BenchmarkRunner {
     static constexpr float BANDWIDTH_IT_DURATION = 2000.0f;
 
     static constexpr StressTask taskset_1[] = {
+        {1000000, 1000000, 200000, 1, H264DEC, BANDWIDTH_IT_DURATION},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, AES_IT_DURATION},  // 20 - band
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
@@ -172,7 +180,6 @@ class BenchmarkRunner {
         constexpr BenchmarkType benchmark_type = taskset.tasks[ID].task;
 
         auto *benchmark = BenchmarkTraits<benchmark_type>::create();
-        benchmark->init();
         _benchmarks[ID] = benchmark;
 
         _task_runtime[ID] = 0;

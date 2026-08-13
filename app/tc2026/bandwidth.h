@@ -9,11 +9,7 @@ class Bandwidth {
     static const unsigned int STRIDE = (CACHE_LINE_SIZE / sizeof(unsigned int));
 
    public:
-    Bandwidth(unsigned int cache_size) : _buffer(nullptr), _size(cache_size) {}
-
-    ~Bandwidth() { delete[] _buffer; }
-
-    inline void init() {
+    Bandwidth(unsigned int cache_size) : _buffer(nullptr), _size(cache_size) {
         unsigned int allocation_size = _size / sizeof(unsigned int);
         _buffer = new unsigned int[allocation_size];
 
@@ -21,6 +17,8 @@ class Bandwidth {
             _buffer[i] = i;
         }
     }
+
+    ~Bandwidth() { delete[] _buffer; }
 
     inline void run() {
         unsigned int allocation_size = _size / sizeof(unsigned int);
