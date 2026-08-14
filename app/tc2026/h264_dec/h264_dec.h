@@ -21,6 +21,10 @@
 
 */
 
+/*
+ * This program was further ported and adapted to EPOS on C++
+ * */
+
 class H264Dec {
    private:
     enum h264_dec_SliceType { P_SLICE = 0, B_SLICE, I_SLICE, SP_SLICE, SI_SLICE };
@@ -58,7 +62,10 @@ class H264Dec {
 
     ~H264Dec() {}
 
-    inline void run() { h264_dec_decode_one_macroblock(); }
+    inline int run() {
+        h264_dec_decode_one_macroblock();
+        return h264_dec_return();
+    }
 
    private:
     // TODO: Maybe use these returns

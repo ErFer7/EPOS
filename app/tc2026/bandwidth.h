@@ -20,11 +20,14 @@ class Bandwidth {
 
     ~Bandwidth() { delete[] _buffer; }
 
-    inline void run() {
+    inline int run() {
         unsigned int allocation_size = _size / sizeof(unsigned int);
+
         for (unsigned int i = 0; i < allocation_size; i += STRIDE) {
             _buffer[i] = _buffer[i] + 1;
         }
+
+        return 0;
     }
 
    private:

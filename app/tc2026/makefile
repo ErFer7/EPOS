@@ -2,18 +2,19 @@
 
 include ../../makedefs
 
-OBJS := tc2026.o rijndael_enc.o rijndael_enc_libc.o aes.o input_small.o kalman.o h264_decinput.o
+SRCS := $(shell find . -name "*.cc")
+OBJS := $(SRCS:.cc=.o)
 
 all: install
 
 $(APPLICATION): $(OBJS) $(LIB)/*
-		$(ALD) $(ALDFLAGS) -o $@ $(OBJS)
+	$(ALD) $(ALDFLAGS) -o $@ $(OBJS)
 
 %.o: %.cc
-		$(ACC) $(ACCFLAGS) -c -o $@ $<
+	$(ACC) $(ACCFLAGS) -c -o $@ $<
 
 install: $(APPLICATION)
-		$(INSTALL) $(APPLICATION) $(IMG)
+	$(INSTALL) $(APPLICATION) $(IMG)
 
 clean:
-		$(CLEAN) *.o $(APPLICATION)
+	$(CLEAN) $(OBJS) $(APPLICATION)

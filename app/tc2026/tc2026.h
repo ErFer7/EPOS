@@ -8,13 +8,15 @@
 #include <utility/random.h>
 
 #include "bandwidth.h"
-#include "h264_dec.h"
+#include "h264_dec/h264_dec.h"
+#include "mpeg2/mpeg2.h"
+#include "susan/susan.h"
 
 using namespace EPOS;
 
 OStream cout;
 
-enum BenchmarkType { RIJNDAEL, KALMAN, BANDWIDTH_L1, BANDWIDTH_L2, H264DEC };
+enum BenchmarkType { RIJNDAEL, KALMAN, BANDWIDTH_L1, BANDWIDTH_L2, H264DEC, MPEG2, SUSAN };
 
 struct StressTask {
     const unsigned int period;
@@ -51,6 +53,18 @@ struct BenchmarkTraits<H264DEC> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<MPEG2> {
+    using Type = Mpeg2;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<SUSAN> {
+    using Type = Susan;
+    static Type *create() { return new Type(); }
+};
+
 // template <> struct Benchmark_Traits<RIJNDAEL> {
 //     using Type = Rijndael;
 //     static Type* create() { return new Type(); } // Default constructor
@@ -64,13 +78,15 @@ class BenchmarkRunner {
     static const unsigned int SELECTED_TASKSET = 1;
     static const unsigned int SEED = 20260610;
 
+    static constexpr float SINGLE = 200000.0f;
     static constexpr float AES_IT_DURATION = 2800.0f;  // in microseconds
     static constexpr float KALMAN_IT_DURATION = 500.0f;
     static constexpr float BANDWIDTH_IT_DURATION = 2000.0f;
 
     static constexpr StressTask taskset_1[] = {
-        {1000000, 1000000, 200000, 1, H264DEC, BANDWIDTH_IT_DURATION},
-        // {1000000, 1000000, 200000, 1, RIJNDAEL, AES_IT_DURATION},  // 20 - band
+        // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
+        // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
+        {1000000, 1000000, 200000, 2, SUSAN, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
@@ -247,8 +263,10 @@ class BenchmarkRunner {
 
         Time_Stamp init = _get_time();
 
+        volatile int _ = 0;  // Just to ensure that the return is used
+
         for (unsigned int iterations = 0; iterations < my_iter_per_job; iterations++) {
-            benchmark->run();
+            _ = benchmark->run();
         }
 
         Time_Stamp job_runtime = _get_time() - init;
