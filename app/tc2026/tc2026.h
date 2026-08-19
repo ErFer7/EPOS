@@ -8,6 +8,7 @@
 #include <utility/random.h>
 
 #include "bandwidth.h"
+#include "cjpeg_transupp/cjpeg_transupp.h"
 #include "h264_dec/h264_dec.h"
 #include "mpeg2/mpeg2.h"
 #include "susan/susan.h"
@@ -16,7 +17,7 @@ using namespace EPOS;
 
 OStream cout;
 
-enum BenchmarkType { RIJNDAEL, KALMAN, BANDWIDTH_L1, BANDWIDTH_L2, H264DEC, MPEG2, SUSAN };
+enum BenchmarkType { RIJNDAEL, KALMAN, BANDWIDTH_L1, BANDWIDTH_L2, H264DEC, MPEG2, SUSAN, CJPEG_TRANSUPP };
 
 struct StressTask {
     const unsigned int period;
@@ -65,6 +66,12 @@ struct BenchmarkTraits<SUSAN> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<CJPEG_TRANSUPP> {
+    using Type = CJpegTransupp;
+    static Type *create() { return new Type(); }
+};
+
 // template <> struct Benchmark_Traits<RIJNDAEL> {
 //     using Type = Rijndael;
 //     static Type* create() { return new Type(); } // Default constructor
@@ -86,7 +93,7 @@ class BenchmarkRunner {
     static constexpr StressTask taskset_1[] = {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        {1000000, 1000000, 200000, 2, SUSAN, SINGLE},
+        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
