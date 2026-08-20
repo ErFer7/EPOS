@@ -50,8 +50,8 @@
 #define CJPEG_WRBMP_BMP_SUPPORTED   /* BMP image file format */
 #define CJPEG_WRBMP_GIF_SUPPORTED   /* GIF image file format */
 #define CJPEG_WRBMP_PPM_SUPPORTED   /* PBMPLUS PPM/PGM image file format */
-#undef RLE_SUPPORTED    /* Utah RLE image file format */
-#define CJPEG_WRBMP_TARGA_SUPPORTED   /* Targa image file format */
+#undef RLE_SUPPORTED                /* Utah RLE image file format */
+#define CJPEG_WRBMP_TARGA_SUPPORTED /* Targa image file format */
 
 #undef TWO_FILE_COMMANDLINE
 #undef NEED_SIGNAL_CATCHER
