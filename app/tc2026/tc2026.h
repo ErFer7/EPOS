@@ -10,8 +10,11 @@
 #include "anagram/anagram.h"
 #include "audiobeam/audiobeam.h"
 #include "bandwidth.h"
+#include "bitcount/bitcount.h"
 #include "cjpeg_transupp/cjpeg_transupp.h"
 #include "cjpeg_wrbmp/cjpeg_wrbmp.h"
+#include "cosf/cosf.h"
+#include "deg2rad/deg2rad.h"
 #include "fac/fac.h"
 #include "h264_dec/h264_dec.h"
 #include "mpeg2/mpeg2.h"
@@ -32,12 +35,15 @@ enum BenchmarkType {
     MPEG2,
     SUSAN,
     CJPEG_TRANSUPP,
-    CJPEG_WRBMP,
-    AUDIOBEAM,  // FIX: Currently hangs after 4 iterations
-    ANAGRAM,    // FIX: Currently hangs after 2 iterations
+    CJPEG_WRBMP,  // WARN: There are some problems, but it works
+    AUDIOBEAM,    // FIX: Currently hangs after 4 iterations
+    ANAGRAM,      // FIX: Currently hangs after 2 iterations
     PETRINET,
     FAC,
-    PRIME
+    PRIME,
+    BITCOUNT,
+    COSF,
+    DEG2RAD
 };
 
 struct StressTask {
@@ -129,6 +135,24 @@ struct BenchmarkTraits<PRIME> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<BITCOUNT> {
+    using Type = BitCount;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<COSF> {
+    using Type = Cosf;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<DEG2RAD> {
+    using Type = Deg2Rad;
+    static Type *create() { return new Type(); }
+};
+
 // template <> struct Benchmark_Traits<RIJNDAEL> {
 //     using Type = Rijndael;
 //     static Type* create() { return new Type(); } // Default constructor
@@ -150,7 +174,7 @@ class BenchmarkRunner {
     static constexpr StressTask taskset_1[] = {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        {1000000, 1000000, 200000, 2, PRIME, SINGLE},
+        {1000000, 1000000, 200000, 2, DEG2RAD, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
