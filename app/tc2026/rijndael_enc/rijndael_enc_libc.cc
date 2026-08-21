@@ -26,7 +26,7 @@ unsigned long rijndael_enc_fwrite(const void *ptr,
     return number_of_chars_to_write;
 }
 
-int rijndael_enc_fseek(struct rijndael_enc_FILE *stream, long int offset, Origin origin) {
+int rijndael_enc_fseek(struct rijndael_enc_FILE *stream, long int offset, RijndaelOrigin origin) {
     if (origin == RIJNDAEL_ENC_SEEK_SET) {
         stream->cur_pos = offset;
         return 0;

@@ -38,31 +38,17 @@
   -----------------------------------------------------------------------
 */
 
+#include "rijndael_enc.h"
+
 #include "aes.h"
 #include "rijndael_enc_libc.h"
 
-/*
-  Global variable definitions
-*/
-unsigned char rijndael_enc_key[32];
-int rijndael_enc_key_len;
-
-extern unsigned char rijndael_enc_data[];
-struct rijndael_enc_FILE rijndael_enc_fin;
-
-int rijndael_enc_checksum = 0;
-
-/*
-  Forward declaration of functions
-*/
-void rijndael_enc_init(void);
-int rijndael_enc_return(void);
-void rijndael_enc_fillrand(unsigned char *buf, int len);
-void rijndael_enc_encfile(struct rijndael_enc_FILE *fin, struct aes *ctx);
-void rijndael_enc_main(void);
-
-void rijndael_enc_init(void) {
+RijndaelEnc::RijndaelEnc() {
     /* create a pseudo-file for the input*/
+    for (unsigned int i = 0; i < 31369; i++) {
+        rijndael_enc_data[i] = rijndael_enc_input_data[i];
+    }
+
     rijndael_enc_fin.data = rijndael_enc_data;
     rijndael_enc_fin.size = 31369;
     rijndael_enc_fin.cur_pos = 0;
@@ -105,8 +91,6 @@ void rijndael_enc_init(void) {
     rijndael_enc_key_len = i / 2;
 }
 
-int rijndael_enc_return(void) { return ((rijndael_enc_checksum == (int)249509) ? 0 : -1); }
-
 /* A Pseudo Random Number Generator (PRNG) used for the     */
 /* Initialisation Vector. The PRNG is George Marsaglia's    */
 /* Multiply-With-Carry (MWC) PRNG that concatenates two     */
@@ -117,7 +101,7 @@ int rijndael_enc_return(void) { return ((rijndael_enc_checksum == (int)249509) ?
 
 #define RAND(a, b) (((a = 36969 * (a & 65535) + (a >> 16)) << 16) + (b = 18000 * (b & 65535) + (b >> 16)))
 
-void rijndael_enc_fillrand(unsigned char *buf, int len) {
+void RijndaelEnc::rijndael_enc_fillrand(unsigned char *buf, int len) {
     static unsigned long a[2], mt = 1, count = 4;
     static char r[4];
     int i;
@@ -138,7 +122,7 @@ void rijndael_enc_fillrand(unsigned char *buf, int len) {
     }
 }
 
-void rijndael_enc_encfile(struct rijndael_enc_FILE *fin, struct aes *ctx) {
+void RijndaelEnc::rijndael_enc_encfile(struct rijndael_enc_FILE *fin, struct aes *ctx) {
     unsigned char inbuf[16], outbuf[16];
     long int flen;
     unsigned long i = 0, l = 0;
@@ -191,10 +175,12 @@ void rijndael_enc_encfile(struct rijndael_enc_FILE *fin, struct aes *ctx) {
     }
 }
 
-void rijndael_enc_main(void) {
+int RijndaelEnc::run() {
     struct aes ctx[1];
 
     /* encryption in Cipher Block Chaining mode */
     rijndael_enc_set_key(rijndael_enc_key, rijndael_enc_key_len, enc, ctx);
     rijndael_enc_encfile(&rijndael_enc_fin, ctx);
+
+    return (rijndael_enc_checksum == (int)249509) ? 0 : -1;
 }

@@ -1,4 +1,6 @@
-unsigned char rijndael_enc_data[] = {
+#include "rijndael_enc.h"
+
+const unsigned char RijndaelEnc::rijndael_enc_input_data[] = {
     'K', 'u', 'r', 't', 'V', 'o', 'n', 'n', 'e', 'g', 'u', 't', 's', 'C', 'o', 'm', 'm', 'e', 'n',  'c', 'e', 'm',
     'e', 'n', 't', 'A', 'd', 'd', 'r', 'e', 's', 's', 'a', 't', 'M', 'I', 'T', 'L', 'a', 'd', 'i',  'e', 's', 'a',
     'n', 'd', 'g', 'e', 'n', 't', 'l', 'e', 'm', 'e', 'n', 'o', 'f', 't', 'h', 'e', 'c', 'l', 'a',  's', 's', 'o',

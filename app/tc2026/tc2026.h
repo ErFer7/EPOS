@@ -16,10 +16,14 @@
 #include "cosf/cosf.h"
 #include "deg2rad/deg2rad.h"
 #include "fac/fac.h"
+#include "fft/fft.h"
 #include "h264_dec/h264_dec.h"
+#include "md5/md5.h"
 #include "mpeg2/mpeg2.h"
 #include "petrinet/petrinet.h"
 #include "prime/prime.h"
+#include "rijndael_enc/rijndael_enc.h"
+#include "sha/sha.h"
 #include "susan/susan.h"
 
 using namespace EPOS;
@@ -27,10 +31,10 @@ using namespace EPOS;
 OStream cout;
 
 enum BenchmarkType {
-    RIJNDAEL,  // TODO: Bring it to standard
-    KALMAN,    // TODO: Bring it to standard
-    BANDWIDTH_L1,
-    BANDWIDTH_L2,
+    RIJNDAEL_ENC,
+    KALMAN,        // TODO: Bring it to standard
+    BANDWIDTH_L1,  // TODO: Improve with IsolBench
+    BANDWIDTH_L2,  // TODO: Improve with IsolBench
     H264DEC,
     MPEG2,
     SUSAN,
@@ -43,7 +47,10 @@ enum BenchmarkType {
     PRIME,
     BITCOUNT,
     COSF,
-    DEG2RAD
+    DEG2RAD,
+    MD5,
+    SHA,
+    FFT
 };
 
 struct StressTask {
@@ -62,6 +69,12 @@ struct Taskset {
 
 template <int TaskEnum>
 struct BenchmarkTraits;
+
+template <>
+struct BenchmarkTraits<RIJNDAEL_ENC> {
+    using Type = RijndaelEnc;
+    static Type *create() { return new Type(); }  // Default constructor
+};
 
 template <>
 struct BenchmarkTraits<BANDWIDTH_L1> {
@@ -153,10 +166,23 @@ struct BenchmarkTraits<DEG2RAD> {
     static Type *create() { return new Type(); }
 };
 
-// template <> struct Benchmark_Traits<RIJNDAEL> {
-//     using Type = Rijndael;
-//     static Type* create() { return new Type(); } // Default constructor
-// };
+template <>
+struct BenchmarkTraits<MD5> {
+    using Type = Md5;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<SHA> {
+    using Type = Sha;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<FFT> {
+    using Type = Fft;
+    static Type *create() { return new Type(); }
+};
 
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
@@ -174,7 +200,7 @@ class BenchmarkRunner {
     static constexpr StressTask taskset_1[] = {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        {1000000, 1000000, 200000, 2, DEG2RAD, SINGLE},
+        {1000000, 1000000, 200000, 2, FFT, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
