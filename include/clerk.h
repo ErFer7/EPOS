@@ -348,7 +348,7 @@ public:
             return CPU::clock();
 #ifdef __PMIC_H
         case Event::CPU_VOLTAGE:
-            return PMIC::get_cpu_voltage();
+            return PMIC::cpu_voltage();
 #endif
         case Event::CORE:
             return CPU::id();

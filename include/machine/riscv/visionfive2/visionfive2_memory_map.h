@@ -41,6 +41,7 @@ struct Memory_Map {
         SPI1_BASE       = 0x10070000,  // VisionFive2 QSPI 1
         SPI2_BASE       = 0x10080000,  // VisionFive2 QSPI 2
         I2C5_BASE       = 0x12050000,  // VisionFive2 I2C5
+        TEMP_BASE       = 0x120e0000,  // VisionFive2 temperature sensor
         SYS_CRG_BASE    = 0x13020000,  // VisionFive2 System CRG
         SYS_CON_BASE    = 0x13030000,  // VisionFive2 System CON
         ETH_BASE        = 0x16030000,  // VisionFive2 Ethernet

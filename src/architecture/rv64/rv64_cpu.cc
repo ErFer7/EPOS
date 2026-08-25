@@ -81,7 +81,7 @@ void CPU::switch_context(Context ** o, Context * n)     // "o" is in a0 and "n" 
 
 Hertz CPU::clock() {
 #ifdef __CLK_H
-    return Clock_Tree::get_cpu_clock();
+    return Clock_Tree::cpu_clock();
 #endif
     return Traits<CPU>::CLOCK;
 }

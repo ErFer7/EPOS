@@ -9,7 +9,7 @@
 #include <utility/elf.h>
 #include <utility/string.h>
 #include "machine/riscv/visionfive2/visionfive2_pmic.h"
-#include "machine/riscv/visionfive2/visionfive2_hardware_clock.h"
+#include <machine/clock_tree.h>
 
 extern "C" {
     char _end;
@@ -392,7 +392,7 @@ void Setup::say_hi()
     kout << "\n*** This is EPOS!\n" << endl;
     kout << "Setting up this machine as follows: " << endl;
     kout << "  Mode:         " << ((Traits<Build>::SMOD == Traits<Build>::LIBRARY) ? "library" : (Traits<Build>::SMOD == Traits<Build>::BUILTIN) ? "built-in" : "kernel") << endl;
-    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << HardwareClock::get_cpu_clock() / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
+    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << Clock_Tree::cpu_clock() / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
     kout << "  Machine:      VisionFive 2" << endl;
 #ifdef __library__
     kout << "  Memory:       " << (RAM_TOP + 1 - RAM_BASE) / 1024 << " KB [" << reinterpret_cast<void *>(RAM_BASE) << ":" << reinterpret_cast<void *>(RAM_TOP) << "]" << endl;
@@ -804,7 +804,7 @@ void _setup() // supervisor mode
     if (CPU::id() == Traits<Machine>::BSP) {
         Cache::init();
         PMIC::init();
-        HardwareClock::init();
+        Clock_Tree::init();
         Temperature_Sensor::init();
     } else {
         for (volatile int i = 0; i < 1000000; i++);

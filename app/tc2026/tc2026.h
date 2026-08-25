@@ -18,6 +18,7 @@
 #include "fac/fac.h"
 #include "fft/fft.h"
 #include "h264_dec/h264_dec.h"
+#include "iir/iir.h"
 #include "md5/md5.h"
 #include "mpeg2/mpeg2.h"
 #include "petrinet/petrinet.h"
@@ -50,7 +51,8 @@ enum BenchmarkType {
     DEG2RAD,
     MD5,
     SHA,
-    FFT
+    FFT,
+    IIR
 };
 
 struct StressTask {
@@ -184,6 +186,12 @@ struct BenchmarkTraits<FFT> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<IIR> {
+    using Type = Iir;
+    static Type *create() { return new Type(); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
@@ -200,7 +208,7 @@ class BenchmarkRunner {
     static constexpr StressTask taskset_1[] = {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        {1000000, 1000000, 200000, 2, FFT, SINGLE},
+        {1000000, 1000000, 200000, 2, IIR, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
