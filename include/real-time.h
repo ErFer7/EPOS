@@ -131,7 +131,8 @@ class RT_Thread: public Periodic_Thread
 {
 public:
     RT_Thread(void (* function)(), Microsecond p, Microsecond d = SAME, Microsecond c = UNKNOWN, Microsecond a = NOW, int n = INFINITE, unsigned int cpu = ANY, Color cl = WHITE, Task * t = 0, unsigned int ss = STACK_SIZE)
-    : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss, this), &entry, this, function, a, n) {
+    : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss), &entry, this, function, a, n) {
+    // : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss, this), &entry, this, function, a, n) {
         // TODO: REMEMBER THIS!!!
         resume();
     }

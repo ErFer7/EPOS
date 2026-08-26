@@ -62,7 +62,7 @@ public:
     static const unsigned long APP_HIGH         = library ? RAM_TOP : 0xffffffffffffffff; // 512 GB (highest address)
 
     static const unsigned long APP_CODE         = APP_LOW;
-    static const unsigned long APP_DATA         = APP_CODE + 256 * 1024; // APP_CODE + 4 MB
+    static const unsigned long APP_DATA         = APP_CODE + 512 * 1024; // APP_CODE + 4 MB
 
     static const unsigned long PHY_MEM          = RAM_BASE;       // 2 GB (max 256 GB of RAM)
     static const unsigned long IO               = 0x0000000000000000;  // 0 (max 512 MB of IO = MIO_TOP - MIO_BASE)
