@@ -7,6 +7,7 @@
 #include <utility/convert.h>
 #include <utility/random.h>
 
+#include "adpcm_enc/adpcm_enc.h"
 #include "anagram/anagram.h"
 #include "audiobeam/audiobeam.h"
 #include "bandwidth.h"
@@ -15,15 +16,22 @@
 #include "cjpeg_wrbmp/cjpeg_wrbmp.h"
 #include "cosf/cosf.h"
 #include "deg2rad/deg2rad.h"
+#include "dijkstra/dijkstra.h"
 #include "fac/fac.h"
 #include "fft/fft.h"
 #include "h264_dec/h264_dec.h"
+#include "huff_enc/huff_enc.h"
 #include "iir/iir.h"
 #include "lms/lms.h"
+#include "ludcmp/ludcmp.h"
+#include "matrix1/matrix1.h"
 #include "md5/md5.h"
+#include "minver/minver.h"
 #include "mpeg2/mpeg2.h"
 #include "petrinet/petrinet.h"
 #include "prime/prime.h"
+#include "quicksort/quicksort.h"
+#include "recursion/recursion.h"
 #include "rijndael_enc/rijndael_enc.h"
 #include "sha/sha.h"
 #include "susan/susan.h"
@@ -55,7 +63,15 @@ enum BenchmarkType {
     FFT,
     IIR,
     LMS,
-    FILTERBANK
+    FILTERBANK,
+    MINVER,
+    LUDCMP,
+    MATRIX1,
+    QUICKSORT,
+    RECURSION,
+    DIJKSTRA,
+    HUFF_ENC,
+    ADPCM_ENC
 };
 
 struct StressTask {
@@ -207,6 +223,54 @@ struct BenchmarkTraits<FILTERBANK> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<MINVER> {
+    using Type = Minver;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<LUDCMP> {
+    using Type = LudCmp;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<MATRIX1> {
+    using Type = Matrix1;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<QUICKSORT> {
+    using Type = Quicksort;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<RECURSION> {
+    using Type = Recursion;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<DIJKSTRA> {
+    using Type = Dijkstra;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<HUFF_ENC> {
+    using Type = HuffEnc;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<ADPCM_ENC> {
+    using Type = AdpcmEnc;
+    static Type *create() { return new Type(); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
@@ -223,7 +287,7 @@ class BenchmarkRunner {
     static constexpr StressTask taskset_1[] = {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        {1000000, 1000000, 200000, 2, FILTERBANK, SINGLE},
+        {1000000, 1000000, 200000, 2, ADPCM_ENC, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
