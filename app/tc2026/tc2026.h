@@ -30,12 +30,14 @@
 #include "md5/md5.h"
 #include "minver/minver.h"
 #include "mpeg2/mpeg2.h"
+#include "ndes/ndes.h"
 #include "petrinet/petrinet.h"
 #include "prime/prime.h"
 #include "quicksort/quicksort.h"
 #include "recursion/recursion.h"
 #include "rijndael_enc/rijndael_enc.h"
 #include "sha/sha.h"
+#include "statemate/statemate.h"
 #include "susan/susan.h"
 
 using namespace EPOS;
@@ -75,7 +77,9 @@ enum BenchmarkType {
     HUFF_ENC,
     ADPCM_ENC,
     GSM_ENC,
-    G723_ENC
+    G723_ENC,
+    STATEMATE,
+    NDES
 };
 
 struct StressTask {
@@ -287,6 +291,18 @@ struct BenchmarkTraits<G723_ENC> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<STATEMATE> {
+    using Type = Statemate;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<NDES> {
+    using Type = Ndes;
+    static Type *create() { return new Type(); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
@@ -304,9 +320,9 @@ class BenchmarkRunner {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
-        {1000000, 1000000, 200000, 1, GSM_ENC, SINGLE},
+        {1000000, 1000000, 200000, 1, NDES, SINGLE},
         {1000000, 1000000, 200000, 2, G723_ENC, SINGLE},
-        {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 3, STATEMATE, BANDWIDTH_IT_DURATION},
     };  // HP = 1
 
     static constexpr Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)}};
