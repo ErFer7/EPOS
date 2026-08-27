@@ -19,6 +19,8 @@
 #include "dijkstra/dijkstra.h"
 #include "fac/fac.h"
 #include "fft/fft.h"
+#include "g723_enc/g723_enc.h"
+#include "gsm_enc/gsm_enc.h"
 #include "h264_dec/h264_dec.h"
 #include "huff_enc/huff_enc.h"
 #include "iir/iir.h"
@@ -41,10 +43,10 @@ using namespace EPOS;
 OStream cout;
 
 enum BenchmarkType {
-    RIJNDAEL_ENC,
+    RIJNDAEL_ENC,  // FIX: Use int instead of long and check why it breaks when used with GSM_ENC
     KALMAN,        // TODO: Bring it to standard
-    BANDWIDTH_L1,  // TODO: Improve with IsolBench
-    BANDWIDTH_L2,  // TODO: Improve with IsolBench
+    BANDWIDTH_L1,  // TODO: Improve with IsolBench and fix the type size
+    BANDWIDTH_L2,  // TODO: Improve with IsolBench and fix the type size
     H264DEC,
     MPEG2,
     SUSAN,
@@ -71,7 +73,9 @@ enum BenchmarkType {
     RECURSION,
     DIJKSTRA,
     HUFF_ENC,
-    ADPCM_ENC
+    ADPCM_ENC,
+    GSM_ENC,
+    G723_ENC
 };
 
 struct StressTask {
@@ -271,6 +275,18 @@ struct BenchmarkTraits<ADPCM_ENC> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<GSM_ENC> {
+    using Type = GsmEnc;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<G723_ENC> {
+    using Type = G723Enc;
+    static Type *create() { return new Type(); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
@@ -287,9 +303,10 @@ class BenchmarkRunner {
     static constexpr StressTask taskset_1[] = {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        {1000000, 1000000, 200000, 2, ADPCM_ENC, SINGLE},
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
-        {1000000, 1000000, 200000, 3, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 1, GSM_ENC, SINGLE},
+        {1000000, 1000000, 200000, 2, G723_ENC, SINGLE},
+        {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
     };  // HP = 1
 
     static constexpr Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)}};
