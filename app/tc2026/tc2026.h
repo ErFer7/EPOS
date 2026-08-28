@@ -8,6 +8,7 @@
 #include <utility/random.h>
 
 #include "adpcm_enc/adpcm_enc.h"
+#include "ammunition/ammunition.h"
 #include "anagram/anagram.h"
 #include "audiobeam/audiobeam.h"
 #include "bandwidth/bandwidth.h"
@@ -84,7 +85,8 @@ enum BenchmarkType {
     GSM_ENC,
     G723_ENC,
     STATEMATE,
-    NDES,  // TODO: Verify the static variables and see if something went wrong
+    NDES,        // TODO: Verify the static variables and see if something went wrong
+    AMMUNITION,  // TODO: Check if the size_t is ok
     FMREF,
     POINTER_CHASE_L1,
     POINTER_CHASE_L2
@@ -308,6 +310,12 @@ struct BenchmarkTraits<STATEMATE> {
 template <>
 struct BenchmarkTraits<NDES> {
     using Type = Ndes;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<AMMUNITION> {
+    using Type = Ammunition;
     static Type *create() { return new Type(); }
 };
 
