@@ -27,12 +27,13 @@
 
 */
 
+namespace AdpcmEnc {
 /* common sampling rate for sound cards on IBM/PC */
-#define SAMPLE_RATE 11025
+static const int SAMPLE_RATE = 11025;
 
-#define PI 3141
-#define SIZE 3
-#define IN_END 4
+static const int PI = 3141;
+static const int SIZE = 3;
+static const int IN_END = 4;
 
 class AdpcmEnc {
    public:
@@ -583,3 +584,4 @@ class AdpcmEnc {
     int adpcm_enc_ph1, adpcm_enc_ph2;
     int adpcm_enc_rh1, adpcm_enc_rh2;
 };
+};  // namespace AdpcmEnc

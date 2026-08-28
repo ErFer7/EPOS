@@ -101,8 +101,9 @@ RijndaelEnc::RijndaelEnc() {
 
 #define RAND(a, b) (((a = 36969 * (a & 65535) + (a >> 16)) << 16) + (b = 18000 * (b & 65535) + (b >> 16)))
 
+// FIX: Change this static to something else
 void RijndaelEnc::rijndael_enc_fillrand(unsigned char *buf, int len) {
-    static unsigned long a[2], mt = 1, count = 4;
+    static unsigned int a[2], mt = 1, count = 4;
     static char r[4];
     int i;
 
@@ -114,7 +115,7 @@ void RijndaelEnc::rijndael_enc_fillrand(unsigned char *buf, int len) {
 
     for (i = 0; i < len; ++i) {
         if (count == 4) {
-            *(unsigned long *)r = RAND(a[0], a[1]);
+            *(unsigned int *)r = RAND(a[0], a[1]);
             count = 0;
         }
 
@@ -124,8 +125,8 @@ void RijndaelEnc::rijndael_enc_fillrand(unsigned char *buf, int len) {
 
 void RijndaelEnc::rijndael_enc_encfile(struct rijndael_enc_FILE *fin, struct aes *ctx) {
     unsigned char inbuf[16], outbuf[16];
-    long int flen;
-    unsigned long i = 0, l = 0;
+    int flen;
+    unsigned int i = 0, l = 0;
 
     rijndael_enc_fillrand(outbuf, 16); /* set an IV for CBC mode           */
     flen = fin->size;

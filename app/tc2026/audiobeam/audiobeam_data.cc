@@ -1,5 +1,7 @@
 #include "audiobeam.h"
 
+namespace Audiobeam {
+
 const float Audiobeam::audiobeam_input_data[5760] = {
     -2.1628241e-002, -6.1782300e-002, 1.2674258e-002,  4.5557573e-002,  -3.1999024e-002, 1.5042214e-002,
     -2.2025290e-002, -1.1691264e-001, -1.1481735e-002, -1.4446880e-002, -1.5755706e-002, -8.0576309e-002,
@@ -989,3 +991,4 @@ const unsigned int Audiobeam::audiobeam_source_location_data_size = sizeof(Audio
 const float Audiobeam::audiobeam_origin_location_data[3] = {1.5, 3, 0};
 
 const unsigned int Audiobeam::audiobeam_origin_location_data_size = sizeof(Audiobeam::audiobeam_origin_location_data);
+}  // namespace Audiobeam

@@ -10,7 +10,7 @@
 #include "adpcm_enc/adpcm_enc.h"
 #include "anagram/anagram.h"
 #include "audiobeam/audiobeam.h"
-#include "bandwidth.h"
+#include "bandwidth/bandwidth.h"
 #include "bitcount/bitcount.h"
 #include "cjpeg_transupp/cjpeg_transupp.h"
 #include "cjpeg_wrbmp/cjpeg_wrbmp.h"
@@ -19,6 +19,7 @@
 #include "dijkstra/dijkstra.h"
 #include "fac/fac.h"
 #include "fft/fft.h"
+#include "fmref/fmref.h"
 #include "g723_enc/g723_enc.h"
 #include "gsm_enc/gsm_enc.h"
 #include "h264_dec/h264_dec.h"
@@ -32,6 +33,7 @@
 #include "mpeg2/mpeg2.h"
 #include "ndes/ndes.h"
 #include "petrinet/petrinet.h"
+#include "pointer_chase/pointer_chase.h"
 #include "prime/prime.h"
 #include "quicksort/quicksort.h"
 #include "recursion/recursion.h"
@@ -44,11 +46,14 @@ using namespace EPOS;
 
 OStream cout;
 
+// TODO: Check all of them
+// TODO: Add an "industrial" benchmark (probably SDAV)
+// TODO: Add Image Disparity
 enum BenchmarkType {
-    RIJNDAEL_ENC,  // FIX: Use int instead of long and check why it breaks when used with GSM_ENC
+    RIJNDAEL_ENC,  // Single: ~1935us Iteration WCET, Contention: ~3867us -> 2x FIX: Fails when two of them run
     KALMAN,        // TODO: Bring it to standard
-    BANDWIDTH_L1,  // TODO: Improve with IsolBench and fix the type size
-    BANDWIDTH_L2,  // TODO: Improve with IsolBench and fix the type size
+    BANDWIDTH_L1,
+    BANDWIDTH_L2,
     H264DEC,
     MPEG2,
     SUSAN,
@@ -75,11 +80,14 @@ enum BenchmarkType {
     RECURSION,
     DIJKSTRA,
     HUFF_ENC,
-    ADPCM_ENC,
+    ADPCM_ENC,  // NOTE: Under work
     GSM_ENC,
     G723_ENC,
     STATEMATE,
-    NDES
+    NDES,  // TODO: Verify the static variables and see if something went wrong
+    FMREF,
+    POINTER_CHASE_L1,
+    POINTER_CHASE_L2
 };
 
 struct StressTask {
@@ -107,14 +115,14 @@ struct BenchmarkTraits<RIJNDAEL_ENC> {
 
 template <>
 struct BenchmarkTraits<BANDWIDTH_L1> {
-    using Type = Bandwidth;
-    static Type *create() { return new Type(Bandwidth::L1_CACHE_SIZE); }
+    using Type = Bandwidth::Bandwidth;
+    static Type *create() { return new Type(Bandwidth::Bandwidth::L1_CACHE_SIZE); }
 };
 
 template <>
 struct BenchmarkTraits<BANDWIDTH_L2> {
-    using Type = Bandwidth;
-    static Type *create() { return new Type(Bandwidth::L2_CACHE_SIZE); }
+    using Type = Bandwidth::Bandwidth;
+    static Type *create() { return new Type(Bandwidth::Bandwidth::L2_CACHE_SIZE); }
 };
 
 template <>
@@ -149,7 +157,7 @@ struct BenchmarkTraits<CJPEG_WRBMP> {
 
 template <>
 struct BenchmarkTraits<AUDIOBEAM> {
-    using Type = Audiobeam;
+    using Type = Audiobeam::Audiobeam;
     static Type *create() { return new Type(); }
 };
 
@@ -275,7 +283,7 @@ struct BenchmarkTraits<HUFF_ENC> {
 
 template <>
 struct BenchmarkTraits<ADPCM_ENC> {
-    using Type = AdpcmEnc;
+    using Type = AdpcmEnc::AdpcmEnc;
     static Type *create() { return new Type(); }
 };
 
@@ -303,6 +311,24 @@ struct BenchmarkTraits<NDES> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<FMREF> {
+    using Type = Fmref::Fmref;
+    static Type *create() { return new Type(); }
+};
+
+template <>
+struct BenchmarkTraits<POINTER_CHASE_L1> {
+    using Type = PointerChase::PointerChase;
+    static Type *create() { return new Type(PointerChase::PointerChase::L1_CACHE_SIZE); }
+};
+
+template <>
+struct BenchmarkTraits<POINTER_CHASE_L2> {
+    using Type = PointerChase::PointerChase;
+    static Type *create() { return new Type(PointerChase::PointerChase::L2_CACHE_SIZE); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
@@ -317,12 +343,22 @@ class BenchmarkRunner {
     static constexpr float BANDWIDTH_IT_DURATION = 2000.0f;
 
     static constexpr StressTask taskset_1[] = {
-        // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
-        // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
-        // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
-        {1000000, 1000000, 200000, 1, NDES, SINGLE},
-        {1000000, 1000000, 200000, 2, G723_ENC, SINGLE},
-        {1000000, 1000000, 200000, 3, STATEMATE, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 1, RIJNDAEL_ENC, SINGLE},
+        {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
+        {1000000, 1000000, 200000, 1, FILTERBANK, SINGLE},
+        {1000000, 1000000, 200000, 1, FILTERBANK, SINGLE},
+        {1000000, 1000000, 200000, 1, MATRIX1, SINGLE},
+        {1000000, 1000000, 200000, 1, POINTER_CHASE_L1, SINGLE},
+        {1000000, 1000000, 200000, 2, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 2, MINVER, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 2, MINVER, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 2, QUICKSORT, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 2, QUICKSORT, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 3, LUDCMP, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 3, RECURSION, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 3, POINTER_CHASE_L2, BANDWIDTH_IT_DURATION},
     };  // HP = 1
 
     static constexpr Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)}};
@@ -436,6 +472,7 @@ class BenchmarkRunner {
         _job_wcet[ID] = 0;
         _iteration_wcet[ID] = 0;
         _current_iteration[ID] = 0;
+        _return[ID] = 0;
 
         _init_taskset<ID + 1>();
     }
@@ -459,10 +496,6 @@ class BenchmarkRunner {
     inline static void _init_thread(Microsecond activation) {
         constexpr int job = _calc_jobs(ID);
 
-        cout << ">  Thread[" << ID << "]: period = " << taskset.tasks[ID].period
-             << ", deadline = " << taskset.tasks[ID].deadline << ", wcet = " << taskset.tasks[ID].wcet
-             << ", activation = " << activation << ", times = " << job << ", cpu = " << taskset.tasks[ID].cpu << endl;
-
         _threads[ID] = new RT_Thread(&_run_func<ID>,
                                      taskset.tasks[ID].period,
                                      taskset.tasks[ID].deadline,
@@ -470,6 +503,10 @@ class BenchmarkRunner {
                                      activation,
                                      job,
                                      taskset.tasks[ID].cpu);
+
+        cout << ">  Thread[" << ID << "]<" << _threads[ID] << ">: period = " << taskset.tasks[ID].period
+             << ", deadline = " << taskset.tasks[ID].deadline << ", wcet = " << taskset.tasks[ID].wcet
+             << ", activation = " << activation << ", times = " << job << ", cpu = " << taskset.tasks[ID].cpu << endl;
 
         _init_thread<ID + 1>(activation);
     }
@@ -480,6 +517,11 @@ class BenchmarkRunner {
             //     << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' <<
             //     endl;
             cout << ">  Iteration [" << i << ']' << endl;
+
+            for (unsigned int i = 0; i < task_count; i++) {
+                cout << "   > Task [" << i << "], IWCET: " << _iteration_wcet[i] << "us; return -> " << _return[i]
+                     << endl;
+            }
 
             Delay(1000000);
         }
@@ -497,10 +539,8 @@ class BenchmarkRunner {
 
         Time_Stamp init = _get_time();
 
-        volatile int _ = 0;  // Just to ensure that the return is used
-
         for (unsigned int iterations = 0; iterations < my_iter_per_job; iterations++) {
-            _ = benchmark->run();
+            _return[ID] = benchmark->run();
         }
 
         Time_Stamp job_runtime = _get_time() - init;
@@ -529,6 +569,7 @@ class BenchmarkRunner {
     inline static Thread *_threads[task_count];
     inline static Thread *_logger;
     inline static void *_benchmarks[task_count];
+    inline static int _return[task_count];
 };
 
 template <>

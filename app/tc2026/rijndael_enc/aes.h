@@ -111,7 +111,7 @@
 /* End of configuration options, but see also aes.c */
 
 typedef unsigned char byte; /* must be an 8-bit storage unit */
-typedef unsigned long word; /* must be a 32-bit storage unit */
+typedef unsigned int word;  /* must be a 32-bit storage unit */
 typedef short aes_ret;      /* function return value         */
 
 #define aes_bad 0

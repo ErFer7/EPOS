@@ -158,15 +158,15 @@ aes_ret rijndael_enc_set_key(byte in_key[], const word n_bytes, const enum aes_k
 }
 
 short rijndael_enc_encrypt(unsigned char in_blk[], unsigned char out_blk[], const struct aes *cx) {
-    const unsigned long *kp = cx->e_key;
+    const unsigned int *kp = cx->e_key;
     if (!(cx->mode & 1)) return 0;
-    unsigned long b0[4];
-    b0[0] = *(unsigned long *)in_blk ^ kp[0];
-    b0[1] = *(unsigned long *)(in_blk + 4) ^ kp[1];
-    b0[2] = *(unsigned long *)(in_blk + 8) ^ kp[2];
-    b0[3] = *(unsigned long *)(in_blk + 12) ^ kp[3];
+    unsigned int b0[4];
+    b0[0] = *(unsigned int *)in_blk ^ kp[0];
+    b0[1] = *(unsigned int *)(in_blk + 4) ^ kp[1];
+    b0[2] = *(unsigned int *)(in_blk + 8) ^ kp[2];
+    b0[3] = *(unsigned int *)(in_blk + 12) ^ kp[3];
     kp += 4;
-    unsigned long b1[4];
+    unsigned int b1[4];
     switch (cx->Nrnd) {
         case 14:
             b1[0] = kp[0] ^ (rijndael_enc_ft_tab[0][((unsigned char)b0[0])] ^
@@ -398,9 +398,9 @@ short rijndael_enc_encrypt(unsigned char in_blk[], unsigned char out_blk[], cons
                                     rijndael_enc_fl_tab[2][((unsigned char)(b1[1] >> 16))] ^
                                     rijndael_enc_fl_tab[3][((unsigned char)(b1[2] >> 24))]);
     }
-    *(unsigned long *)out_blk = (b0[0]);
-    *(unsigned long *)(out_blk + 4) = (b0[1]);
-    *(unsigned long *)(out_blk + 8) = (b0[2]);
-    *(unsigned long *)(out_blk + 12) = (b0[3]);
+    *(unsigned int *)out_blk = (b0[0]);
+    *(unsigned int *)(out_blk + 4) = (b0[1]);
+    *(unsigned int *)(out_blk + 8) = (b0[2]);
+    *(unsigned int *)(out_blk + 12) = (b0[3]);
     return aes_good;
 }

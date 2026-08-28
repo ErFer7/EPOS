@@ -1,5 +1,6 @@
 #include "audiobeamlibmalloc.h"
 
+namespace Audiobeam {
 #define AUDIOBEAM_HEAP_SIZE 10000
 
 static char audiobeam_simulated_heap[AUDIOBEAM_HEAP_SIZE];
@@ -11,3 +12,4 @@ void *audiobeam_malloc(unsigned int numberOfBytes) {
     audiobeam_freeHeapPos += ((numberOfBytes + 4) & (unsigned int)0xfffffffc);
     return currentPos;
 }
+}  // namespace Audiobeam

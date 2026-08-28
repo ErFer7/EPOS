@@ -34,6 +34,8 @@
 
 #include "audiobeamlibmath.h"
 
+namespace Audiobeam {
+
 static const int audiobeam_npio2_hw[] = {
     0x3fc90f00, 0x40490f00, 0x4096cb00, 0x40c90f00, 0x40fb5300, 0x4116cb00, 0x412fed00, 0x41490f00,
     0x41623100, 0x417b5300, 0x418a3a00, 0x4196cb00, 0x41a35c00, 0x41afed00, 0x41bc7e00, 0x41c90f00,
@@ -385,3 +387,4 @@ float audiobeam___ieee754_sqrtf(float x) {
     AUDIOBEAM_SET_FLOAT_WORD(z, ix);
     return z;
 }
+}  // namespace Audiobeam

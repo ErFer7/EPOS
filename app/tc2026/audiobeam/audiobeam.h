@@ -1,5 +1,6 @@
 #pragma once
 
+namespace Audiobeam {
 struct audiobeam_DataQueue {
     float **sample_queue;
     int head;
@@ -23,7 +24,7 @@ struct audiobeam_PreprocessedDelays {
 #define FLT_MAX 999e999
 
 #define SOUND_SPEED 342
-#define SAMPLING_RATE 16000
+static const int SAMPLING_RATE = 16000;
 #define CARTESIAN_DISTANCE(x1, y1, z1, x2, y2, z2) \
     (sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2) + (z1 - z2) * (z1 - z2)));
 
@@ -110,3 +111,4 @@ class Audiobeam {
     static const unsigned int audiobeam_source_location_data_size;
     static const unsigned int audiobeam_origin_location_data_size;
 };
+}  // namespace Audiobeam

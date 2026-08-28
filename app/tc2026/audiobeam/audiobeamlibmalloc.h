@@ -22,6 +22,8 @@
 #ifndef AUDIOBEAM_MALLOC_H
 #define AUDIOBEAM_MALLOC_H
 
+namespace Audiobeam {
 void *audiobeam_malloc(unsigned int numberOfBytes);
+}
 
 #endif

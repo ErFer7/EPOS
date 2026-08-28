@@ -22,6 +22,8 @@
 #ifndef AUDIOBEAM_LIBM
 #define AUDIOBEAM_LIBM
 
+namespace Audiobeam {
+
 #define audiobeam_M_PI 3.14159265358979323846
 
 static const float audiobeam_one = 1.0f, audiobeam_tiny = 1.0e-30f, audiobeam_half = 5.0000000000e-01, /* 0x3f000000 */
@@ -51,4 +53,5 @@ float audiobeam___scalbnf(float x, int n);
 float audiobeam___ceilf(float x);
 float audiobeam___floorf(float x);
 
+}  // namespace Audiobeam
 #endif  // AUDIOBEAM_LIBM

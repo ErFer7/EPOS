@@ -39,6 +39,8 @@
 
 #include "audiobeamlibm.h"
 
+namespace Audiobeam {
+
 /* A union which permits us to convert between a float and a 32 bit
    int.  */
 
@@ -65,4 +67,5 @@ typedef union {
         (d) = sf_u.value;                     \
     }
 
+}
 #endif /* _MATH_PRIVATE_H_ */

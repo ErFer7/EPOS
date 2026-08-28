@@ -27,6 +27,7 @@
 #include "audiobeamlibm.h"
 #include "audiobeamlibmalloc.h"
 
+namespace Audiobeam {
 /*
   Initialization- and return-value-related functions
 */
@@ -415,3 +416,4 @@ int Audiobeam::run() {
 
     return audiobeam_checksum + 1 != 0;
 }
+}  // namespace Audiobeam
