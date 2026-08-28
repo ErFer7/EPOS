@@ -8,6 +8,7 @@
 #include <utility/random.h>
 
 #include "adpcm_enc/adpcm_enc.h"
+#include "ammunition/ammunition.h"
 #include "anagram/anagram.h"
 #include "audiobeam/audiobeam.h"
 #include "bandwidth.h"
@@ -79,7 +80,8 @@ enum BenchmarkType {
     GSM_ENC,
     G723_ENC,
     STATEMATE,
-    NDES
+    NDES,
+    AMMUNITION  // TODO: Check if the size_t is ok
 };
 
 struct StressTask {
@@ -303,6 +305,12 @@ struct BenchmarkTraits<NDES> {
     static Type *create() { return new Type(); }
 };
 
+template <>
+struct BenchmarkTraits<AMMUNITION> {
+    using Type = Ammunition;
+    static Type *create() { return new Type(); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
@@ -320,7 +328,7 @@ class BenchmarkRunner {
         // {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
         // {1000000, 1000000, 200000, 1, RIJNDAEL, SINGLE},  // 20 - band
         // {1000000, 1000000, 200000, 3, KALMAN, KALMAN_IT_DURATION},
-        {1000000, 1000000, 200000, 1, NDES, SINGLE},
+        {1000000, 1000000, 200000, 1, AMMUNITION, SINGLE},
         {1000000, 1000000, 200000, 2, G723_ENC, SINGLE},
         {1000000, 1000000, 200000, 3, STATEMATE, BANDWIDTH_IT_DURATION},
     };  // HP = 1
