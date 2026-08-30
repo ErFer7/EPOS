@@ -1,6 +1,8 @@
 #include "wccfile.h"
 #define EOF -1
 
+namespace Susan {
+
 unsigned int susan_wccfread(void *ptr, unsigned int size, unsigned int count, struct wccFILE *stream) {
     if (susan_wccfeof(stream)) return EOF;
 
@@ -56,3 +58,4 @@ int susan_wccfgetpos(struct wccFILE *stream, unsigned *position) {
 }
 
 int susan_wccfeof(struct wccFILE *stream) { return stream->cur_pos == stream->size ? 1 : 0; }
+}  // namespace Susan

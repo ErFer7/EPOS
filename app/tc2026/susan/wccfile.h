@@ -1,5 +1,6 @@
 #pragma once
 
+namespace Susan {
 enum _Origin_ { WCCSEEK_SET, WCCSEEK_CUR, WCCSEEK_END };
 typedef enum _Origin_ Origin;
 
@@ -17,3 +18,4 @@ int susan_wccfgetpos(struct wccFILE *stream, unsigned *position);
 int susan_wccfeof(struct wccFILE *stream);
 int susan_wccfgetc(struct wccFILE *stream);
 char *susan_wccfgets(char *str, int num, struct wccFILE *stream);
+}  // namespace Susan

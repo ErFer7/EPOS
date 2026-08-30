@@ -18,6 +18,7 @@
 #include "cosf/cosf.h"
 #include "deg2rad/deg2rad.h"
 #include "dijkstra/dijkstra.h"
+#include "disparity/disparity.h"
 #include "fac/fac.h"
 #include "fft/fft.h"
 #include "fmref/fmref.h"
@@ -26,6 +27,7 @@
 #include "h264_dec/h264_dec.h"
 #include "huff_enc/huff_enc.h"
 #include "iir/iir.h"
+#include "kalman/kalman.h"
 #include "lms/lms.h"
 #include "ludcmp/ludcmp.h"
 #include "matrix1/matrix1.h"
@@ -48,17 +50,23 @@ using namespace EPOS;
 OStream cout;
 
 // TODO: Check all of them
+// TODO: Check them on the VisionFive2
+// TODO: Implement the tasksets
 // TODO: Add an "industrial" benchmark (probably SDAV)
-// TODO: Add Image Disparity
 enum BenchmarkType {
-    RIJNDAEL_ENC,  // Single: ~1935us Iteration WCET, Contention: ~3867us -> 2x FIX: Fails when two of them run
-    KALMAN,        // TODO: Bring it to standard
+    // IsolBench like
     BANDWIDTH_L1,
     BANDWIDTH_L2,
+    POINTER_CHASE_L1,
+    POINTER_CHASE_L2,
+
+    // TACLeBench
+    RIJNDAEL_ENC,  // Single: ~1935us Iteration WCET, Contention: ~3867us -> 2x
     H264DEC,
     MPEG2,
     SUSAN,
     CJPEG_TRANSUPP,
+    // NOTE: Ok up to this point
     CJPEG_WRBMP,  // WARN: There are some problems, but it works
     AUDIOBEAM,    // FIX: Currently hangs after 4 iterations
     ANAGRAM,      // FIX: Currently hangs after 2 iterations
@@ -88,8 +96,12 @@ enum BenchmarkType {
     NDES,        // TODO: Verify the static variables and see if something went wrong
     AMMUNITION,  // TODO: Check if the size_t is ok
     FMREF,
-    POINTER_CHASE_L1,
-    POINTER_CHASE_L2
+
+    // SD-VBS
+    DISPARITY,
+
+    // Custom
+    KALMAN
 };
 
 struct StressTask {
@@ -111,7 +123,13 @@ struct BenchmarkTraits;
 
 template <>
 struct BenchmarkTraits<RIJNDAEL_ENC> {
-    using Type = RijndaelEnc;
+    using Type = RijndaelEnc::RijndaelEnc;
+    static Type *create() { return new Type(); }  // Default constructor
+};
+
+template <>
+struct BenchmarkTraits<KALMAN> {
+    using Type = Kalman::Kalman;
     static Type *create() { return new Type(); }  // Default constructor
 };
 
@@ -129,25 +147,25 @@ struct BenchmarkTraits<BANDWIDTH_L2> {
 
 template <>
 struct BenchmarkTraits<H264DEC> {
-    using Type = H264Dec;
+    using Type = H264Dec::H264Dec;
     static Type *create() { return new Type(); }
 };
 
 template <>
 struct BenchmarkTraits<MPEG2> {
-    using Type = Mpeg2;
+    using Type = Mpeg2::Mpeg2;
     static Type *create() { return new Type(); }
 };
 
 template <>
 struct BenchmarkTraits<SUSAN> {
-    using Type = Susan;
+    using Type = Susan::Susan;
     static Type *create() { return new Type(); }
 };
 
 template <>
 struct BenchmarkTraits<CJPEG_TRANSUPP> {
-    using Type = CJpegTransupp;
+    using Type = CJpegTransupp::CJpegTransupp;
     static Type *create() { return new Type(); }
 };
 
@@ -337,11 +355,17 @@ struct BenchmarkTraits<POINTER_CHASE_L2> {
     static Type *create() { return new Type(PointerChase::PointerChase::L2_CACHE_SIZE); }
 };
 
+template <>
+struct BenchmarkTraits<DISPARITY> {
+    using Type = Disparity::Disparity;
+    static Type *create() { return new Type(); }
+};
+
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
    private:
-    static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 10;  // in seconds
+    static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 60;  // in seconds
     static const unsigned int SELECTED_TASKSET = 1;
     static const unsigned int SEED = 20260610;
 
@@ -352,16 +376,16 @@ class BenchmarkRunner {
 
     static constexpr StressTask taskset_1[] = {
         {1000000, 1000000, 200000, 1, RIJNDAEL_ENC, SINGLE},
-        {1000000, 1000000, 200000, 1, H264DEC, SINGLE},
-        {1000000, 1000000, 200000, 1, FILTERBANK, SINGLE},
-        {1000000, 1000000, 200000, 1, FILTERBANK, SINGLE},
-        {1000000, 1000000, 200000, 1, MATRIX1, SINGLE},
-        {1000000, 1000000, 200000, 1, POINTER_CHASE_L1, SINGLE},
-        {1000000, 1000000, 200000, 2, BANDWIDTH_L2, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 2, MINVER, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 2, MINVER, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 2, QUICKSORT, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 2, QUICKSORT, BANDWIDTH_IT_DURATION},
+        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 2, RIJNDAEL_ENC, SINGLE},
+        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 2, DISPARITY, SINGLE},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
         {1000000, 1000000, 200000, 3, LUDCMP, BANDWIDTH_IT_DURATION},
@@ -382,9 +406,11 @@ class BenchmarkRunner {
              << ">  RNG Seed: " << SEED << '\n'
              << ">  Selected taskset: " << SELECTED_TASKSET << '\n'
              << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n'
-             << endl;
-        // << ">  CPU voltage: " << PMIC::get_cpu_voltage() << "mV" << '\n'
-        // << ">  DDR Clock: " << Clock_Tree::get_ddr_clock() / 1000000 << "MHz" << endl;
+#ifdef __visionfive2__
+             << ">  CPU voltage: " << PMIC::cpu_voltage() << "mV" << '\n'
+             << ">  DDR Clock: " << Clock_Tree::ddr_clock() / 1000000 << "MHz";
+#endif
+        << endl;
 
         Monitor::print_monitor_info();
 
@@ -521,10 +547,12 @@ class BenchmarkRunner {
 
     static int _log_status() {
         for (unsigned int i = 0; i < TEST_DURATION; i++) {
-            // cout << ">  Iteration [" << i << "], Clock: " << HardwareClock::get_cpu_clock() << "Hz"
-            //     << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' <<
-            //     endl;
-            cout << ">  Iteration [" << i << ']' << endl;
+            cout << ">  Iteration [" << i << ']'
+#ifdef __visionfive2__
+                 << ", Clock: " << HardwareClock::cpu_clock() << "Hz"
+                 << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C'
+#endif
+                 << endl;
 
             for (unsigned int i = 0; i < task_count; i++) {
                 cout << "   > Task [" << i << "], IWCET: " << _iteration_wcet[i] << "us; return -> " << _return[i]

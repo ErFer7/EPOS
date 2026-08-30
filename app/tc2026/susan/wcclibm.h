@@ -1,5 +1,6 @@
 #pragma once
 
+namespace Susan {
 #define int32_t int
 #define uint32_t unsigned int
 #define u_int16_t unsigned short
@@ -46,3 +47,4 @@ float susan___scalbnf(float x, int n);
 float susan___ieee754_logf(float x);
 float susan___ieee754_log10f(float x);
 float susan___sinf(float x);
+}  // namespace Susan

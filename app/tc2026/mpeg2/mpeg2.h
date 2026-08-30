@@ -48,6 +48,7 @@
  * This program was further ported and adapted to EPOS on C++
  * */
 
+namespace Mpeg2 {
 class Mpeg2 {
    private:
     struct mbinfo {
@@ -80,6 +81,8 @@ class Mpeg2 {
         unsigned char *dst;
         volatile char bitmask = 0;
 
+        mpeg2_oldorgframe = new unsigned char[mpeg2_oldorgframe_size];
+
         src = &mpeg2_oldorgframe_data[0];
         dst = &mpeg2_oldorgframe[0];
 
@@ -92,7 +95,7 @@ class Mpeg2 {
         }
     }
 
-    ~Mpeg2() {}
+    ~Mpeg2() { delete[] mpeg2_oldorgframe; }
 
     inline int run() {
         mpeg2_motion_estimation(mpeg2_oldorgframe,
@@ -2106,7 +2109,8 @@ uses global vars: mpeg2_pict_type, frame_pred_dct
     volatile int mpeg2_topfirst = 1;
     volatile int mpeg2_frame_pred_dct = 0;
     mbinfo mpeg2_mbinfo[352];
-    unsigned char mpeg2_oldorgframe[];
+    unsigned char *mpeg2_oldorgframe;
     static const unsigned char mpeg2_oldorgframe_data[];
     static const unsigned int mpeg2_oldorgframe_size;
 };
+}  // namespace Mpeg2

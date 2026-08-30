@@ -1,6 +1,7 @@
 #include "wccmalloc.h"
 
 // This must be redefined for each new benchmark
+namespace Susan {
 #define HEAP_SIZE 30000
 
 char susan_simulated_heap[HEAP_SIZE];
@@ -37,3 +38,4 @@ void susan_wccmemset(void *p, int value, unsigned int num) {
 
     for (i = 0; i < num; ++i) *char_ptr++ = (unsigned char)value;
 }
+}  // namespace Susan

@@ -23,6 +23,8 @@
 
 */
 
+namespace CJpegTransupp {
+
 /* The basic DCT block is 8x8 samples */
 #define DCTSIZE 8
 
@@ -1239,3 +1241,4 @@ class CJpegTransupp {
 
     jpeg_compress_struct cjpeg_transupp_dstinfo;
 };
+}  // namespace CJpegTransupp

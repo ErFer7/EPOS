@@ -1,5 +1,7 @@
 #include "mpeg2.h"
 
+namespace Mpeg2 {
+
 constexpr unsigned char Mpeg2::mpeg2_oldorgframe_data[] = {
   0x9f, 0x9d, 0x9b, 0x9d, 0x9f, 0xa1, 0xa2, 0xa3,
   0x9e, 0xa2, 0xa5, 0xa5, 0xa2, 0xa1, 0xa4, 0xa7,
@@ -11268,3 +11270,4 @@ constexpr unsigned char Mpeg2::mpeg2_oldorgframe_data[] = {
 };
 
 const unsigned int Mpeg2::mpeg2_oldorgframe_size = sizeof(Mpeg2::mpeg2_oldorgframe_data);
+}

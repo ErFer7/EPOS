@@ -25,6 +25,8 @@
  * This program was further ported and adapted to EPOS on C++
  * */
 
+namespace H264Dec {
+
 class H264Dec {
    private:
     enum h264_dec_SliceType { P_SLICE = 0, B_SLICE, I_SLICE, SP_SLICE, SI_SLICE };
@@ -32,20 +34,30 @@ class H264Dec {
    public:
     H264Dec() {
         unsigned int i;
-        unsigned char *p;
+        unsigned char *dst;
+        const unsigned char *src;
         volatile signed char bitmask = 0;
 
         /*
           Apply volatile XOR-bitmask to entire input array.
         */
-        p = (unsigned char *)&h264_dec_mv_array[0];
-        for (i = 0; i < sizeof(h264_dec_mv_array); ++i, ++p) *p ^= bitmask;
+        dst = (unsigned char *)&h264_dec_mv_array[0];
+        src = (const unsigned char *)&h264_dec_mv_array_const[0];
+        for (i = 0; i < sizeof(h264_dec_mv_array); ++i, ++dst, ++src) {
+            *dst = *src ^ bitmask;
+        }
 
-        p = (unsigned char *)&h264_dec_list_imgUV[0];
-        for (i = 0; i < sizeof(h264_dec_list_imgUV); ++i, ++p) *p ^= bitmask;
+        dst = (unsigned char *)&h264_dec_list_imgUV[0];
+        src = (const unsigned char *)&h264_dec_list_imgUV_const[0];
+        for (i = 0; i < sizeof(h264_dec_list_imgUV); ++i, ++dst, ++src) {
+            *dst = *src ^ bitmask;
+        }
 
-        p = (unsigned char *)&h264_dec_img_m7[0];
-        for (i = 0; i < sizeof(h264_dec_img_m7); ++i, ++p) *p ^= bitmask;
+        dst = (unsigned char *)&h264_dec_img_m7[0];
+        src = (const unsigned char *)&h264_dec_img_m7_const[0];
+        for (i = 0; i < sizeof(h264_dec_img_m7); ++i, ++dst, ++src) {
+            *dst = *src ^ bitmask;
+        }
 
         mb_cr_size_x = 8;
         mb_cr_size_y = 8;
@@ -68,7 +80,6 @@ class H264Dec {
     }
 
    private:
-    // TODO: Maybe use these returns
     int h264_dec_return() { return (h264_dec_img_mpr[0][0] + h264_dec_dec_picture_imgUV[0][0][0] + 128 != 0); }
 
     void h264_dec_decode_one_macroblock() {
@@ -503,8 +514,12 @@ class H264Dec {
     int mb_cr_size_y;
     signed char h264_dec_img_mpr[7][7];
     signed char h264_dec_dec_picture_imgUV[2][64][54];
-
-    static const signed char h264_dec_mv_array[65][65][2];
-    static const short h264_dec_list_imgUV[2][45][45];
-    static const int h264_dec_img_m7[16][16];
+    // Moving this to the heap would just be annoying
+    signed char h264_dec_mv_array[65][65][2];
+    short h264_dec_list_imgUV[2][45][45];
+    int h264_dec_img_m7[16][16];
+    static const signed char h264_dec_mv_array_const[65][65][2];
+    static const short h264_dec_list_imgUV_const[2][45][45];
+    static const int h264_dec_img_m7_const[16][16];
 };
+}  // namespace H264Dec

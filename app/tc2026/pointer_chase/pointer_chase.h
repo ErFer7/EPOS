@@ -34,12 +34,11 @@ class PointerChase {
 
     ~PointerChase() { delete[] _raw; }
 
-    // TODO: Maybe add volatile
     inline int run() {
-        unsigned char *p = _chase_ptr;
+        volatile unsigned char *p = _chase_ptr;
 
         for (unsigned int i = 0; i < ITERATIONS; ++i) {
-            p = *reinterpret_cast<unsigned char **>(p);
+            p = *reinterpret_cast<unsigned char * volatile *>(p);
         }
 
         _chase_ptr = p;
@@ -74,7 +73,7 @@ class PointerChase {
     unsigned long _block_count;
     unsigned char *_raw;
     unsigned char *_buffer;
-    unsigned char *_chase_ptr;
+    volatile unsigned char *_chase_ptr;  // TODO: Check if volatile is really necessary, it won't hurt anyway
     Random *_random;
 };
 }  // namespace PointerChase

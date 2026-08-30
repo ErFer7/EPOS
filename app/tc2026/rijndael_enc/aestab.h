@@ -24,6 +24,7 @@
   depending on the internal byte order required.
 */
 
+namespace RijndaelEnc {
 #define w0(p) 0x000000##p
 
 /*
@@ -220,3 +221,4 @@ const word rijndael_enc_im_tab[4][256] = {{m_table},
 #undef r
 #define r r3
                                           {m_table}};
+}  // namespace RijndaelEnc

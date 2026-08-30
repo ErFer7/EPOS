@@ -65,6 +65,7 @@
 #ifndef _AES_H
 #define _AES_H
 
+namespace RijndaelEnc {
 /* The only supported block size for the benchmark is 16 */
 #define BLOCK_SIZE 16
 
@@ -160,5 +161,5 @@ struct aes {
 
 aes_ret rijndael_enc_set_key(byte key[], const word n_bytes, const enum aes_key f, struct aes *cx);
 aes_ret rijndael_enc_encrypt(byte in_blk[], byte out_blk[], const struct aes *cx);
-
+}  // namespace RijndaelEnc
 #endif

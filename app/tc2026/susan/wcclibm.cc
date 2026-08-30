@@ -2,6 +2,7 @@
 
 #include "math_private.h"
 
+namespace Susan {
 /* e_rem_pio2f.c -- float version of e_rem_pio2.c
    Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
 */
@@ -457,3 +458,4 @@ float susan___fabsf(float x) {
     SET_FLOAT_WORD(x, ix & 0x7fffffff);
     return x;
 }
+}  // namespace Susan

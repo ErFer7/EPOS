@@ -17,6 +17,7 @@
 
 #include "wcclibm.h"
 
+namespace Susan {
 // #include <endian.h>
 // #include <sys/types.h>
 
@@ -168,3 +169,4 @@ typedef union {
         sf_u.word = (i);            \
         (d) = sf_u.value;           \
     }
+}  // namespace Susan

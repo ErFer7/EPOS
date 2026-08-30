@@ -1,5 +1,6 @@
 #include "rijndael_enc.h"
 
+namespace RijndaelEnc {
 const unsigned char RijndaelEnc::rijndael_enc_input_data[] = {
     'K', 'u', 'r', 't', 'V', 'o', 'n', 'n', 'e', 'g', 'u', 't', 's', 'C', 'o', 'm', 'm', 'e', 'n',  'c', 'e', 'm',
     'e', 'n', 't', 'A', 'd', 'd', 'r', 'e', 's', 's', 'a', 't', 'M', 'I', 'T', 'L', 'a', 'd', 'i',  'e', 's', 'a',
@@ -1427,3 +1428,4 @@ const unsigned char RijndaelEnc::rijndael_enc_input_data[] = {
     'e', 'n', 'o', 't', 'a', 's', 'f', 'a', 't', 'a', 's', 'y', 'o', 'u', 'i', 'm', 'a', 'g', 'i',  'n', 'e', 'D',
     'o', 'n', 't', 'w', 'o', 'r', 'r', 'y', 'a', 'b', 'o', 'u', 't', 't', 'h', 'e', 'f', 'u', 't',  'u', 'r', 'e',
     'O', 'r', 'w', 'o', 'r', 'r', 'y', 'b', 'u', 't', 'k', 'n', 'o', 'w', 't', 'h', 'a', 't', '\n'};
+}

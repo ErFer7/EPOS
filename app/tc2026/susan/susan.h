@@ -178,6 +178,8 @@
 #include "wcclibm.h"
 #include "wccmalloc.h"
 
+namespace Susan {
+
 #define EXP_A 184
 #define EXP_C 16249
 
@@ -198,16 +200,21 @@ class Susan {
 
     typedef corner_rep CORNER_LIST[MAX_CORNERS];
 
+   private:
+    static const unsigned int DATA_SIZE = 7292;
+
    public:
     Susan() {
         volatile int a = 0;
 
-        for (unsigned int i = 0; i < 7292; ++i) {
+        susan_input_mut = new signed char[DATA_SIZE];
+
+        for (unsigned int i = 0; i < DATA_SIZE; ++i) {
             susan_input_mut[i] = susan_input[i];
         }
 
         susan_file.data = reinterpret_cast<char *>(susan_input_mut);
-        susan_file.size = 7292;
+        susan_file.size = DATA_SIZE;
         susan_file.size += a;
         susan_file.cur_pos = 0;
         susan_file.cur_pos += a;
@@ -2255,6 +2262,7 @@ class Susan {
     int susan_max_no_corners;
     int susan_max_no_edges;
     wccFILE susan_file;
-    signed char susan_input_mut[7292];
-    static const signed char susan_input[7292];
+    signed char *susan_input_mut;
+    static const signed char susan_input[DATA_SIZE];
 };
+}  // namespace Susan

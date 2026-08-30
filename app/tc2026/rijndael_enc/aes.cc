@@ -30,6 +30,7 @@
 
 #include "aestab.h"
 
+namespace RijndaelEnc {
 #define four_tables(x, tab, vf, rf, c)                                                                                 \
     (tab[0][bval(vf(x, 0, c), rf(0, c))] ^ tab[1][bval(vf(x, 1, c), rf(1, c))] ^ tab[2][bval(vf(x, 2, c), rf(2, c))] ^ \
      tab[3][bval(vf(x, 3, c), rf(3, c))])
@@ -404,3 +405,4 @@ short rijndael_enc_encrypt(unsigned char in_blk[], unsigned char out_blk[], cons
     *(unsigned int *)(out_blk + 12) = (b0[3]);
     return aes_good;
 }
+}  // namespace RijndaelEnc

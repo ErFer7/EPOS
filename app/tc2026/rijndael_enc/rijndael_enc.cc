@@ -43,14 +43,17 @@
 #include "aes.h"
 #include "rijndael_enc_libc.h"
 
+namespace RijndaelEnc {
 RijndaelEnc::RijndaelEnc() {
     /* create a pseudo-file for the input*/
-    for (unsigned int i = 0; i < 31369; i++) {
+    rijndael_enc_data = new unsigned char[DATA_SIZE];
+
+    for (unsigned int i = 0; i < DATA_SIZE; i++) {
         rijndael_enc_data[i] = rijndael_enc_input_data[i];
     }
 
     rijndael_enc_fin.data = rijndael_enc_data;
-    rijndael_enc_fin.size = 31369;
+    rijndael_enc_fin.size = DATA_SIZE;
     rijndael_enc_fin.cur_pos = 0;
 
     unsigned i;
@@ -101,10 +104,7 @@ RijndaelEnc::RijndaelEnc() {
 
 #define RAND(a, b) (((a = 36969 * (a & 65535) + (a >> 16)) << 16) + (b = 18000 * (b & 65535) + (b >> 16)))
 
-// FIX: Change this static to something else
 void RijndaelEnc::rijndael_enc_fillrand(unsigned char *buf, int len) {
-    static unsigned int a[2], mt = 1, count = 4;
-    static char r[4];
     int i;
 
     if (mt) {
@@ -185,3 +185,4 @@ int RijndaelEnc::run() {
 
     return (rijndael_enc_checksum == (int)249509) ? 0 : -1;
 }
+}  // namespace RijndaelEnc

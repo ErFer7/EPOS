@@ -1,5 +1,6 @@
 #include "rijndael_enc_libc.h"
 
+namespace RijndaelEnc {
 int rijndael_enc_toupper(int c) {
     if ((c >= 'a') && (c <= 'z')) return c - 'a' + 'A';
     return c;
@@ -46,3 +47,4 @@ int rijndael_enc_fgetpos(struct rijndael_enc_FILE *stream, unsigned *position) {
 }
 
 int rijndael_enc_feof(struct rijndael_enc_FILE *stream) { return stream->cur_pos == stream->size ? 1 : 0; }
+}  // namespace RijndaelEnc
