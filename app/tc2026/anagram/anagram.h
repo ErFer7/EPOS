@@ -107,7 +107,7 @@ class Anagram {
     void anagram_qsorts(char *a, unsigned long n, unsigned long es) {
         unsigned long j;
         char *pi, *pj, *pn;
-        volatile unsigned int flowfactdummy = 0;
+        volatile unsigned int _ = 0;  // Was flowfactdummy
         while (n > 1) {
             if (n > 10)
                 pi = anagram_pivot(a, n, es);
@@ -121,7 +121,7 @@ class Anagram {
             while (1) {
                 /* wcc note: this assignment expression was added to avoid assignment of
                    multiple loop bound annotations to same loop (cf. Ticket #0002323). */
-                flowfactdummy++;
+                _++;
                 do {
                     pi += es;
                 } while (pi < pn && anagram_CompareFrequency(pi, a) < 0);

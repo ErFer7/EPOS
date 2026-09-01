@@ -181,7 +181,7 @@ void Anagram::anagram_ReadDict(void) {
     char *pch;
     char *pchBase;
     unsigned len;
-    unsigned cWords = 0;
+    unsigned _ = 0;  // Was cWords
     unsigned cLetters;
     int i;
     volatile char bitmask = 0;
@@ -211,7 +211,7 @@ void Anagram::anagram_ReadDict(void) {
         *pchBase = (char)(pch - pchBase);
         pchBase[1] = (char)cLetters;
         pchBase = pch;
-        cWords++;
+        _++;
     }
 
     *pchBase++ = 0;

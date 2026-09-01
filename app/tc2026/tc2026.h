@@ -30,6 +30,7 @@
 #include "kalman/kalman.h"
 #include "lms/lms.h"
 #include "ludcmp/ludcmp.h"
+// #include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
 #include "matrix1/matrix1.h"
 #include "md5/md5.h"
 #include "minver/minver.h"
@@ -408,9 +409,9 @@ class BenchmarkRunner {
              << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n'
 #ifdef __visionfive2__
              << ">  CPU voltage: " << PMIC::cpu_voltage() << "mV" << '\n'
-             << ">  DDR Clock: " << Clock_Tree::ddr_clock() / 1000000 << "MHz";
+             << ">  DDR Clock: " << Clock_Tree::ddr_clock() / 1000000 << "MHz"
 #endif
-        << endl;
+             << endl;
 
         Monitor::print_monitor_info();
 
@@ -549,7 +550,7 @@ class BenchmarkRunner {
         for (unsigned int i = 0; i < TEST_DURATION; i++) {
             cout << ">  Iteration [" << i << ']'
 #ifdef __visionfive2__
-                 << ", Clock: " << HardwareClock::cpu_clock() << "Hz"
+                 << ", Clock: " << Clock_Tree::cpu_clock() << "Hz"
                  << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C'
 #endif
                  << endl;

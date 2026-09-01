@@ -304,7 +304,7 @@ int Audiobeam::audiobeam_process_signal(struct audiobeam_Delays *delays,
                                         int window,
                                         float *weights) {
     int i, j;
-    float time_index = 0;
+    float _ = 0;  // Changed from time_index to _ to avoid unused variables errors
     float time_index_inc = (1.0 / sampling_rate);
 
     float value;
@@ -346,7 +346,7 @@ int Audiobeam::audiobeam_process_signal(struct audiobeam_Delays *delays,
         queue->tail = queue->head;
         queue->head = audiobeam_wrapped_inc(queue->head, delays->max_delay);
 
-        time_index += time_index_inc;
+        _ += time_index_inc;
     }
 
     return (done);

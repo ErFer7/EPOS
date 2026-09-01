@@ -270,7 +270,7 @@ class HuffEnc {
     {
         unsigned long j;
         char *pi, *pj, *pn;
-        unsigned int flowfactdummy = 0;
+        unsigned int _ = 0;  // Was flowfactdummy
         while (n > 1) {
             if (n > 10)
                 pi = huff_enc_pivot(a, n, es);
@@ -285,7 +285,7 @@ class HuffEnc {
             while (1) {
                 /* wcc note: this assignment expression was added to avoid assignment of
                    multiple loop bound annotations to same loop (cf. Ticket #0002323). */
-                flowfactdummy++;
+                _++;
                 do {
                     pi += es;
                 } while (pi < pn && huff_enc_weighhuff_enc_t_tree_comp(pi, a) < 0);
