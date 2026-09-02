@@ -24,6 +24,8 @@
 
 #include "cdjpeg.h"
 
+namespace CJpegWRBMP {
+
 class CJpegWRBMP {
    private:
     struct cjpeg_wrbmp_bmp_dest_struct {
@@ -62,6 +64,10 @@ class CJpegWRBMP {
     ~CJpegWRBMP() {}
 
     inline int run() {
+        // NOTE: Safety fix
+        cjpeg_wrbmp_jpeg_stream = cjpeg_wrbmp_output_array;
+        cjpeg_wrbmp_checksum = 0;
+
         cjpeg_wrbmp_finish_output_bmp(&cjpeg_wrbmp_jpeg_dec_1);
         cjpeg_wrbmp_write_colormap(&cjpeg_wrbmp_jpeg_dec_1, 768, 4, 1);
 
@@ -201,8 +207,5 @@ class CJpegWRBMP {
 
     cjpeg_wrbmp_jpeg_decompress_struct cjpeg_wrbmp_jpeg_dec_1;
     cjpeg_wrbmp_jpeg_decompress_struct cjpeg_wrbmp_jpeg_dec_2;
-
-    // NOTE: These are apparently not used
-    cjpeg_wrbmp_djpeg_dest_struct cjpeg_wrbmp_djpeg_dest;
-    cjpeg_wrbmp_bmp_dest_struct cjpeg_wrbmp_bmp_dest;
 };
+}  // namespace CJpegWRBMP

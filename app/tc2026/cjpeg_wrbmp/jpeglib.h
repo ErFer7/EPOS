@@ -1,5 +1,6 @@
-/*
+#pragma once
 
+/*
   This program is part of the TACLeBench benchmark suite.
   Version V 1.x
 
@@ -21,23 +22,75 @@
   License:  See the accompanying README file
 */
 
-#ifndef JPEGLIB_H
-#define JPEGLIB_H
+namespace CJpegWRBMP {
 
 typedef int CJPEG_WRBMP_FILE;
 typedef unsigned int cjpeg_wrbmp_size_t;
 
-/*
-   First we include the configuration files that record how this
-   installation of the JPEG library is set up.  jconfig.h can be
-   generated automatically for many systems.  jmorecfg.h contains
-   manual configuration options that most people need not worry about.
+#define CJPEG_WRBMP_GETJSAMPLE(value) ((int)(value))
+
+typedef unsigned char CJPEG_WRBMP_JSAMPLE;
+typedef short CJPEG_WRBMP_JCOEF;
+typedef unsigned char CJPEG_WRBMP_JOCTET;
+
+/* These typedefs are used for various table entries and so forth.
+   They must be at least as wide as specified; but making them too big
+   won't cost a huge amount of memory, so we don't provide special
+   extraction code like we did for JSAMPLE.  (In other words, these
+   typedefs live at a different point on the speed/space tradeoff curve.)
 */
 
-#ifndef JCONFIG_INCLUDED /* in case jinclude.h already did */
-#include "jconfig.h"     /* widely used configuration options */
+/* UINT8 must hold at least the values 0..255. */
+
+typedef unsigned char CJPEG_WRBMP_UINT8;
+
+/* UINT16 must hold at least the values 0..65535. */
+
+typedef unsigned short CJPEG_WRBMP_UINT16;
+
+/* INT16 must hold at least the values -32768..32767. */
+
+#ifndef XMD_H /* X11/xmd.h correctly defines INT16 */
+typedef short INT16;
 #endif
-#include "jmorecfg.h" /* seldom changed options */
+
+/* INT32 must hold at least signed 32-bit values. */
+
+#ifndef XMD_H /* X11/xmd.h correctly defines INT32 */
+typedef long INT32;
+#endif
+
+typedef unsigned int CJPEG_WRBMP_JDIMENSION;
+
+/* This macro is used to declare a "method", that is, a function pointer.
+   We want to supply prototype parameters if the compiler can cope.
+   Note that the arglist parameter must be parenthesized!
+   Again, you can customize this if you need special linkage keywords.
+*/
+
+#define EXTERN(type) extern type
+
+#ifdef CJPEG_WRBMP_HAVE_PROTOTYPES
+#define CJPEG_WRBMP_JMETHOD(type, methodname, arglist) type(*methodname) arglist
+#else
+#define CJPEG_WRBMP_JMETHOD(type, methodname, arglist) type (*methodname)()
+#endif
+
+/* Here is the pseudo-keyword for declaring pointers that must be "far"
+   on 80x86 machines.  Most of the specialized coding for 80x86 is handled
+   by just saying "FAR *" where such a pointer is needed.  In a few places
+   explicit coding is needed; see uses of the NEED_FAR_POINTERS symbol.
+*/
+
+#ifdef CJPEG_JPEG6B_WRBMP_NEED_FAR_POINTERS
+#define CJPEG_WRBMP_FAR far
+#else
+#define CJPEG_WRBMP_FAR
+#endif
+
+#ifndef CJPEG_JPEG6B_WRBMP_HAVE_BOOLEAN
+typedef int cjpeg_wrbmp_boolean;
+#endif
 
 /* Data structures for images (arrays of samples and of DCT coefficients).
    On 80x86 machines, the image arrays are too big for near pointers,
@@ -799,5 +852,4 @@ typedef CJPEG_WRBMP_JMETHOD(cjpeg_wrbmp_boolean, jpeg_marker_parser_method, (cjp
 #include "jerror.h"  /* fetch error codes too */
 #include "jpegint.h" /* fetch private declarations */
 #endif
-
-#endif /* JPEGLIB_H */
+}  // namespace CJpegWRBMP

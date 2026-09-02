@@ -25,7 +25,6 @@
 #include "audiobeam.h"
 
 #include "audiobeamlibm.h"
-#include "audiobeamlibmalloc.h"
 
 namespace Audiobeam {
 /*
@@ -34,6 +33,7 @@ namespace Audiobeam {
 
 // TODO: Check if this is ok
 Audiobeam::Audiobeam() {
+    audiobeam_freeHeapPos = 0;
     audiobeam_input_pos = 0;
     audiobeam_checksum = 0;
 
@@ -41,6 +41,8 @@ Audiobeam::Audiobeam() {
     const unsigned char *src;
     unsigned char *dst;
     volatile char bitmask = 0;
+
+    audiobeam_input = new float[audiobeam_input_data_size];
 
     src = reinterpret_cast<const unsigned char *>(&audiobeam_input_data[0]);
     dst = reinterpret_cast<unsigned char *>(&audiobeam_input[0]);
@@ -411,6 +413,10 @@ void Audiobeam::audiobeam_calc_single_pos(float source_location[3], float audiob
 */
 
 int Audiobeam::run() {
+    audiobeam_freeHeapPos = 0;
+    audiobeam_input_pos = 0;
+    audiobeam_checksum = 0;
+
     char hamming = 1;
     audiobeam_calc_single_pos(audiobeam_source_location, audiobeam_mic_locations, hamming);
 

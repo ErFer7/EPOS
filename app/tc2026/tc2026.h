@@ -67,10 +67,10 @@ enum BenchmarkType {
     MPEG2,
     SUSAN,
     CJPEG_TRANSUPP,
+    CJPEG_WRBMP,
+    AUDIOBEAM,  // WARN: There are possible memory corruptions here
     // NOTE: Ok up to this point
-    CJPEG_WRBMP,  // WARN: There are some problems, but it works
-    AUDIOBEAM,    // FIX: Currently hangs after 4 iterations
-    ANAGRAM,      // FIX: Currently hangs after 2 iterations
+    ANAGRAM,  // FIX: Currently hangs after 2 iterations
     PETRINET,
     FAC,
     PRIME,
@@ -172,7 +172,7 @@ struct BenchmarkTraits<CJPEG_TRANSUPP> {
 
 template <>
 struct BenchmarkTraits<CJPEG_WRBMP> {
-    using Type = CJpegWRBMP;
+    using Type = CJpegWRBMP::CJpegWRBMP;
     static Type *create() { return new Type(); }
 };
 
@@ -366,7 +366,7 @@ class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
 
    private:
-    static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 60;  // in seconds
+    static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 15;  // in seconds
     static const unsigned int SELECTED_TASKSET = 1;
     static const unsigned int SEED = 20260610;
 
@@ -377,15 +377,15 @@ class BenchmarkRunner {
 
     static constexpr StressTask taskset_1[] = {
         {1000000, 1000000, 200000, 1, RIJNDAEL_ENC, SINGLE},
-        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
-        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
-        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
-        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
-        {1000000, 1000000, 200000, 1, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
+        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
+        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
+        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
+        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
         {1000000, 1000000, 200000, 2, RIJNDAEL_ENC, SINGLE},
-        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
-        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
-        {1000000, 1000000, 200000, 2, CJPEG_TRANSUPP, SINGLE},
+        {1000000, 1000000, 200000, 2, AUDIOBEAM, SINGLE},
+        {1000000, 1000000, 200000, 2, AUDIOBEAM, SINGLE},
+        {1000000, 1000000, 200000, 2, AUDIOBEAM, SINGLE},
         {1000000, 1000000, 200000, 2, DISPARITY, SINGLE},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
         {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},

@@ -205,6 +205,7 @@ class Anagram {
     /* buffer to write an answer */
     char anagram_buffer[30];
 
+    // FIX: This breaks everything
     inline static char anagram_simulated_heap[ANAGRAM_HEAP_SIZE];
     inline static unsigned int anagram_freeHeapPos;
 };

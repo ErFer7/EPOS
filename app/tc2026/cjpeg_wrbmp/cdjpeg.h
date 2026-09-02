@@ -22,12 +22,9 @@
 
 */
 
-#define CJPEG_WRBMP_JPEG_CJPEG_DJPEG      /* define proper options in jconfig.h */
-#define CJPEG_WRBMP_JPEG_INTERNAL_OPTIONS /* cjpeg.c,djpeg.c need to see xxx_SUPPORTED */
-
-#include "cderror.h" /* get application-specific error codes */
-#include "jerror.h"  /* get library error codes too */
 #include "jpeglib.h"
+
+namespace CJpegWRBMP {
 
 typedef struct cjpeg_wrbmp_cjpeg_source_struct *cjpeg_wrbmp_cjpeg_source_ptr;
 
@@ -85,3 +82,4 @@ struct cjpeg_wrbmp_cdjpeg_progress_mgr {
 };
 
 typedef struct cjpeg_wrbmp_cdjpeg_progress_mgr *cjpeg_wrbmp_cd_progress_ptr;
+}  // namespace CJpegWRBMP

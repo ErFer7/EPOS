@@ -45,6 +45,9 @@ static const int SAMPLING_RATE = 16000;
 #define INTERPOLATE(low_value, high_value, offset) (((high_value - low_value) * (offset)) + low_value)
 
 class Audiobeam {
+   private:
+    static const unsigned int AUDIOBEAM_HEAP_SIZE = 10000;
+
    public:
     Audiobeam();
 
@@ -96,14 +99,24 @@ class Audiobeam {
     void audiobeam_calc_single_pos(float source_location[3], float audiobeam_mic_locations[15][3], int hamming);
 
    private:
-    float audiobeam_input[5760];
+    void *audiobeam_malloc(unsigned int numberOfBytes) {
+        void *currentPos = (void *)&audiobeam_simulated_heap[audiobeam_freeHeapPos];
+        /* Get a 4-byte address for alignment purposes */
+        audiobeam_freeHeapPos += ((numberOfBytes + 4) & (unsigned int)0xfffffffc);
+        return currentPos;
+    }
+
+   private:
+    float *audiobeam_input;
     float audiobeam_mic_locations[15][3];
     float audiobeam_source_location[3];
     float audiobeam_origin_location[3];
     int audiobeam_input_pos;
     int audiobeam_checksum;
-    static const float audiobeam_mic_locations_data[15][3];
+    unsigned int audiobeam_freeHeapPos;
+    char audiobeam_simulated_heap[AUDIOBEAM_HEAP_SIZE];  // TODO: This should be in the heap
     static const float audiobeam_input_data[5760];
+    static const float audiobeam_mic_locations_data[15][3];
     static const float audiobeam_source_location_data[3];
     static const float audiobeam_origin_location_data[3];
     static const unsigned int audiobeam_mic_locations_data_size;

@@ -18,7 +18,7 @@ template<> struct Traits<Build>: public Traits_Tokens
     // Evaluating: 600s (10 min)
     // Experimental testing (300s) (5 min)
     // Debuggin (15s)
-    static const unsigned int EXPECTED_SIMULATION_TIME = 15 + 60; // s (0 => not simulated)
+    static const unsigned int EXPECTED_SIMULATION_TIME = 15 + 15; // s (0 => not simulated)
 
     // Default flags
     static const bool enabled = true;
