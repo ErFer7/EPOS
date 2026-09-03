@@ -1,7 +1,7 @@
 // EPOS VisionFive 2 (RISC-V) Memory Map
 
-#ifndef __riscv_sifive_u_memory_map_h
-#define __riscv_sifive_u_memory_map_h
+#ifndef __riscv_visionfive2_memory_map_h
+#define __riscv_visionfive2_memory_map_h
 
 #include <system/memory_map.h>
 
