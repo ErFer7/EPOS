@@ -28,6 +28,8 @@
                     (from the book C Programming for EEs by Hyun Soon Ahn)
 */
 
+namespace LudCmp {
+
 class LudCmp {
    public:
     LudCmp() {
@@ -135,3 +137,4 @@ class LudCmp {
     double ludcmp_a[50][50], ludcmp_b[50], ludcmp_x[50];
     int ludcmp_chkerr;
 };
+}  // namespace LucCmp

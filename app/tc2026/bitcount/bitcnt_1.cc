@@ -19,6 +19,7 @@
 
 #include "bitcount.h"
 
+namespace BitCount {
 int BitCount::bitcount_bit_count(long x) {
     int n = 0;
     /*
@@ -32,3 +33,4 @@ int BitCount::bitcount_bit_count(long x) {
     }
     return (n);
 }
+}  // namespace BitCount

@@ -250,7 +250,7 @@ class Susan {
         // Distance threshold, smoothing mode, (default=4) */ bt=50; /* Brightness threshold, all modes, (default=20) */
     }
 
-    ~Susan() {}
+    ~Susan() { delete[] susan_input_mut; }
 
     // TODO: Maybe change this and add options to the benchmark
     inline int run() {

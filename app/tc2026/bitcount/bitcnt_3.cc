@@ -19,6 +19,7 @@
 
 #include "bitcount.h"
 
+namespace BitCount {
 /*
 **  Count bits in each nybble
 **
@@ -80,3 +81,4 @@ int BitCount::bitcount_AR_btbl_bitcount(long int x) {
     accu += bitcount_bits[*ptr];
     return accu;
 }
+}  // namespace BitCount

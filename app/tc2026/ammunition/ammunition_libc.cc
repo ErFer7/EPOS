@@ -6,6 +6,8 @@
 #include "ammunition_stdlib.h"
 #include "ammunition_string.h"
 
+namespace Ammunition {
+
 /*
   Standard library functions
 */
@@ -126,3 +128,4 @@ int ammunition_sprintf_u(char *s, unsigned int number) {
 
     return digits;
 }
+}  // namespace Ammunition

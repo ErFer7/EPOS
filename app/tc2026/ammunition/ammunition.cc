@@ -32,6 +32,8 @@
 #include "arithm.h"
 #include "bits.h"
 
+namespace Ammunition {
+
 void Ammunition::ammunition_reset_str_bits(char *str, char *s) {
     int i;
     for (i = 0; i < 8; i++) {
@@ -905,3 +907,4 @@ int Ammunition::run() {
 
     return ammunition_result;
 }
+}  // namespace Ammunition

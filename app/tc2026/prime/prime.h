@@ -20,6 +20,8 @@
 
 */
 
+namespace Prime {
+
 class Prime {
    public:
     Prime() {
@@ -81,3 +83,4 @@ class Prime {
     int prime_result;
     volatile int prime_seed;
 };
+}  // namespace Prime

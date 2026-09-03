@@ -29,6 +29,7 @@
 #include "quicksortlibm.h"
 #include "quicksortstdlib.h"
 
+namespace Quicksort {
 /*
   Initialization- and return-value-related functions
 */
@@ -162,3 +163,4 @@ void Quicksort::quicksort_vec(char *a, unsigned long n, unsigned long es) {
         }
     }
 }
+}  // namespace Quicksort

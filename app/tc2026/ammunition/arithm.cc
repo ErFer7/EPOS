@@ -27,6 +27,8 @@
 
 #include "ammunition_string.h"
 
+namespace Ammunition {
+
 /* This variable can have only two values 0 or 1.  The value `1'
    corresponds to overflow.  The variable value are modified by all
    functions of addition, subtract, multiplication, division,
@@ -1080,3 +1082,4 @@ char *ammunition_integer_from_string(int size, const char *operand, void *result
     if (ammunition_overflow_bit) ammunition_arithmetic_unsigned_overflow_reaction();
     return first_nondigit;
 }
+}  // namespace Ammunition

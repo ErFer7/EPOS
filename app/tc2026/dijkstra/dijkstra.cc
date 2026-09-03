@@ -19,6 +19,8 @@
 
 #include "dijkstra.h"
 
+namespace Dijkstra {
+
 Dijkstra::Dijkstra() {
     for (unsigned int i = 0; i < NUM_NODES; i++) {
         for (unsigned int j = 0; j < NUM_NODES; j++) {
@@ -121,3 +123,4 @@ int Dijkstra::dijkstra_find(int chStart, int chEnd) {
     }
     return 0;
 }
+}  // namespace Dijkstra

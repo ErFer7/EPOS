@@ -22,16 +22,17 @@
 
 */
 
+namespace Fac {
+
 class Fac {
    public:
-    Fac() {
-        fac_s = 0;
-        fac_n = 5;
-    }
+    Fac() { fac_n = 5; }
 
     ~Fac() = default;
 
     inline int run() {
+        reset();
+
         int i;
 
         for (i = 0; i <= fac_n; i++) {
@@ -43,6 +44,8 @@ class Fac {
     }
 
    private:
+    inline void reset() { fac_s = 0; }
+
     int fac_fac(int n) {
         if (n == 0)
             return 1;
@@ -54,3 +57,4 @@ class Fac {
     int fac_s;
     volatile int fac_n;
 };
+}  // namespace Fac

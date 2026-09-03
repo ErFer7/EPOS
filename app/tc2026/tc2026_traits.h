@@ -11,14 +11,14 @@ template<> struct Traits<Build>: public Traits_Tokens
     static const unsigned int SMOD = LIBRARY;
     static const unsigned int ARCHITECTURE = RV64;
     static const unsigned int MACHINE = RISCV;
-    static const unsigned int MODEL = SiFive_U;
+    static const unsigned int MODEL = VisionFive2;
     static const unsigned int CPUS = ((MODEL == Legacy_PC) || (MODEL == Raspberry_Pi3) || (MODEL == Realview_PBX) || (MODEL == Zynq)) ? 4 : (MODEL == SiFive_U || MODEL == VisionFive2) ?  4 : 1;
     static const unsigned int NETWORKING = STANDALONE;
     // Collecting data: 1200s (20 min)
     // Evaluating: 600s (10 min)
     // Experimental testing (300s) (5 min)
-    // Debuggin (15s)
-    static const unsigned int EXPECTED_SIMULATION_TIME = 15 + 15; // s (0 => not simulated)
+    // Debugging (15s)
+    static const unsigned int EXPECTED_SIMULATION_TIME = 300 + 15; // s (0 => not simulated)
 
     // Default flags
     static const bool enabled = true;

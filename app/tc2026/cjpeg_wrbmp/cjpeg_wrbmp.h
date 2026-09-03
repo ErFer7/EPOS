@@ -55,18 +55,13 @@ class CJpegWRBMP {
         cjpeg_wrbmp_jpeg_dec_2.output_height = 30;
         cjpeg_wrbmp_jpeg_dec_2.actual_number_of_colors = 256;
         cjpeg_wrbmp_jpeg_dec_2.out_color_components = 3;
-
-        cjpeg_wrbmp_jpeg_stream = cjpeg_wrbmp_output_array;
-
-        cjpeg_wrbmp_checksum = 0;
     }
 
     ~CJpegWRBMP() {}
 
     inline int run() {
         // NOTE: Safety fix
-        cjpeg_wrbmp_jpeg_stream = cjpeg_wrbmp_output_array;
-        cjpeg_wrbmp_checksum = 0;
+        reset();
 
         cjpeg_wrbmp_finish_output_bmp(&cjpeg_wrbmp_jpeg_dec_1);
         cjpeg_wrbmp_write_colormap(&cjpeg_wrbmp_jpeg_dec_1, 768, 4, 1);
@@ -78,6 +73,11 @@ class CJpegWRBMP {
     }
 
    private:
+    inline void reset() {
+        cjpeg_wrbmp_jpeg_stream = cjpeg_wrbmp_output_array;
+        cjpeg_wrbmp_checksum = 0;
+    }
+
     /*
    Calculation functions
 */

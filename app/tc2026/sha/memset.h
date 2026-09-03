@@ -20,4 +20,6 @@
 */
 #include "memhelper.h"
 
+namespace Sha {
 void *sha_glibc_memset(void *dstpp, int c, size_t len);
+}

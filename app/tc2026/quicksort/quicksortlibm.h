@@ -22,6 +22,8 @@
 #ifndef __QUICKSORTLIBM
 #define __QUICKSORTLIBM
 
+namespace Quicksort {
+
 // The following defines map the math functions to specialized calls
 #define quicksort_acos quicksort___ieee754_acosf
 #define quicksort_atan quicksort___atanf
@@ -52,5 +54,7 @@ float quicksort___scalbnf(float, int);
 float quicksort___ieee754_logf(float);
 float quicksort___ieee754_log10f(float);
 float quicksort___sinf(float);
+
+}  // namespace Quicksort
 
 #endif  // __QUICKSORTLIBM

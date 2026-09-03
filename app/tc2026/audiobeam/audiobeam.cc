@@ -33,10 +33,6 @@ namespace Audiobeam {
 
 // TODO: Check if this is ok
 Audiobeam::Audiobeam() {
-    audiobeam_freeHeapPos = 0;
-    audiobeam_input_pos = 0;
-    audiobeam_checksum = 0;
-
     unsigned int i;
     const unsigned char *src;
     unsigned char *dst;
@@ -413,9 +409,7 @@ void Audiobeam::audiobeam_calc_single_pos(float source_location[3], float audiob
 */
 
 int Audiobeam::run() {
-    audiobeam_freeHeapPos = 0;
-    audiobeam_input_pos = 0;
-    audiobeam_checksum = 0;
+    reset();
 
     char hamming = 1;
     audiobeam_calc_single_pos(audiobeam_source_location, audiobeam_mic_locations, hamming);

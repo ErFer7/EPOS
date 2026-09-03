@@ -3,6 +3,8 @@
 
 #include "gsm_enc.h"
 
+namespace GsmEnc {
+
 const gsm_signal GsmEnc::gsm_enc_pcmdata_const[] = {
     (short)0x0000, (short)0x0000, (short)0x0010, (short)0x0010, (short)0x0010, (short)0x0020, (short)0x0020,
     (short)0x0018, (short)0x0028, (short)0x0020, (short)0x0020, (short)0x0028, (short)0x0028, (short)0x0020,
@@ -503,5 +505,7 @@ const gsm_byte GsmEnc::gsm_enc_gsmdata_const[] = {
     0xBE, 0xC0, 0xFC, 0xE4, 0x85, 0xB5, 0x06, 0xB4, 0x81, 0x35, 0x46, 0xB6, 0xC8, 0x9B};
 
 const size_t GsmEnc::gsm_enc_gsmdata_const_size = sizeof(gsm_enc_gsmdata_const);
+
+}  // namespace GsmEnc
 
 #endif /* end of include guard: DATA_H */

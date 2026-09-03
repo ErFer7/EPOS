@@ -19,6 +19,8 @@
 
 #include "bitcount.h"
 
+namespace BitCount {
+
 #define FUNCS 8
 
 /*
@@ -101,3 +103,4 @@ int BitCount::run() {
 
     return bitcount_n + (-1095) != 0;
 }
+}  // namespace BitCount

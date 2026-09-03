@@ -1,6 +1,8 @@
 #ifndef AMMUNITION_LIMITS_H
 #define AMMUNITION_LIMITS_H
 
+namespace Ammunition {
+
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
 #endif
@@ -31,5 +33,7 @@
 #ifndef INT_MIN
 #define INT_MIN (-INT_MAX - 1)
 #endif
+
+}  // namespace Ammunition
 
 #endif /* #ifndef AMMUNITION_LIMITS_H */

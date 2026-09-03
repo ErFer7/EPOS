@@ -37,6 +37,8 @@
 #ifndef _MATH_PRIVATE_H_
 #define _MATH_PRIVATE_H_
 
+namespace Quicksort {
+
 /* A union which permits us to convert between a float and a 32 bit
    int.  */
 
@@ -62,5 +64,7 @@ typedef union {
         sf_u.word = (i);                      \
         (d) = sf_u.value;                     \
     }
+
+}  // namespace Quicksort
 
 #endif /* _MATH_PRIVATE_H_ */

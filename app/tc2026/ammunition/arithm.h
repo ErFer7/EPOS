@@ -16,6 +16,8 @@
 
 #include "ammunition_limits.h"
 
+namespace Ammunition {
+
 /* This page contains definitions of variables and macros common for
    all package functions. */
 
@@ -80,5 +82,7 @@ extern char *ammunition_integer_from_string(int size, const char *operand, void 
 
 char ammunition_isdigit(unsigned char c);
 int ammunition_isspace(int c);
+
+}  // namespace Ammunition
 
 #endif /* #ifndef __ARITHMETIC__ */

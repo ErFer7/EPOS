@@ -20,6 +20,8 @@
 #ifndef BITOPS__H
 #define BITOPS__H
 
+namespace BitCount {
+
 class BitCount {
    public:
     BitCount();
@@ -68,4 +70,5 @@ class BitCount {
     char bitcount_bits[256];
 };
 
+}  // namespace BitCount
 #endif /*  BITOPS__H */

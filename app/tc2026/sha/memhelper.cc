@@ -21,6 +21,9 @@
 */
 
 #include "memhelper.h"
+
+namespace Sha {
+
 int printf(const char *format, ...);
 /* sha_wordcopy_fwd_aligned -- Copy block beginning at SRCP to
    block beginning at DSTP with LEN `op_t' words (not LEN bytes!).
@@ -141,3 +144,4 @@ void sha_wordcopy_fwd_aligned(long int dstp, long int srcp, size_t len) {
 
     ((op_t *)dstp)[0] = a1;
 }
+}  // namespace Sha

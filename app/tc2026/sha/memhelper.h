@@ -22,6 +22,8 @@
 
 #include "sha.h"
 
+namespace Sha {
+
 void sha_wordcopy_fwd_aligned(long int dstp, long int srcp, size_t len);
 
 /* Type to use for aligned memory operations.
@@ -49,5 +51,7 @@ void sha_wordcopy_fwd_aligned(long int dstp, long int srcp, size_t len);
         dst_bp += (nbytes) & -OPSIZ;                                    \
         (nbytes_left) = (nbytes) % OPSIZ;                               \
     }
+
+}  // namespace Sha
 
 #endif  // MEM_HELPER_H

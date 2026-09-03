@@ -48,6 +48,8 @@ class Fmref {
     ~Fmref() = default;
 
     inline int run() {
+        reset();
+
         int i;
         EqualizerData eq_data;
 
@@ -86,6 +88,8 @@ class Fmref {
     }
 
    private:
+    inline void reset() { x = 0; }
+
     void fmref_fb_compact(FloatBuffer *fb) {
         int i;
         char *source;
@@ -111,7 +115,6 @@ class Fmref {
     }
 
     void fmref_get_floats(FloatBuffer *fb) {
-        static int x = 0;
         fmref_fb_compact(fb);
 
         /* Fill the remaining space in fb with 1.0. */
@@ -497,6 +500,7 @@ class Fmref {
     }
 
    private:
+    int x;
     float fmref_lpf_coeff[NUM_TAPS];
     float fmref_eq_cutoffs[EQUALIZER_BANDS + 1] = {55.000004f,
                                                    77.78174f,

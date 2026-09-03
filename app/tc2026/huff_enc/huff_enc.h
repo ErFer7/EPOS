@@ -45,6 +45,8 @@
 
 */
 
+namespace HuffEnc {
+
 /*
   Declaration of types
 */
@@ -75,6 +77,9 @@ class HuffEnc {
     ~HuffEnc() = default;
 
     inline int run() {
+        huff_enc_input_pos = 0;
+        huff_enc_output_pos = 0;
+
         huff_enc_t_tree *tree;
         huff_enc_t_tree heap[514];
         huff_enc_t_bin_val encoding_table[257];
@@ -443,7 +448,7 @@ class HuffEnc {
         "these two sign possibilities in one bit, the symbol 'e' is transmitted in a "
         "single bit and the symbols 'y' and 'z' need four bits. Look at the symbols "
         "in the text you are reading, you'll fast understand the compression ratio...";
-    inline static unsigned char huff_enc_encoded[huff_enc_encoded_len] = {
+    unsigned char huff_enc_encoded[huff_enc_encoded_len] = {
         128, 0,   0,   0,   80,  133, 32,  32,  128, 100, 4,   32,  63,  239, 255, 240, 0,   0,   0,   0,   0,
         0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   4,   7,   167, 21,  129, 232, 69,  120, 132, 217,
         20,  162, 19,  164, 39,  133, 252, 138, 105, 20,  194, 19,  129, 240, 172, 138, 248, 150, 11,  11,  240,
@@ -466,3 +471,4 @@ class HuffEnc {
         162, 217, 166, 93,  22,  4,   140, 31,  91,  166, 55,  25,  202, 192, 111, 20,  171, 207, 39,  192,
     };
 };
+}  // namespace HuffEnc

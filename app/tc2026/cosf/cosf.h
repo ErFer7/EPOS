@@ -23,6 +23,8 @@
 
 #include "wcclibm.h"
 
+namespace Cosf {
+
 class Cosf {
    public:
     Cosf() { cosf_solutions = 0.0f; }
@@ -44,3 +46,4 @@ class Cosf {
    private:
     float cosf_solutions;
 };
+}  // namespace Cosf

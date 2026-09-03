@@ -1,7 +1,7 @@
 #pragma once
 
-#include <machine/cache.h>
 #include <architecture/cpu.h>
+#include <machine/cache.h>
 #include <system/memory_map.h>
 
 __BEGIN_SYS
@@ -15,8 +15,8 @@ class Cache : Cache_Common {
     typedef CPU::Reg64 Reg64;
 
     enum {
-        CONFIG   = 0x000,
-        L2_WAYS  = 0x008,
+        CONFIG = 0x000,
+        L2_WAYS = 0x008,
         L2_FLUSH = 0x200,
     };
 
@@ -24,12 +24,12 @@ class Cache : Cache_Common {
 
     static const unsigned long L2_CACHE_LINE_SIZE = 64;
 
-  public:
+   public:
     static void init() {
-        unsigned int config         = reg32(CONFIG);
-        unsigned int banks          = masked(config, 0, 7);
-        unsigned int ways           = masked(config, 8, 15);
-        unsigned int lg_sets        = masked(config, 16, 23);
+        unsigned int config = reg32(CONFIG);
+        unsigned int banks = masked(config, 0, 7);
+        unsigned int ways = masked(config, 8, 15);
+        unsigned int lg_sets = masked(config, 16, 23);
         unsigned int lg_block_bytes = masked(config, 24, 31);
 
         reg32(L2_WAYS) = ways - 1;
@@ -52,7 +52,7 @@ class Cache : Cache_Common {
 
     static void flush(const void *const ptr, unsigned int size) {
         unsigned long line = reinterpret_cast<unsigned long>(ptr);
-        unsigned long end  = line + size;
+        unsigned long end = line + size;
         barrier();
         for (; line < end; line += L2_CACHE_LINE_SIZE) {
             reg64(L2_FLUSH) = line;
@@ -62,7 +62,7 @@ class Cache : Cache_Common {
 
     static void barrier() { asm volatile("fence iorw, iorw" ::: "memory"); }
 
-  private:
+   private:
     static volatile Reg64 &reg64(unsigned int offset) {
         return *reinterpret_cast<volatile Reg64 *>(Memory_Map::L2_CACHE_BASE + offset);
     }

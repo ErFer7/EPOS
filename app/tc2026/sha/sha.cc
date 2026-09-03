@@ -22,6 +22,7 @@
 #include "memcpy.h"
 #include "memset.h"
 
+namespace Sha {
 /*
   Declaration of global variables
 */
@@ -188,3 +189,4 @@ int Sha::run() {
     sum = sha_info.data[14] + sha_info.data[15];
     return (sum - 261944 != 0);
 }
+}  // namespace Sha

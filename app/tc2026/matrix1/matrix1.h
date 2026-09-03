@@ -56,6 +56,8 @@
 
 */
 
+namespace Matrix1 {
+
 #define X 10 /* first dimension of array A */
 #define Y 10 /* second dimension of array A, first dimension of array B */
 #define Z 10 /* second dimension of array B */
@@ -111,3 +113,4 @@ class Matrix1 {
     int matrix1_B[Y * Z];
     int matrix1_C[X * Z];
 };
+}  // namespace Matrix1

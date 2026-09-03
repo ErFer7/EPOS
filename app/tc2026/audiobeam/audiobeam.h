@@ -51,11 +51,17 @@ class Audiobeam {
    public:
     Audiobeam();
 
-    ~Audiobeam() = default;
+    ~Audiobeam() { delete[] audiobeam_input; }
 
     int run();
 
    private:
+    inline void reset() {
+        audiobeam_freeHeapPos = 0;
+        audiobeam_input_pos = 0;
+        audiobeam_checksum = 0;
+    }
+
     void audiobeam_preprocess_delays(struct audiobeam_PreprocessedDelays prep_delays[], float *delays);
     float *audiobeam_parse_line(float *float_arr, int num_mic);
     long int audiobeam_find_max_in_arr(float *arr, int size);

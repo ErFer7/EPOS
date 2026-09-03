@@ -25,6 +25,8 @@
   License: MIT License
 */
 
+namespace Filterbank {
+
 class Filterbank {
    public:
     Filterbank() { filterbank_numiters = 2; }
@@ -96,3 +98,4 @@ class Filterbank {
     int filterbank_return_value;
     int filterbank_numiters;
 };
+}  // namespace Filterbank

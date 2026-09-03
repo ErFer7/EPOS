@@ -23,6 +23,8 @@
 
 #include "quicksort.h"
 
+namespace Quicksort {
+
 const char *Quicksort::quicksort_input_string[681] = {"Kurt",
                                                       "Vonneguts",
                                                       "Commencement",
@@ -1040,3 +1042,4 @@ const unsigned int Quicksort::quicksort_input_vector_data[3000] = {
     1154349542, 2113690868, 552812661,  2120838155, 302935500,  1366405247, 675161631,  1584892936, 1241258962,
     460552958,  1149677717, 1242907571, 1656498187, 1558349476, 1932062638, 1180082199, 1751062934, 1227734017,
     1319619072, 1164585770, 1213877140};
+}  // namespace Quicksort

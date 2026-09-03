@@ -1,6 +1,8 @@
 #ifndef __QUICKSORT_H
 #define __QUICKSORT_H
 
+namespace Quicksort {
+
 struct quicksort_3DVertexStruct {
     unsigned int x, y, z;
     double distance;
@@ -29,5 +31,7 @@ class Quicksort {
     volatile int quicksort_const_prop_border_i = 0;
     volatile char quicksort_const_prop_border_c = 0;
 };
+
+}  // namespace Quicksort
 
 #endif

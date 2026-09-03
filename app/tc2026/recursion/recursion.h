@@ -20,6 +20,8 @@
 
 */
 
+namespace Recursion {
+
 class Recursion {
    public:
     Recursion() {
@@ -46,3 +48,4 @@ class Recursion {
     int recursion_result;
     int recursion_input;
 };
+}  // namespace Recursion

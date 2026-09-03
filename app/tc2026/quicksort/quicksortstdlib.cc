@@ -23,8 +23,10 @@
 
 #include "quicksort.h"
 
+namespace Quicksort {
+
 int quicksort_strcmp(const char *str1, const char *str2) {
-     while (*str1 && (*str1 == *str2))++ str1, ++str2;
+    while (*str1 && (*str1 == *str2)) ++str1, ++str2;
 
     return (*(const unsigned char *)str1 - *(const unsigned char *)str2);
 }
@@ -55,13 +57,12 @@ void quicksort_swapi(char *ii, char *ij, unsigned long es) {
     i = (char *)ii;
     j = (char *)ij;
 
-     do {
+    do {
         c = *i;
         *i++ = *j;
         *j++ = c;
         es -= sizeof(char);
-    }
-    while (es != 0);
+    } while (es != 0);
 }
 
 char *quicksort_pivot_strings(char *a, unsigned long n, unsigned long es) {
@@ -115,3 +116,4 @@ char *quicksort_pivot_vectors(char *a, unsigned long n, unsigned long es) {
 
     return (pj);
 }
+}  // namespace Quicksort

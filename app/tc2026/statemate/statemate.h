@@ -28,6 +28,8 @@
   Macro definitions
 */
 
+namespace Statemate {
+
 #define SYS_bit_get(a, b) (a)[(b)]
 #define SYS_bit_clr(a, b) (a)[(b)] = 0
 #define SYS_bit_set(a, b) (a)[(b)] = 1
@@ -1154,3 +1156,4 @@ class Statemate {
     char statemate_BEWEGUNG_BLOCK_ERKENNUNG_CTRL_next_state;             /** 2 bits **/
     char statemate_BLOCK_ERKENNUNG_CTRL_BLOCK_ERKENNUNG_CTRL_next_state; /** 2 bits **/
 };
+}  // namespace Statemate

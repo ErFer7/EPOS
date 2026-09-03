@@ -799,9 +799,9 @@ void _entry() // Machine mode
 void _setup() // supervisor mode
 {
     // if (CPU::id() == Traits<Machine>::BSP) {
-    //     Cache::init();
     //     PMIC::init();
     //     Clock_Tree::init();
+    //     Cache::init();
     //     Temperature_Sensor::init();
     // } else {
     //     for (volatile int i = 0; i < 1000000; i++);

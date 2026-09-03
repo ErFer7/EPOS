@@ -23,6 +23,8 @@
 
 #include "math_private.h"
 
+namespace Quicksort {
+
 // Often used variables/consts
 #ifdef __STDC__
 const float
@@ -94,8 +96,7 @@ float
 #ifdef __STDC__
 float quicksort___ieee754_powf(float x, float y)
 #else
-float quicksort___ieee754_powf(x, y)
-float x, y;
+float quicksort___ieee754_powf(x, y) float x, y;
 #endif
 {
     float z, ax, z_h, z_l, p_h, p_l;
@@ -337,8 +338,7 @@ float x, y;
 #ifdef __STDC__
 float quicksort___ieee754_sqrtf(float x)
 #else
-float quicksort___ieee754_sqrtf(x)
-float x;
+float quicksort___ieee754_sqrtf(x) float x;
 #endif
 {
     float z;
@@ -366,7 +366,7 @@ float x;
     /* normalize x */
     m = (ix >> 23);
     if (m == 0) { /* subnormal x */
-         for (i = 0; (ix & 0x00800000) == 0; i++) ix <<= 1;
+        for (i = 0; (ix & 0x00800000) == 0; i++) ix <<= 1;
         m -= i - 1;
     }
     m -= 127; /* unbias exponent */
@@ -380,7 +380,7 @@ float x;
     q = s = 0;      /* q = sqrt(x) */
     r = 0x01000000; /* r = moving bit from right to left */
 
-     while (r != 0) {
+    while (r != 0) {
         t = s + r;
         if (t <= ix) {
             s = t + r;
@@ -433,8 +433,7 @@ float x;
 #ifdef __STDC__
 float quicksort___copysignf(float x, float y)
 #else
-float quicksort___copysignf(x, y)
-float x, y;
+float quicksort___copysignf(x, y) float x, y;
 #endif
 {
     unsigned int ix, iy;
@@ -505,8 +504,7 @@ float
 #ifdef __STDC__
 int quicksort___ieee754_rem_pio2f(float x, float *y)
 #else
-int quicksort___ieee754_rem_pio2f(x, y)
-float x, y[];
+int quicksort___ieee754_rem_pio2f(x, y) float x, y[];
 #endif
 {
     float z, w, t, r, fn;
@@ -632,8 +630,7 @@ float
 #ifdef __STDC__
 float quicksort___kernel_cosf(float x, float y)
 #else
-float quicksort___kernel_cosf(x, y)
-float x, y;
+float quicksort___kernel_cosf(x, y) float x, y;
 #endif
 {
     float a, hz, z, r, qx;
@@ -692,8 +689,7 @@ float
 #ifdef __STDC__
 float quicksort___kernel_sinf(float x, float y, int iy)
 #else
-float quicksort___kernel_sinf(x, y, iy)
-float x, y;
+float quicksort___kernel_sinf(x, y, iy) float x, y;
 int iy; /* iy=0 if y is zero */
 #endif
 {
@@ -774,8 +770,7 @@ float quicksort_aT[] = {
 #ifdef __STDC__
 float quicksort___atanf(float x)
 #else
-float quicksort___atanf(x)
-float x;
+float quicksort___atanf(x) float x;
 #endif
 {
     float w, s1, s2, z;
@@ -851,8 +846,7 @@ float x;
 #ifdef __STDC__
 float quicksort___cosf(float x)
 #else
-float quicksort___cosf(x)
-float x;
+float quicksort___cosf(x) float x;
 #endif
 {
     float y[2], z = 0.0f;
@@ -903,8 +897,7 @@ float x;
 #ifdef __STDC__
 float quicksort___sinf(float x)
 #else
-float quicksort___sinf(x)
-float x;
+float quicksort___sinf(x) float x;
 #endif
 {
     float y[2], z = 0.0;
@@ -959,8 +952,7 @@ float x;
 #ifdef __STDC__
 float quicksort___fabsf(float x)
 #else
-float quicksort___fabsf(x)
-float x;
+float quicksort___fabsf(x) float x;
 #endif
 {
     unsigned int ix;
@@ -996,8 +988,7 @@ float
 #ifdef __STDC__
 float quicksort___scalbnf(float x, int n)
 #else
-float quicksort___scalbnf(x, n)
-float x;
+float quicksort___scalbnf(x, n) float x;
 int n;
 #endif
 {
@@ -1048,3 +1039,4 @@ int quicksort___isinff(float x) {
     t |= -t;
     return (~(t >> 31) & (ix >> 30));
 }
+}  // namespace Quicksort

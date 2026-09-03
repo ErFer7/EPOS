@@ -27,6 +27,8 @@
     Original source: Turbo C Programming for Engineering by Hyun Soo Ahn
 */
 
+namespace Minver {
+
 class Minver {
    public:
     Minver() {
@@ -185,3 +187,4 @@ class Minver {
     double minver_a_i[3][3];
     double minver_det;
 };
+}  // namespace Minver

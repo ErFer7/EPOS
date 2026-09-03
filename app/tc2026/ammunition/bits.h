@@ -20,6 +20,8 @@
 
 #include "ammunition_limits.h"
 
+namespace Ammunition {
+
 /* This macro value returns bit vlaue (0 or 1) with given bit
    displacement (0, 1, ...).  The macro has side effects!  Value of
    `bit_displacement' must be nonegative and can be greater than
@@ -57,5 +59,7 @@ int ammunition_bit_string_comparison(const void *str1,
                                      const void *str2,
                                      int bit_displacement2,
                                      int bit_length);
+
+}  // namespace Ammunition
 
 #endif /* #ifndef __BITS__ */

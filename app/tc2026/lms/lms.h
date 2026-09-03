@@ -40,6 +40,8 @@
   OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 */
 
+namespace Lms {
+
 #define N 201
 #define L 20
 #define SAMPLING 5
@@ -161,3 +163,4 @@ class Lms {
         1.41421356237309381,
     };
 };
+}  // namespace Lms

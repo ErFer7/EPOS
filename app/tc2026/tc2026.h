@@ -7,360 +7,15 @@
 #include <utility/convert.h>
 #include <utility/random.h>
 
-#include "adpcm_enc/adpcm_enc.h"
-#include "ammunition/ammunition.h"
-#include "anagram/anagram.h"
-#include "audiobeam/audiobeam.h"
-#include "bandwidth/bandwidth.h"
-#include "bitcount/bitcount.h"
-#include "cjpeg_transupp/cjpeg_transupp.h"
-#include "cjpeg_wrbmp/cjpeg_wrbmp.h"
-#include "cosf/cosf.h"
-#include "deg2rad/deg2rad.h"
-#include "dijkstra/dijkstra.h"
-#include "disparity/disparity.h"
-#include "fac/fac.h"
-#include "fft/fft.h"
-#include "fmref/fmref.h"
-#include "g723_enc/g723_enc.h"
-#include "gsm_enc/gsm_enc.h"
-#include "h264_dec/h264_dec.h"
-#include "huff_enc/huff_enc.h"
-#include "iir/iir.h"
-#include "kalman/kalman.h"
-#include "lms/lms.h"
-#include "ludcmp/ludcmp.h"
-// #include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
-#include "matrix1/matrix1.h"
-#include "md5/md5.h"
-#include "minver/minver.h"
-#include "mpeg2/mpeg2.h"
-#include "ndes/ndes.h"
-#include "petrinet/petrinet.h"
-#include "pointer_chase/pointer_chase.h"
-#include "prime/prime.h"
-#include "quicksort/quicksort.h"
-#include "recursion/recursion.h"
-#include "rijndael_enc/rijndael_enc.h"
-#include "sha/sha.h"
-#include "statemate/statemate.h"
-#include "susan/susan.h"
+#include "benchmarks.h"
+#ifdef __visionfive2__
+#include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
+#endif
+#include "tasksets.h"
 
 using namespace EPOS;
 
 OStream cout;
-
-// TODO: Check all of them
-// TODO: Check them on the VisionFive2
-// TODO: Implement the tasksets
-// TODO: Add an "industrial" benchmark (probably SDAV)
-enum BenchmarkType {
-    // IsolBench like
-    BANDWIDTH_L1,
-    BANDWIDTH_L2,
-    POINTER_CHASE_L1,
-    POINTER_CHASE_L2,
-
-    // TACLeBench
-    RIJNDAEL_ENC,  // Single: ~1935us Iteration WCET, Contention: ~3867us -> 2x
-    H264DEC,
-    MPEG2,
-    SUSAN,
-    CJPEG_TRANSUPP,
-    CJPEG_WRBMP,
-    AUDIOBEAM,  // WARN: There are possible memory corruptions here
-    // NOTE: Ok up to this point
-    ANAGRAM,  // FIX: Currently hangs after 2 iterations
-    PETRINET,
-    FAC,
-    PRIME,
-    BITCOUNT,
-    COSF,
-    DEG2RAD,
-    MD5,
-    SHA,
-    FFT,
-    IIR,
-    LMS,
-    FILTERBANK,
-    MINVER,
-    LUDCMP,
-    MATRIX1,
-    QUICKSORT,
-    RECURSION,
-    DIJKSTRA,
-    HUFF_ENC,
-    ADPCM_ENC,  // NOTE: Under work
-    GSM_ENC,
-    G723_ENC,
-    STATEMATE,
-    NDES,        // TODO: Verify the static variables and see if something went wrong
-    AMMUNITION,  // TODO: Check if the size_t is ok
-    FMREF,
-
-    // SD-VBS
-    DISPARITY,
-
-    // Custom
-    KALMAN
-};
-
-struct StressTask {
-    const unsigned int period;
-    const unsigned int deadline;
-    const unsigned int wcet;
-    const unsigned int cpu;
-    const BenchmarkType task;
-    const float duration;  // Iteration duration
-};
-
-struct Taskset {
-    const StressTask *tasks;
-    const unsigned int size;
-};
-
-template <int TaskEnum>
-struct BenchmarkTraits;
-
-template <>
-struct BenchmarkTraits<RIJNDAEL_ENC> {
-    using Type = RijndaelEnc::RijndaelEnc;
-    static Type *create() { return new Type(); }  // Default constructor
-};
-
-template <>
-struct BenchmarkTraits<KALMAN> {
-    using Type = Kalman::Kalman;
-    static Type *create() { return new Type(); }  // Default constructor
-};
-
-template <>
-struct BenchmarkTraits<BANDWIDTH_L1> {
-    using Type = Bandwidth::Bandwidth;
-    static Type *create() { return new Type(Bandwidth::Bandwidth::L1_CACHE_SIZE); }
-};
-
-template <>
-struct BenchmarkTraits<BANDWIDTH_L2> {
-    using Type = Bandwidth::Bandwidth;
-    static Type *create() { return new Type(Bandwidth::Bandwidth::L2_CACHE_SIZE); }
-};
-
-template <>
-struct BenchmarkTraits<H264DEC> {
-    using Type = H264Dec::H264Dec;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<MPEG2> {
-    using Type = Mpeg2::Mpeg2;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<SUSAN> {
-    using Type = Susan::Susan;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<CJPEG_TRANSUPP> {
-    using Type = CJpegTransupp::CJpegTransupp;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<CJPEG_WRBMP> {
-    using Type = CJpegWRBMP::CJpegWRBMP;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<AUDIOBEAM> {
-    using Type = Audiobeam::Audiobeam;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<ANAGRAM> {
-    using Type = Anagram;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<PETRINET> {
-    using Type = Petrinet;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<FAC> {
-    using Type = Fac;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<PRIME> {
-    using Type = Prime;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<BITCOUNT> {
-    using Type = BitCount;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<COSF> {
-    using Type = Cosf;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<DEG2RAD> {
-    using Type = Deg2Rad;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<MD5> {
-    using Type = Md5;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<SHA> {
-    using Type = Sha;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<FFT> {
-    using Type = Fft;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<IIR> {
-    using Type = Iir;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<LMS> {
-    using Type = Lms;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<FILTERBANK> {
-    using Type = Lms;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<MINVER> {
-    using Type = Minver;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<LUDCMP> {
-    using Type = LudCmp;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<MATRIX1> {
-    using Type = Matrix1;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<QUICKSORT> {
-    using Type = Quicksort;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<RECURSION> {
-    using Type = Recursion;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<DIJKSTRA> {
-    using Type = Dijkstra;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<HUFF_ENC> {
-    using Type = HuffEnc;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<ADPCM_ENC> {
-    using Type = AdpcmEnc::AdpcmEnc;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<GSM_ENC> {
-    using Type = GsmEnc;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<G723_ENC> {
-    using Type = G723Enc;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<STATEMATE> {
-    using Type = Statemate;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<NDES> {
-    using Type = Ndes;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<AMMUNITION> {
-    using Type = Ammunition;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<FMREF> {
-    using Type = Fmref::Fmref;
-    static Type *create() { return new Type(); }
-};
-
-template <>
-struct BenchmarkTraits<POINTER_CHASE_L1> {
-    using Type = PointerChase::PointerChase;
-    static Type *create() { return new Type(PointerChase::PointerChase::L1_CACHE_SIZE); }
-};
-
-template <>
-struct BenchmarkTraits<POINTER_CHASE_L2> {
-    using Type = PointerChase::PointerChase;
-    static Type *create() { return new Type(PointerChase::PointerChase::L2_CACHE_SIZE); }
-};
-
-template <>
-struct BenchmarkTraits<DISPARITY> {
-    using Type = Disparity::Disparity;
-    static Type *create() { return new Type(); }
-};
 
 class BenchmarkRunner {
     typedef TSC::Time_Stamp Time_Stamp;
@@ -370,33 +25,7 @@ class BenchmarkRunner {
     static const unsigned int SELECTED_TASKSET = 1;
     static const unsigned int SEED = 20260610;
 
-    static constexpr float SINGLE = 200000.0f;
-    static constexpr float AES_IT_DURATION = 2800.0f;  // in microseconds
-    static constexpr float KALMAN_IT_DURATION = 500.0f;
-    static constexpr float BANDWIDTH_IT_DURATION = 2000.0f;
-
-    static constexpr StressTask taskset_1[] = {
-        {1000000, 1000000, 200000, 1, RIJNDAEL_ENC, SINGLE},
-        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 1, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 2, RIJNDAEL_ENC, SINGLE},
-        {1000000, 1000000, 200000, 2, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 2, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 2, AUDIOBEAM, SINGLE},
-        {1000000, 1000000, 200000, 2, DISPARITY, SINGLE},
-        {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 3, BANDWIDTH_L1, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 3, LUDCMP, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 3, RECURSION, BANDWIDTH_IT_DURATION},
-        {1000000, 1000000, 200000, 3, POINTER_CHASE_L2, BANDWIDTH_IT_DURATION},
-    };  // HP = 1
-
-    static constexpr Taskset tasksets[] = {{taskset_1, sizeof(taskset_1) / sizeof(StressTask)}};
-
-    inline static constexpr Taskset taskset = tasksets[SELECTED_TASKSET - 1];
+    inline static constexpr Taskset taskset = TASKSETS[SELECTED_TASKSET - 1];
     inline static constexpr unsigned int task_count = taskset.size;
 
    public:
@@ -465,7 +94,7 @@ class BenchmarkRunner {
         cout << "-----------------------------------------------------" << endl;
 
         for (unsigned int i = 0; i < task_count; i++) {
-            cout << "Task [" << i << "]: " << _threads[i] << '\n'
+            cout << "Task [" << i << "]: " << _threads[i] << " - " << benchmark_name(taskset.tasks[i].task) << '\n'
                  << ">   Counted iterations: " << _current_iteration[i] << endl;
 
             const int total_jobs = _calc_jobs(i);
@@ -539,9 +168,10 @@ class BenchmarkRunner {
                                      job,
                                      taskset.tasks[ID].cpu);
 
-        cout << ">  Thread[" << ID << "]<" << _threads[ID] << ">: period = " << taskset.tasks[ID].period
-             << ", deadline = " << taskset.tasks[ID].deadline << ", wcet = " << taskset.tasks[ID].wcet
-             << ", activation = " << activation << ", times = " << job << ", cpu = " << taskset.tasks[ID].cpu << endl;
+        cout << ">  Thread[" << ID << "]<" << _threads[ID] << ">(" << benchmark_name(taskset.tasks[ID].task)
+             << "):\n   Period = " << taskset.tasks[ID].period << ", deadline = " << taskset.tasks[ID].deadline
+             << ", wcet = " << taskset.tasks[ID].wcet << ", activation = " << activation << ", times = " << job
+             << ", cpu = " << taskset.tasks[ID].cpu << endl;
 
         _init_thread<ID + 1>(activation);
     }

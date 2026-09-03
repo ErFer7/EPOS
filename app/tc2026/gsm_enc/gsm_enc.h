@@ -1,6 +1,8 @@
 #ifndef PRIVATE_H
 #define PRIVATE_H
 
+namespace GsmEnc {
+
 typedef short gsm_word;   /* 16 bit signed int  */
 typedef int longgsm_word; /* 32 bit signed int  */
 
@@ -214,5 +216,6 @@ class GsmEnc {
 
     static const size_t gsm_enc_gsmdata_const_size;
 };
+}  // namespace GsmEnc
 
 #endif /* PRIVATE_H */

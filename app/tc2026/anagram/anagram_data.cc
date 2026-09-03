@@ -21,9 +21,8 @@
 
 #include "anagram.h"
 
-/*
-  Definition of global variables
-*/
+namespace Anagram {
+
 const char *Anagram::anagram_achPhrase[3] = {"todd austin", "john alledy", "mary updike"};
 
 const char *Anagram::anagram_dictionary[2279] = {
@@ -203,3 +202,4 @@ const char *Anagram::anagram_dictionary[2279] = {
     "x",     "xenon", "x's",   "yacht", "Yale",  "yam",   "yang",  "yarn",  "Yates", "year",  "yeast", "Yeats", "Yemen",
     "yield", "yip",   "yodel", "yoga",  "yoke",  "yore",  "you'd", "y's",   "Yves",  "YWCA",  "Zeiss", "zest",  "zig",
     "zing",  "zip",   "Zoe",   "zoo"};
+}  // namespace Anagram

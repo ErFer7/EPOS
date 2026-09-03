@@ -24,6 +24,8 @@
 // Description: This is the MD5 algorithm comming form the Diffie-Hellman
 // application in the Netbench benchmark suite
 
+namespace Md5 {
+
 #define RANDOM_BYTES_NEEDED 256
 
 // Here, it can be defined how many keys should be exchanged
@@ -221,7 +223,7 @@ typedef struct {
 
 class Md5 {
    public:
-    Md5() = default;
+    Md5() { seedByte = 0; }
 
     ~Md5() = default;
 
@@ -535,7 +537,6 @@ class Md5 {
          needs random seeds!
     */
     void md5_InitRandomStruct(R_RANDOM_STRUCT *randomStruct) {
-        static unsigned char seedByte = 0;
         unsigned int bytesNeeded;
 
         md5_R_RandomInit(randomStruct);
@@ -561,8 +562,10 @@ class Md5 {
     }
 
    private:
+    unsigned char seedByte;
     int md5_bytesNeeded;
     unsigned char md5_PADDING[64] = {0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                      0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                      0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 };
+}  // namespace Md5

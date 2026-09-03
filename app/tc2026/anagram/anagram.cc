@@ -160,7 +160,8 @@
 #include "anagram.h"
 
 #include "anagram_ctype.h"
-#include "anagram_strings.h"
+
+namespace Anagram {
 
 /*
   Initialization- and return-value-related functions
@@ -217,7 +218,7 @@ void Anagram::anagram_ReadDict(void) {
     *pchBase++ = 0;
 }
 
-Anagram::Anagram() { anagram_ReadDict(); }
+Anagram::Anagram() { anagram_simulated_heap = new char[ANAGRAM_HEAP_SIZE]; }
 
 /*
   Core benchmark functions
@@ -432,6 +433,8 @@ void Anagram::anagram_SortCandidates(void) {
 }
 
 int Anagram::run() {
+    reset();
+
     for (int i = 0; i < 3; i++) {
         anagram_Reset();
         anagram_BuildMask(anagram_achPhrase[i]);
@@ -450,3 +453,4 @@ int Anagram::run() {
 
     return 0;
 }
+}  // namespace Anagram

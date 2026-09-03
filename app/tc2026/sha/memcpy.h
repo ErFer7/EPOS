@@ -22,4 +22,7 @@
 #include "memhelper.h"
 #include "sha.h"
 
+namespace Sha {
+
 void *sha_glibc_memcpy(void *dstpp, const void *srcpp, size_t len);
+}

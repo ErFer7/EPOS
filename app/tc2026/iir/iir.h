@@ -48,6 +48,8 @@
 
 */
 
+namespace Iir {
+
 class Iir {
    public:
     Iir() {
@@ -121,3 +123,4 @@ class Iir {
     volatile float iir_coefficients[5 * 4];
     float iir_x;
 };
+}  // namespace Iir

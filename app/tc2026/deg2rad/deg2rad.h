@@ -22,9 +22,9 @@
 
 */
 
-#include "pi.h"
+namespace Deg2Rad {
 
-#define deg2rad(d) ((d) * PI / 180)
+#define deg2rad(d) ((d) * 3.14 / 180)
 
 class Deg2Rad {
    public:
@@ -50,3 +50,4 @@ class Deg2Rad {
     float deg2rad_X;
     float deg2rad_Y;
 };
+}  // namespace Deg2Rad

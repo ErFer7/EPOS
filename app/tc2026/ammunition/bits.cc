@@ -16,6 +16,8 @@
 
 #include "bits.h"
 
+namespace Ammunition {
+
 /* This function determines that given bit string contains only zero
    bits.  The function retruns TRUE if all bits of given bit string
    are zero or `bit_length' <= 0.  Value of `bit_displacement' must be
@@ -261,3 +263,4 @@ int ammunition_bit_string_comparison(const void *str1,
     else
         return 0;
 }
+}  // namespace Ammunition

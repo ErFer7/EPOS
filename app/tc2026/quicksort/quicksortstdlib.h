@@ -24,10 +24,14 @@
 #ifndef __QUICKSORTSTDLIB_H
 #define __QUICKSORTSTDLIB_H
 
+namespace Quicksort {
+
 int quicksort_compare_strings(const char *, const char *);
 int quicksort_compare_vectors(const char *, const char *);
 void quicksort_swapi(char *, char *, unsigned long);
 char *quicksort_pivot_strings(char *, unsigned long, unsigned long);
 char *quicksort_pivot_vectors(char *, unsigned long, unsigned long);
+
+}  // namespace Quicksort
 
 #endif

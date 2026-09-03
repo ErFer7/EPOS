@@ -18,6 +18,8 @@
 
 #include "sha.h"
 
+namespace Sha {
+
 const unsigned char Sha::sha_data[32743] = {
     'K', 'u', 'r', 't', 'V', 'o', 'n', 'n',  'e', 'g', 'u', 't', 's', 'C', 'o', 'm', 'm', 'e', 'n', 'c', 'e', 'm', 'e',
     'n', 't', 'A', 'd', 'd', 'r', 'e', 's',  's', 'a', 't', 'M', 'I', 'T', 'L', 'a', 'd', 'i', 'e', 's', 'a', 'n', 'd',
@@ -1443,3 +1445,5 @@ const unsigned char Sha::sha_data[32743] = {
     'a', 'd', 'i', 'e', 's', 'a', 'n', 'd',  'g', 'e', 'n', 't', 'l', 'e', 'm', 'e', 'n', 'o', 'f', 't', 'h', 'e', 'c',
     'l', 'a', 's', 's', 'o', 'f', '9', '7',  'W', 'e', 'a', 'r', 's', 'u', 'n', 's', 'c', 'r', 'e', 'e', 'n', 'I', 'f',
     'I', 'c', 'o', 'u', 'l', 'd', 'o', 'f',  'f', 'e', 'r', 'y', '\n'};
+
+}

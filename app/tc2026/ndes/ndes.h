@@ -18,6 +18,8 @@
 
 */
 
+namespace Ndes {
+
 /* A read from this address will result in an known value of 1 */
 #define KNOWN_VALUE 1
 #define NDES_WORSTCASE 1
@@ -302,3 +304,4 @@ class Ndes {
     int ndes_value = 0;
 #endif
 };
+}  // namespace Ndes

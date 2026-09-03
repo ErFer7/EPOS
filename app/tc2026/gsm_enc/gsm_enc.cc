@@ -7,6 +7,8 @@
 
 #include "gsm_enc.h"
 
+namespace GsmEnc {
+
 /*
     Inlined functions from add.h
 */
@@ -1903,3 +1905,4 @@ int GsmEnc::run() {
 
     return gsm_enc_result;
 }
+}  // namespace GsmEnc

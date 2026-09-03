@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Ammunition {
+
 class Ammunition {
    public:
     Ammunition() { ammunition_result = 0; }
@@ -17,3 +19,4 @@ class Ammunition {
    private:
     int ammunition_result;
 };
+}  // namespace Ammunition

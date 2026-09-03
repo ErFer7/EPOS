@@ -4,6 +4,8 @@
   Defines
 */
 
+namespace Anagram {
+
 #define anagram_DICTWORDS 2279
 #define anagram_MASK_BITS 32 /* number of bits in a Quad */
 #define anagram_MAX_QUADS 2  /* controls largest phrase */
@@ -17,8 +19,7 @@
         continue;                                                          \
     }
 
-/* This must be redefined for each new benchmark */
-#define ANAGRAM_HEAP_SIZE 21000
+static const int ANAGRAM_HEAP_SIZE = 21000;
 
 /*
   Type definitions
@@ -50,7 +51,7 @@ class Anagram {
    public:
     Anagram();
 
-    ~Anagram() = default;
+    ~Anagram() { delete[] anagram_simulated_heap; }
 
     int run();
 
@@ -167,6 +168,11 @@ class Anagram {
         }
     }
 
+    inline void reset() {
+        anagram_freeHeapPos = 0;
+        anagram_ReadDict();
+    }
+
    private:
     static const char *anagram_achPhrase[3];
     static const char *anagram_dictionary[anagram_DICTWORDS];
@@ -205,7 +211,7 @@ class Anagram {
     /* buffer to write an answer */
     char anagram_buffer[30];
 
-    // FIX: This breaks everything
-    inline static char anagram_simulated_heap[ANAGRAM_HEAP_SIZE];
-    inline static unsigned int anagram_freeHeapPos;
+    char *anagram_simulated_heap;
+    unsigned int anagram_freeHeapPos;
 };
+}  // namespace Anagram

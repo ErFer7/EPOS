@@ -1,6 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
 
+namespace Dijkstra {
+
 #define NUM_NODES 100
 #define NONE 9999
 #define OUT_OF_MEMORY -1
@@ -45,5 +47,6 @@ class Dijkstra {
     unsigned char dijkstra_AdjMatrix[NUM_NODES][NUM_NODES];
     static const unsigned char dijkstra_AdjMatrix_data[NUM_NODES][NUM_NODES];
 };
+}  // namespace Dijkstra
 
 #endif /* INPUT_H */

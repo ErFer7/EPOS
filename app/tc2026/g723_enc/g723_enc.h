@@ -18,6 +18,8 @@
 
 */
 
+namespace G723Enc {
+
 /*
   Declaration of data types
 */
@@ -686,3 +688,4 @@ class G723Enc {
     */
     short g723_enc_fitab[16] = {0, 0, 0, 0x200, 0x200, 0x200, 0x600, 0xE00, 0xE00, 0x600, 0x200, 0x200, 0x200, 0, 0, 0};
 };
+}  // namespace G723Enc

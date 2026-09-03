@@ -19,6 +19,7 @@
 
 #include "bitcount.h" /* from Snippets */
 
+namespace BitCount {
 /*
 **  Count bits in each nybble
 **
@@ -64,3 +65,4 @@ int BitCount::bitcount_btbl_bitcnt(unsigned long x) {
 
     return cnt;
 }
+}  // namespace BitCount

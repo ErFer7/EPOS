@@ -33,6 +33,7 @@
 #ifndef _WCCLIBM
 #define _WCCLIBM
 
+namespace Cosf {
 #define int32_t int
 #define u_int32_t unsigned int
 
@@ -52,5 +53,6 @@ int basicmath___isinff(float x);
 float basicmath___kernel_cosf(float x, float y);
 float basicmath___kernel_sinf(float x, float y, int iy);
 float basicmath___scalbnf(float x, int n);
+}  // namespace Cosf
 
 #endif  // _WCCLIBM

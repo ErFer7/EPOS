@@ -34,6 +34,7 @@
 
 #include "math_private.h"
 
+namespace Cosf {
 /* e_acosf.c -- float version of e_acos.c.
    Conversion to float by Ian Lance Taylor, Cygnus Support, ian@cygnus.com.
 */
@@ -720,3 +721,4 @@ float basicmath___scalbnf(float x, int n) {
     SET_FLOAT_WORD(x, (ix & 0x807fffff) | (k << 23));
     return x * basicmath_twom25;
 }
+}  // namespace Cosf

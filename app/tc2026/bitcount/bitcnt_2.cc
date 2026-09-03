@@ -19,6 +19,7 @@
 
 #include "bitcount.h"
 
+namespace BitCount {
 int BitCount::bitcount_bitcount(long i) {
     i = ((i & 0xAAAAAAAAL) >> 1) + (i & 0x55555555L);
     i = ((i & 0xCCCCCCCCL) >> 2) + (i & 0x33333333L);
@@ -27,3 +28,4 @@ int BitCount::bitcount_bitcount(long i) {
     i = ((i & 0xFFFF0000L) >> 16) + (i & 0x0000FFFFL);
     return (int)i;
 }
+}  // namespace BitCount

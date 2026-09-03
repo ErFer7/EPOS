@@ -20,6 +20,8 @@
 */
 #include "memset.h"
 
+namespace Sha {
+
 int printf(const char *format, ...);
 
 void *sha_glibc_memset(void *dstpp, int c, size_t len) {
@@ -78,3 +80,4 @@ void *sha_glibc_memset(void *dstpp, int c, size_t len) {
 
     return (void *)dstpp;
 }
+}  // namespace Sha

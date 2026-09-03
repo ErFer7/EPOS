@@ -26,27 +26,17 @@
   #define PROFILING
 */
 
+namespace Petrinet {
+
 class Petrinet {
    public:
-    Petrinet() {
-        petrinet_P1_is_marked = 3;
-        petrinet_P2_is_marked = 5;
-        petrinet_P3_is_marked = 0;
-
-        /*
-          Maybe we should also initialise these arrays, as they may be read
-          in the petrinet_main() function before being written.
-        */
-        /*
-          volatile long petrinet_P1_marking_member_0[ 3 ];
-          volatile long petrinet_P2_marking_member_0[ 5 ];
-          volatile long petrinet_P3_marking_member_0[ 6 ];
-        */
-    }
+    Petrinet() = default;
 
     ~Petrinet() = default;
 
     inline int run() {
+        reset();
+
         int dummy_i;
         /*   dummy_i = 17; Takes too much time */
         dummy_i = 2;
@@ -835,6 +825,26 @@ class Petrinet {
     }
 
    private:
+    inline void reset() {
+        petrinet_P1_is_marked = 3;
+        petrinet_P2_is_marked = 5;
+        petrinet_P3_is_marked = 0;
+
+        // NOTE: Fix that TACLeBench didn't add
+        for (unsigned int i = 0; i < 3; i++) {
+            petrinet_P1_marking_member_0[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < 5; i++) {
+            petrinet_P2_marking_member_0[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < 6; i++) {
+            petrinet_P3_marking_member_0[i] = 0;
+        }
+    }
+
+   private:
     volatile int petrinet_P1_is_marked;
     volatile long petrinet_P1_marking_member_0[3];
     volatile int petrinet_P2_is_marked;
@@ -843,3 +853,4 @@ class Petrinet {
     volatile long petrinet_P3_marking_member_0[6];
     const long petrinet_CHECKSUM = 0;
 };
+}  // namespace Petrinet

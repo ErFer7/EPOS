@@ -66,20 +66,30 @@
 
 */
 
-#define N_FFT 1024
+namespace Fft {
+
 #define NUMBER_OF_BITS 13 /* fract format 1.NUMBER_OF_BITS = 1.13 */
 
 #define BITS_PER_TWID 13    /* bits per twiddle coefficient */
 #define SHIFT BITS_PER_TWID /* fractional shift after each multiplication */
 
 class Fft {
+   private:
+    static const int N_FFT = 1024;
+    static const unsigned int FFT_TWIDTABLE_SIZE = 2046;
+
    public:
     Fft() {
-        for (unsigned int i = 0; i < 2046; i++) {
+        fft_input_data = new int[2 * N_FFT];
+        fft_twidtable = new int[FFT_TWIDTABLE_SIZE];
+        fft_input = new float[N_FFT];
+        fft_inputfract = new int[N_FFT];
+
+        for (unsigned int i = 0; i < FFT_TWIDTABLE_SIZE; i++) {
             fft_twidtable[i] = fft_twidtable_data[i];
         }
 
-        for (unsigned int i = 0; i < 1024; i++) {
+        for (int i = 0; i < N_FFT; i++) {
             fft_input[i] = fft_input_const[i];
         }
 
@@ -96,7 +106,12 @@ class Fft {
         for (; i < 2 * N_FFT; i++) fft_input_data[i] += x;
     }
 
-    ~Fft() = default;
+    ~Fft() {
+        delete[] fft_input_data;
+        delete[] fft_twidtable;
+        delete[] fft_input;
+        delete[] fft_inputfract;
+    }
 
     inline int run() {
         fft_bit_reduct(&fft_input_data[0]);
@@ -265,20 +280,21 @@ class Fft {
     }
 
    private:
-    int fft_input_data[2 * N_FFT];
+    int *fft_input_data;
 
     /* precalculated twiddle factors
        for an integer 1024 point FFT
        in format 1.13 => table twidtable[ 2*(N_FFT-1) ] ; */
-    int fft_twidtable[2046];
+    int *fft_twidtable;
 
     static const int fft_twidtable_data[2046];
 
     /* 1024 real values as input data in float format */
-    float fft_input[1024];
+    float *fft_input;
 
-    static const float fft_input_const[1024];
+    static const float fft_input_const[N_FFT];
 
     /* will hold the transformed data */
-    int fft_inputfract[N_FFT];
+    int *fft_inputfract;
 };
+}  // namespace Fft

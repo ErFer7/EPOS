@@ -21,6 +21,8 @@
 
 /* Useful defines & typedefs */
 
+namespace Sha {
+
 typedef unsigned char BYTE;
 typedef unsigned long LONG;
 
@@ -62,5 +64,6 @@ class Sha {
    private:
     static const unsigned char sha_data[32743];
 };
+}  // namespace Sha
 
 #endif  // SHA_H
