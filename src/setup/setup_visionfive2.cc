@@ -8,8 +8,9 @@
 #include <machine.h>
 #include <utility/elf.h>
 #include <utility/string.h>
-#include "machine/riscv/visionfive2/visionfive2_pmic.h"
+#include <machine/pmic.h>
 #include <machine/clock_tree.h>
+#include <machine/dvfs.h>
 
 extern "C" {
     char _end;
@@ -805,8 +806,10 @@ void _setup() // supervisor mode
         PMIC::init();
         Clock_Tree::init();
         Cache::init();
+        DVFS::init();
         Temperature_Sensor::init();
     } else {
+        // TODO: Remove this
         for (volatile int i = 0; i < 1000000; i++);
     }
 

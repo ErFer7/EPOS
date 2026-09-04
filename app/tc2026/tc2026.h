@@ -22,7 +22,7 @@ class BenchmarkRunner {
 
    private:
     static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 15;  // in seconds
-    static const unsigned int SELECTED_TASKSET = 1;
+    static const unsigned int SELECTED_TASKSET = 7;
     static const unsigned int SEED = 20260610;
 
     inline static constexpr Taskset taskset = TASKSETS[SELECTED_TASKSET - 1];
