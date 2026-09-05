@@ -165,7 +165,6 @@ class Clock_Tree : Clock_Tree_Common {
         // reg(aon_crg_base, RESET_ASSERT_ADDRESS_SELECTOR) &= ~0x3;
     }
 
-    // TODO: Clean this up
     static Hertz pll(const unsigned int &pll) {
         if (pll > 2) return 0;
 
