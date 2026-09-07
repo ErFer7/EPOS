@@ -5,6 +5,7 @@
 #include <architecture/cpu.h>
 #include <machine/i2c.h>
 #include <machine/pmic.h>
+#include <machine/power.h>
 
 __BEGIN_SYS
 
@@ -24,7 +25,10 @@ class PMIC : public PMIC_Common {
         REG_OUTPUT_CTRL1 = 0x10,   // DCDC1/2/3/4/5/6 Enable
         REG_DCDC2_VOLTAGE = 0x14,  // DCDC2 (CPU) Voltage Control
         REG_PWRON_STATUS = 0x20,
+        REG_PD_SEQUENCE = 0x32
     };
+
+    enum RegPDSequence { RESET = 1U << 6, POWEROFF = 1U << 7 };
 
    public:
     PMIC() {}
@@ -78,6 +82,39 @@ class PMIC : public PMIC_Common {
         TSC::usleep(2);
 
         _voltage = voltage;
+    }
+
+    // TODO: Refactor this to isolate the writing and reading behavior
+    static void shutdown(bool reboot = true) {
+        if (Power::shutdown_power_domain() != 0) {
+            db<PMIC>(WRN) << "Shutdown failed" << endl;
+        }
+
+        const char reg = REG_PD_SEQUENCE;
+        char val = 0;
+
+        if (!I2C::write(PMIC_I2C_ADDR, &reg, 1, false)) {
+            return;
+        }
+
+        if (!I2C::read(PMIC_I2C_ADDR, &val, 1, true)) {
+            return;
+        }
+
+        unsigned int reg_val = val & 0x7F;
+
+        reg_val |= POWEROFF;
+
+        if (reboot) {
+            reg_val |= RESET;
+        }
+
+        char payload[2];
+
+        payload[0] = REG_PD_SEQUENCE;
+        payload[1] = reg_val;
+
+        I2C::write(PMIC_I2C_ADDR, payload, 2, true);
     }
 
    private:

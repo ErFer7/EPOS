@@ -85,6 +85,7 @@ class GEM;
 class DWC_Ether_QoS;
 class IEEE802_15_4_NIC;
 class Ethernet_NIC;
+class Power;
 
 class DVFS;
 

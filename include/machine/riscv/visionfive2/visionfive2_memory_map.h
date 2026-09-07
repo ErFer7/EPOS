@@ -46,6 +46,7 @@ struct Memory_Map {
         SYS_CON_BASE    = 0x13030000,  // VisionFive2 System CON
         ETH_BASE        = 0x16030000,  // VisionFive2 Ethernet
         SYS_AON_BASE    = 0x17000000,  // VisionFive2 System AON
+        POWER_BASE      = 0x1703FFFF,  // VisionFive2 Power Management Unit
         FLASH_BASE      = 0x20000000,  // Virt / VisionFive2 Flash
 
         // Physical Memory at Boot

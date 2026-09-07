@@ -229,6 +229,7 @@ namespace EPOS {
 #define __PMIC_H                <machine/riscv/visionfive2/visionfive2_pmic.h>
 #define __CLK_H                 <machine/riscv/visionfive2/visionfive2_clock_tree.h>
 #define __DVFS_H                <machine/riscv/visionfive2/visionfive2_dvfs.h>
+#define __Power_H               <machine/riscv/visionfive2/visionfive2_power.h>
 
 #ifndef __standalone__
 #define __NIC_H                 <machine/riscv/visionfive2/visionfive2_gmac.h>

@@ -2,6 +2,7 @@
 
 #include <machine/machine.h>
 #include <machine/display.h>
+#include <machine/pmic.h>
 
 __BEGIN_SYS
 
@@ -9,6 +10,13 @@ void Machine::reboot()
 {
     if(Traits<System>::reboot) {
         db<Machine>(TRC) << "Machine::reboot()" << endl;
+
+#ifdef __visionfive2__
+    if (CPU::id() == CPU::BSP) {
+        CPU::int_disable();
+        PMIC::shutdown();
+    }
+#endif
 
 #ifdef __sifive_e__
         CPU::Reg * reset = reinterpret_cast<CPU::Reg *>(Memory_Map::AON_BASE);
@@ -27,6 +35,13 @@ void Machine::reboot()
 void Machine::poweroff()
 {
     db<Machine>(TRC) << "Machine::poweroff()" << endl;
+
+#ifdef __visionfive2__
+    if (CPU::id() == CPU::BSP) {
+        CPU::int_disable();
+        PMIC::shutdown();
+    }
+#endif
 
 #ifdef __sifive_e__
         CPU::Reg * reset = reinterpret_cast<CPU::Reg *>(Memory_Map::AON_BASE);
