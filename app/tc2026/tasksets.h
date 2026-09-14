@@ -18,9 +18,17 @@ struct Taskset {
 
 static constexpr float SINGLE = 200000.0f;
 
-static constexpr float BANDWIDTH_IT_DURATION = 2800.0f;    // in microseconds
+#ifdef __sifive_u__
+static constexpr float BANDWIDTH_IT_DURATION = 370.0f;     // in microseconds
+static constexpr float DISPARITY_IT_DURATION = 173910.0f;  // in microseconds
+static constexpr float CPU_IT_DURATION = 16.0f;            // in microseconds
+#endif
+
+#ifdef __visionfive2__
+static constexpr float BANDWIDTH_IT_DURATION = 1600.0f;    // in microseconds
 static constexpr float DISPARITY_IT_DURATION = 200000.0f;  // in microseconds
-static constexpr float CPU_IT_DURATION = 0.00375f;         // in microseconds
+static constexpr float CPU_IT_DURATION = 30.0f;            // in microseconds
+#endif
 
 // Old tasksets
 static constexpr StressTask SBESC_TASKSET_1[] = {

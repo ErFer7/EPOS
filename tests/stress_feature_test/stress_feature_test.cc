@@ -21,12 +21,12 @@ typedef TSC::Time_Stamp Time_Stamp;
 // Configuration
 const bool MEASURE_TIME = true;
 const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 10;  // in seconds
-const bool DVFS_CHANGE = true;
+const bool DVFS_CHANGE = false;
 const unsigned int DVFS_CHANGES = 4;
 const unsigned int DVFS_CHANGE_ITERATION = TEST_DURATION / DVFS_CHANGES;
-const bool ENABLE_EA_PEDF = true;
-const bool PRINT_TASK_DATA = true;
-const unsigned int SELECTED_TASKSET = 2;
+const bool ENABLE_EA_PEDF = false;
+const bool PRINT_TASK_DATA = false;
+const unsigned int SELECTED_TASKSET = 1;
 const unsigned int ITERATION_CHANGE_BEHAVIOR = 90;
 const unsigned int CACHE_LINE_SIZE = 64;
 const unsigned int L1_CACHE_SIZE = 32 * 1024;
@@ -182,8 +182,8 @@ int main() {
          << ">  Size of image 2: " << sizeof(img2) << '\n'
          << ">  Size of the bandwidth allocation: " << BANDWIDTH_ALLOC_SIZE << '\n'
          << ">  CPU Clock: " << CPU::clock() / 1000000 << "MHz" << '\n'
-         << ">  CPU voltage: " << PMIC::get_cpu_voltage() << "mV" << '\n'
-         << ">  DDR Clock: " << HardwareClock::get_ddr_clock() / 1000000 << "MHz" << endl;
+         << ">  CPU voltage: " << PMIC::cpu_voltage() << "mV" << '\n'
+         << ">  DDR Clock: " << Clock_Tree::ddr_clock() / 1000000 << "MHz" << endl;
 
     Monitor::print_monitor_info();
 
@@ -374,7 +374,7 @@ void run_func() {
     Time_Stamp init;
 
     unsigned int my_iter_per_job = calc_iter_per_job(ID);
-    volatile unsigned int ret;
+    volatile unsigned int _;
 
     if ((current_iteration[ID] + 1) % ITERATION_CHANGE_BEHAVIOR == 0) {
         behavior[ID] = !behavior[ID];
@@ -385,27 +385,27 @@ void run_func() {
     for (unsigned int iterations = 0; iterations < my_iter_per_job; iterations++) {
         switch (taskset.tasks[ID].task) {
             case BANDWIDTH_HEAVY:
-                ret += configurable_bench_write(ID, L2_CACHE_SIZE);  // heavy
+                _ += configurable_bench_write(ID, L2_CACHE_SIZE);  // heavy
                 break;
             case CPU_HUNGRY:
-                ret += cpu_hungry();
+                _ += cpu_hungry();
                 break;
             case DISPARITY:
-                ret += disparity(ID);
+                _ += disparity(ID);
                 break;
             case BANDWIDTH_LIGHT:
-                ret += configurable_bench_write(ID, L1_CACHE_SIZE);  // light
+                _ += configurable_bench_write(ID, L1_CACHE_SIZE);  // light
                 break;
             case BANDWIDTH_MIXED:
                 if (behavior[ID]) {
-                    ret += configurable_bench_write(ID, L2_CACHE_SIZE);  // heavy
+                    _ += configurable_bench_write(ID, L2_CACHE_SIZE);  // heavy
                 } else {
-                    ret += configurable_bench_write(ID, L1_CACHE_SIZE);  // light
+                    _ += configurable_bench_write(ID, L1_CACHE_SIZE);  // light
                 }
                 break;
             case BANDWIDTH_RANDOM:
             default:
-                ret += configurable_bench_write(ID, 0, true);  // random
+                _ += configurable_bench_write(ID, 0, true);  // random
                 break;
         }
     }
@@ -433,19 +433,19 @@ int freq_control() {
     bool descending = true;
 
     for (unsigned int i = 0; i < TEST_DURATION; i++) {
-        cout << ">  Iteration [" << i << "], Clock: " << HardwareClock::get_cpu_clock() << "Hz"
+        cout << ">  Iteration [" << i << "], Clock: " << Clock_Tree::cpu_clock() << "Hz"
              << ", Temperature: " << static_cast<float>(Temperature_Sensor::get_temperature()) / 1000.0f << 'C' << endl;
 
         if (DVFS_CHANGE && !(i % DVFS_CHANGE_ITERATION) && i > 0) {
             kout << "Changing the DVFS level from " << dvfs_level << " to " << (dvfs_level + (descending ? -1 : 1))
                  << endl;
-            HardwareClock::set_cpu_clock_frequency_level(descending ? --dvfs_level : ++dvfs_level);
+            // Clock_Tree::cpu_clock(descending ? --dvfs_level : ++dvfs_level);
 
             if (dvfs_level == 0 || dvfs_level == 3) {
                 descending = !descending;
             }
 
-            kout << "Clock changed to " << HardwareClock::get_cpu_clock() << "Hz" << endl;
+            kout << "Clock changed to " << Clock_Tree::cpu_clock() << "Hz" << endl;
         }
 
         Delay(1000000);

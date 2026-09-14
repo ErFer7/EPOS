@@ -1,12 +1,11 @@
 // EPOS CPU Energy-aware PEDF Scheduler Component Implementation
-#ifdef __DVFS_H
 #include <clerk.h>
 #include <process.h>
 
 #include <machine/clock_tree.h>
-#include "machine/riscv/visionfive2/visionfive2_hardware_clock.h"
 #include "scheduler.h"
 
+#ifdef __DVFS_H
 #ifdef __PMU_H
 __BEGIN_SYS
 
@@ -460,7 +459,7 @@ void EA_PEDF_RV64::handle_deadline_misses() {
 
     kout << "EA_PEDF_RV64: Deadline miss detected!" << endl;
 
-    HardwareClock::set_cpu_clock_frequency_level(HardwareClock::MAX);
+    // HardwareClock::set_cpu_clock_frequency_level(HardwareClock::MAX);
 
     cooldown(1);
 
