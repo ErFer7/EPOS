@@ -80,10 +80,11 @@ void CPU::switch_context(Context ** o, Context * n)     // "o" is in a0 and "n" 
 }
 
 Hertz CPU::clock() {
-#ifdef __CLK_H
+#ifdef __visionfive2__
     return Clock_Tree::cpu_clock();
-#endif
+#else
     return Traits<CPU>::CLOCK;
+#endif
 }
 
 __END_SYS

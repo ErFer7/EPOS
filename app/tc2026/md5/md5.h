@@ -276,7 +276,7 @@ class Md5 {
          operation, processing another message block, and updating the
          context.
     */
-    void md5_update(MD5_CTX *context, unsigned char *input, unsigned int inputLen)
+    void md5_update(MD5_CTX *context, volatile unsigned char *input, unsigned int inputLen)
     // MD5_CTX *context;                                        /* context */
     // unsigned char *input;                                /* input block */
     // unsigned int inputLen;                     /* length of input block */
@@ -348,7 +348,7 @@ class Md5 {
 
     /* MD5 basic transformation. Transforms state based on block.
      */
-    void md5_transform(UINT4 state[4], unsigned char block[64]) {
+    void md5_transform(UINT4 state[4], volatile unsigned char block[64]) {
         UINT4 a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
         md5_decode(x, block, 64);
@@ -453,7 +453,7 @@ class Md5 {
     /* Decodes input (unsigned char) into output (UINT4). Assumes len is
          a multiple of 4.
     */
-    void md5_decode(UINT4 *output, unsigned char *input, unsigned int len) {
+    void md5_decode(UINT4 *output, volatile unsigned char *input, unsigned int len) {
         unsigned int i, j;
 
         for (i = 0, j = 0; j < len; i++, j += 4) {
@@ -497,7 +497,7 @@ class Md5 {
         return (0);
     }
 
-    int md5_R_RandomUpdate(R_RANDOM_STRUCT *randomStruct, unsigned char *block, unsigned int blockLen)
+    int md5_R_RandomUpdate(R_RANDOM_STRUCT *randomStruct, volatile unsigned char *block, unsigned int blockLen)
     // R_RANDOM_STRUCT *randomStruct;                          /* random structure */
     // unsigned char *block;                          /* block of values to mix in */
     // unsigned int blockLen;                                   /* length of block */
@@ -562,7 +562,7 @@ class Md5 {
     }
 
    private:
-    unsigned char seedByte;
+    volatile unsigned char seedByte;
     int md5_bytesNeeded;
     unsigned char md5_PADDING[64] = {0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                                      0,    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,

@@ -114,6 +114,8 @@ class Fft {
     }
 
     inline int run() {
+        reset();
+
         fft_bit_reduct(&fft_input_data[0]);
 
         int check_sum = 0;
@@ -125,6 +127,18 @@ class Fft {
     }
 
    private:
+    inline void reset() {
+        fft_pin_down(&fft_input_data[0]);
+
+        int i;
+        volatile int x = 0;
+        for (i = 0; i < 2 * (N_FFT - 1); i++) {
+            fft_input_data[i] += x;
+            fft_twidtable[i] += x;
+        }
+        for (; i < 2 * N_FFT; i++) fft_input_data[i] += x;
+    }
+
     /*
   Algorithm core function
 */

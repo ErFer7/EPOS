@@ -30,12 +30,13 @@ class Deg2Rad {
    public:
     Deg2Rad() {
         deg2rad_X = 0;
-        deg2rad_Y = 0;
     }
 
     ~Deg2Rad() = default;
 
     inline int run() {
+        reset();
+
         for (deg2rad_X = 0.0f; deg2rad_X <= 360.0f; deg2rad_X += 1.0f) deg2rad_Y += deg2rad(deg2rad_X);
 
         int temp = deg2rad_Y;
@@ -45,6 +46,9 @@ class Deg2Rad {
         else
             return -1;
     }
+
+   private:
+    inline void reset() { deg2rad_Y = 0; }
 
    private:
     float deg2rad_X;

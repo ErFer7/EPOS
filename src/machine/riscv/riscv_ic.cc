@@ -39,6 +39,10 @@ void IC::dispatch()
     CPU::Reg a0 = CPU::a0();
     CPU::Reg a1 = CPU::a1();
 
+#ifdef __visionfive2__
+    CPU::a7(0);  // NOTE: This was added to make it safe for the machine_interrupt_handler
+#endif
+
     Interrupt_Id id = int_id();
 
     if(((id != INT_SYS_TIMER) && (id != INT_SYSCALL) && ((id == CPU::EXC_IPF) && (CPU::epc() != CPU::Log_Addr(&__exit)))) || Traits<IC>::hysterically_debugged)

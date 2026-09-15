@@ -27,11 +27,13 @@ namespace Cosf {
 
 class Cosf {
    public:
-    Cosf() { cosf_solutions = 0.0f; }
+    Cosf() = default;
 
     ~Cosf() = default;
 
     inline int run() {
+        reset();
+
         float i;
         for (i = 0.0f; i < 10; i += 0.1f) cosf_solutions += basicmath___cosf(i);
 
@@ -42,6 +44,9 @@ class Cosf {
         else
             return -1;
     }
+
+   private:
+    inline void reset() { cosf_solutions = 0.0f; }
 
    private:
     float cosf_solutions;

@@ -30,17 +30,6 @@ typedef unsigned int u32;
 #define asubsref(a, i) a->data[i]
 #define arrayref(a, i) a[i]
 
-struct DisparityAlloc {
-    unsigned char sminSAD[8 * 4 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char sretDisp[8 + 4 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char shalfWin[8 + 4 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char sSAD[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char sintergalImg[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char sIright_moved[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char sretSAD[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
-    unsigned char spaddedArray[2 * 8 * IMG_WIDTH * IMG_HEIGHT];
-};
-
 class Disparity {
    public:
     Disparity() {
@@ -53,6 +42,40 @@ class Disparity {
 
         for (unsigned int i = 0; i < sizeof(img2); i++) {
             t_img2[i] = img2[i];
+        }
+
+        temp = 0;
+
+        for (unsigned int i = 0; i < sizeof(sminSAD); i++) {
+            sminSAD[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(sretDisp); i++) {
+            sretDisp[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(shalfWin); i++) {
+            shalfWin[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(sSAD); i++) {
+            sSAD[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(sintergalImg); i++) {
+            sintergalImg[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(sIright_moved); i++) {
+            sIright_moved[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(sretSAD); i++) {
+            sretSAD[i] = 0;
+        }
+
+        for (unsigned int i = 0; i < sizeof(spaddedArray); i++) {
+            spaddedArray[i] = 0;
         }
     }
 
@@ -70,14 +93,14 @@ class Disparity {
         imright = (I2D *)t_img2;
 
         // We don't need to delete the returned data because it was allocated in the stack before (disparity_allocs)
-        retDisparity = getDisparity(imleft, imright, WIN_SZ, SHIFT, &_disparity_alloc);
+        retDisparity = getDisparity(imleft, imright, WIN_SZ, SHIFT);
         int height = retDisparity->height;
 
         return height;
     }
 
    private:
-    I2D *getDisparity(I2D *Ileft, I2D *Iright, int win_sz, int max_shift, DisparityAlloc *data) {
+    I2D *getDisparity(I2D *Ileft, I2D *Iright, int win_sz, int max_shift) {
         I2D *retDisp;
         int nr, nc, k;
         I2D *halfWin;
@@ -92,7 +115,7 @@ class Disparity {
         nc = Ileft->width;
         half_win_sz = win_sz / 2;
 
-        fout = (F2D *)data->sminSAD;
+        fout = (F2D *)sminSAD;
         fout->height = nr;
         fout->width = nc;
         for (i = 0; i < nr; i++) {
@@ -103,7 +126,7 @@ class Disparity {
 
         minSAD = fout;
 
-        Iout = (I2D *)data->sretDisp;  // iMallocHandle(rows, cols);
+        Iout = (I2D *)sretDisp;  // iMallocHandle(rows, cols);
 
         Iout->height = nr;
         Iout->width = nc;
@@ -116,7 +139,7 @@ class Disparity {
 
         retDisp = Iout;
 
-        Iout = (I2D *)data->shalfWin;  // iMallocHandle(rows, cols);
+        Iout = (I2D *)shalfWin;  // iMallocHandle(rows, cols);
 
         Iout->height = nr;
         Iout->width = nc;
@@ -140,7 +163,7 @@ class Disparity {
         rows = IleftPadded->height;
         cols = IleftPadded->width;
 
-        fout = (F2D *)data->sSAD;
+        fout = (F2D *)sSAD;
         fout->height = rows;
         fout->width = cols;
         for (i = 0; i < rows; i++) {
@@ -153,7 +176,7 @@ class Disparity {
 
         // integralImg = fSetArray(rows, cols,0);
 
-        fout = (F2D *)data->sintergalImg;
+        fout = (F2D *)sintergalImg;
         fout->height = rows;
         fout->width = cols;
         for (i = 0; i < rows; i++) {
@@ -165,14 +188,14 @@ class Disparity {
         integralImg = fout;
 
         // retSAD = fMallocHandle(rows-win_sz, cols-win_sz);
-        retSAD = (F2D *)data->sretSAD;
+        retSAD = (F2D *)sretSAD;
 
         retSAD->height = rows - win_sz;
         retSAD->width = cols - win_sz;
 
         // Iright_moved = iSetArray(rows, cols, 0);
 
-        Iout = (I2D *)data->sIright_moved;  // iMallocHandle(rows, cols);
+        Iout = (I2D *)sIright_moved;  // iMallocHandle(rows, cols);
 
         Iout->height = rows;
         Iout->width = cols;
@@ -318,8 +341,7 @@ class Disparity {
 
         // paddedArray = iSetArray(newRows, newCols, 0);
 
-        Iout =
-            (I2D *)(_disparity_alloc.spaddedArray + temp * 8 * IMG_WIDTH * IMG_HEIGHT);  // iMallocHandle(rows, cols);
+        Iout = (I2D *)(spaddedArray + temp * 8 * IMG_WIDTH * IMG_HEIGHT);  // iMallocHandle(rows, cols);
 
         Iout->height = newRows;
         Iout->width = newCols;
@@ -371,8 +393,15 @@ class Disparity {
    private:
     signed char *t_img1;
     signed char *t_img2;
-    DisparityAlloc _disparity_alloc;
     unsigned int temp;
+    unsigned char sminSAD[8 * 4 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char sretDisp[8 + 4 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char shalfWin[8 + 4 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char sSAD[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char sintergalImg[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char sIright_moved[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char sretSAD[8 + 8 * IMG_HEIGHT * IMG_WIDTH];
+    unsigned char spaddedArray[2 * 8 * IMG_WIDTH * IMG_HEIGHT];
 };
 
 }  // namespace Disparity

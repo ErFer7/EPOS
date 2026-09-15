@@ -446,7 +446,7 @@ public:
         }
         if(_channel != CHANNELS) {
             _in_use[CPU::id()][_channel] = true;
-            PMU::config(_channel, event);
+            CPU::machine_mode_call(CPU::PMU_CONFIG, _channel, event);  // PMU::config(_channel, event);
 
             if(monitored)
                 new (SYSTEM) Clerk_Monitor<Clerk>(this, frequency);
@@ -460,10 +460,10 @@ public:
         }
     }
 
-    Data read() { return (_channel < CHANNELS) ? PMU::read(_channel) : 0; }
-    void start() { if(_channel < CHANNELS) PMU::start(_channel); }
-    void stop() { if(_channel < CHANNELS) PMU::stop(_channel); }
-    void reset() { if(_channel < CHANNELS) PMU::reset(_channel); }
+    Data read() { return (_channel < CHANNELS) ? CPU::machine_mode_call(CPU::PMU_READ, _channel) : 0; }  // PMU::read(_channel)
+    void start() { if(_channel < CHANNELS) CPU::machine_mode_call(CPU::PMU_START, _channel); }           // PMU::start(_channel)
+    void stop() { if(_channel < CHANNELS) CPU::machine_mode_call(CPU::PMU_STOP, _channel); }             // PMU::stop(_channel)
+    void reset() { if(_channel < CHANNELS) CPU::machine_mode_call(CPU::PMU_RESET, _channel); }            // PMU::reset(_channel)
 
 private:
     Channel _channel;

@@ -1,5 +1,6 @@
 // EPOS SiFive-U (RISC-V) SETUP
 
+#include "architecture/rv64/rv64_pmu.h"
 #include "machine/riscv/visionfive2/visionfive2_cache.h"
 #include "machine/riscv/visionfive2/visionfive2_temperature_sensor.h"
 #define __setup__
@@ -20,6 +21,8 @@ extern "C" {
     // SETUP entry point is in .init (and not in .text), so it will be linked first and will be the first function after the ELF header in the image
     void _entry() __attribute__ ((used, naked, section(".init")));
     void _int_m2s() __attribute((naked, aligned(4)));
+    void _machine_interrupt_entry() __attribute((naked, aligned(4)));
+    void _machine_interrupt_handler(unsigned long *frame) __attribute((aligned(4)));
     void _setup();
 
     // LD eliminates this variable while performing garbage collection, that's why the used attribute.
@@ -48,7 +51,7 @@ class Setup {
     static const unsigned long IMAGE            = Memory_Map::IMAGE;
     static const unsigned long SETUP            = Memory_Map::SETUP;
     static const unsigned long BOOT_STACK       = Memory_Map::BOOT_STACK;
-    static const unsigned long INT_M2S          = Memory_Map::INT_M2S;
+    static const unsigned long M_INT_HANDLER    = Memory_Map::M_INT_HANDLER;
     static const unsigned long FLAT_MEM_MAP     = Memory_Map::FLAT_MEM_MAP;
 
     // Logical memory map
@@ -91,7 +94,8 @@ private:
 
     void say_hi();
 
-    void setup_m2s();
+    void hardware_init();
+    void setup_machine_interrupt_handler();
     void setup_sys_pt();
     void setup_app_pt();
     void setup_sys_pd();
@@ -148,7 +152,7 @@ Setup::Setup()
             setup_sys_pd();
 
             // Relocate the machine to supervisor interrupt forwarder
-            setup_m2s();
+            setup_machine_interrupt_handler();
 
             // Enable paging
             enable_paging();
@@ -160,22 +164,19 @@ Setup::Setup()
             // FIXME: ld is putting the data segments (.data, .sdata, .bss, etc) inside the code segment even if we specify --nmagic, so, for a while, we can't fine tune perms.
             // adjust_perms();
 
-        } else { // library mode
+        } else if (Traits<Machine>::supervisor){ // library mode
+            setup_machine_interrupt_handler();
+            // Configure a flat memory model for the single task in the system
+            setup_flat_paging();
 
-            // Print basic facts about this EPOS instance
-            say_hi();
-
-            if(Traits<Machine>::supervisor) {
-                // Configure a flat memory model for the single task in the system
-                setup_flat_paging();
-
-                // Relocate the machine to supervisor interrupt forwarder
-                setup_m2s();
-
-                // Enable paging
-                enable_paging();
-            }
+            // Enable paging
+            enable_paging();
         }
+
+        hardware_init();
+
+        // Print basic facts about this EPOS instance
+        say_hi();
 
         // Signalize other CPUs that paging is up
         paging_ready = true;
@@ -393,7 +394,7 @@ void Setup::say_hi()
     kout << "\n*** This is EPOS!\n" << endl;
     kout << "Setting up this machine as follows: " << endl;
     kout << "  Mode:         " << ((Traits<Build>::SMOD == Traits<Build>::LIBRARY) ? "library" : (Traits<Build>::SMOD == Traits<Build>::BUILTIN) ? "built-in" : "kernel") << endl;
-    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << Clock_Tree::cpu_clock() / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
+    kout << "  Processor:    " << Traits<Machine>::CPUS << " x RV" << Traits<CPU>::WORD_SIZE << " at " << CPU::clock() / 1000000 << " MHz (BUS clock = " << Traits<Machine>::HFCLK / 1000000 << " MHz)" << endl;
     kout << "  Machine:      VisionFive 2" << endl;
 #ifdef __library__
     kout << "  Memory:       " << (RAM_TOP + 1 - RAM_BASE) / 1024 << " KB [" << reinterpret_cast<void *>(RAM_BASE) << ":" << reinterpret_cast<void *>(RAM_TOP) << "]" << endl;
@@ -521,7 +522,7 @@ void Setup::setup_sys_pd()
 
     // Check alignments
     assert(MMU::pdi(SETUP) == MMU::pdi(RAM_BASE));
-    assert(MMU::pdi(INT_M2S) == MMU::pdi(RAM_TOP));
+    assert(MMU::pdi(M_INT_HANDLER) == MMU::pdi(RAM_TOP));
     if(RAM_BASE != MMU::align_segment(RAM_BASE))
         db<Setup>(WRN) << "Setup::setup_sys_pd: unaligned physical memory!" << endl;
     if(PHY_MEM != MMU::align_segment(PHY_MEM))
@@ -582,11 +583,25 @@ void Setup::setup_sys_pd()
 }
 
 
-void Setup::setup_m2s()
-{
-    db<Setup>(TRC) << "Setup::setup_m2s()" << endl;
+void Setup::hardware_init() {
+    if (CPU::id() == Traits<Machine>::BSP) {
+        PMIC::init();
+        Clock_Tree::init();
+        Cache::init();
+        DVFS::init();
+        Temperature_Sensor::init();
+    } else {
+        // TODO: Remove this
+        for (volatile int i = 0; i < 1000000; i++);
+    }
+}
 
-    memcpy(reinterpret_cast<void *>(INT_M2S), reinterpret_cast<void *>(&_int_m2s), sizeof(Page));
+
+void Setup::setup_machine_interrupt_handler()
+{
+    db<Setup>(TRC) << "Setup::setup_machine_interrupt_handler()" << endl;
+
+    memcpy(reinterpret_cast<void *>(M_INT_HANDLER), reinterpret_cast<void *>(&_machine_interrupt_entry), sizeof(Page));
 }
 
 
@@ -772,21 +787,22 @@ void _entry() // Machine mode
     if (CPU::id() >= Traits<Build>::CPUS) CPU::halt();
 
     CPU::sp(Memory_Map::BOOT_STACK + Traits<Machine>::STACK_SIZE * (CPU::id() + 1) - sizeof(long)); // set the stack pointer, thus creating a stack for SETUP
-    CPU::mscratch(CPU::sp());
+    CPU::mscratch(Memory_Map::M_INT_HANDLER + (4096 / 4) * CPU::id());
 
     if (CPU::id() == Traits<Machine>::BSP) Machine::clear_bss();
 
     if (Traits<Machine>::supervisor) {
-        CPU::satp(0);
-        CPU::mtvec(CPU::INT_DIRECT, _int_m2s);
+        CPU::mtvec(CPU::INT_DIRECT, _machine_interrupt_entry);
         CPU::mideleg(CPU::SSI | CPU::STI | CPU::SEI);
         CPU::medeleg(0xf1ff);
         CPU::mie(CPU::MTI);
-        CPU::mstatuss(CPU::MPP_S | CPU::MPIE);
-        CPU::mstatusc(CPU::SPIE);
+        CPU::mstatus(CPU::MPP_S | CPU::MPIE | CPU::MXR);
+        CPU::mstatusc(CPU::SIE);
+        CPU::sstatuss(CPU::SUM);
         CPU::pmpcfg0(0b11111);                              // configure PMP region 0 as (L=unlocked [0], [00], A = NAPOT [11], X [1], W [1], R [1])
         CPU::pmpaddr0((1ULL << MMU::LA_BITS) - 1);          // comprising the whole memory space
     } else {
+        CPU::satp(0);
         CPU::mie(0);
         CPU::mstatus(CPU::MPP_M);
     }
@@ -801,17 +817,6 @@ void _setup() // supervisor mode
 {
     kerr << endl;
     kout << endl;
-
-    if (CPU::id() == Traits<Machine>::BSP) {
-        PMIC::init();
-        Clock_Tree::init();
-        Cache::init();
-        DVFS::init();
-        Temperature_Sensor::init();
-    } else {
-        // TODO: Remove this
-        for (volatile int i = 0; i < 1000000; i++);
-    }
 
     Setup setup;
 }
@@ -884,5 +889,84 @@ if(Traits<CPU>::WORD_SIZE == 32) {
 }
     ASM("       csrr     sp, mscratch           \n"
         "       mret                            \n");
+}
+
+// This will only be used for 64 bits anyway
+void _machine_interrupt_entry() {
+    ASM("csrrw sp, mscratch, sp          \n"
+        "addi  sp, sp, -128              \n"
+        "sd    a0,   0(sp)               \n"
+        "sd    a1,   8(sp)               \n"
+        "sd    a2,  16(sp)               \n"
+        "sd    a3,  24(sp)               \n"
+        "sd    a4,  32(sp)               \n"
+        "sd    a5,  40(sp)               \n"
+        "sd    a6,  48(sp)               \n"
+        "sd    a7,  56(sp)               \n"
+        "sd    t0,  64(sp)               \n"
+        "sd    t1,  72(sp)               \n"
+        "sd    t2,  80(sp)               \n"
+        "sd    t3,  88(sp)               \n"
+        "sd    t4,  96(sp)               \n"
+        "sd    t5, 104(sp)               \n"
+        "sd    t6, 112(sp)               \n"
+        "sd    ra, 120(sp)               \n"
+        "mv    a0, sp                    \n"
+        "call _machine_interrupt_handler \n"
+        "ld    a0,   0(sp)               \n"
+        "ld    a1,   8(sp)               \n"
+        "ld    a2,  16(sp)               \n"
+        "ld    a3,  24(sp)               \n"
+        "ld    a4,  32(sp)               \n"
+        "ld    a5,  40(sp)               \n"
+        "ld    a6,  48(sp)               \n"
+        "ld    a7,  56(sp)               \n"
+        "ld    t0,  64(sp)               \n"
+        "ld    t1,  72(sp)               \n"
+        "ld    t2,  80(sp)               \n"
+        "ld    t3,  88(sp)               \n"
+        "ld    t4,  96(sp)               \n"
+        "ld    t5, 104(sp)               \n"
+        "ld    t6, 112(sp)               \n"
+        "ld    ra, 120(sp)               \n"
+        "addi  sp, sp, 128               \n"
+        "csrrw sp, mscratch, sp          \n"
+        "mret                            \n");
+}
+
+void _machine_interrupt_handler(unsigned long *frame) {
+    CPU::Reg64 id = CPU::mcause();
+
+    if((id & CLINT::INT_MASK) == CLINT::IRQ_MAC_SOFT) {
+        IC::ipi_eoi(id & CLINT::INT_MASK);
+    } else if((id & CLINT::INT_MASK) == CLINT::IRQ_MAC_TIMER) {
+        Timer::reset();
+        CPU::miec(CPU::MTI);
+        CPU::mips(CPU::STI);
+    } else if(id == CPU::EXC_ENVS) {
+        switch(frame[7]) {
+            case CPU::PMU_CONFIG:
+                PMU::config(frame[0], frame[1]);
+                break;
+            case CPU::PMU_READ:
+                frame[0] = PMU::read(frame[0]);
+                break;
+            case CPU::PMU_START:
+                PMU::start(frame[0]);
+                break;
+            case CPU::PMU_STOP:
+                PMU::stop(frame[0]);
+                break;
+            case CPU::PMU_RESET:
+                PMU::reset(frame[0]);
+                break;
+            default:
+                CPU::mipc(CPU::STI);
+                CPU::mies(CPU::MTI);
+                break;
+        }
+
+        CPU::mepc(CPU::mepc() + 4);
+    }
 }
 

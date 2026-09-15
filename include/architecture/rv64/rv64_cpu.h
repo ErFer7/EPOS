@@ -263,6 +263,31 @@ public:
 public:
     CPU() {};
 
+    // NOTE: Makeshift syscalls
+    enum EcallCode : Reg64 {
+        IGNORED = 0,
+        PMU_CONFIG = 1,
+        PMU_READ = 2,
+        PMU_START = 3,
+        PMU_STOP = 4,
+        PMU_RESET = 5
+    };
+
+    static Reg64 machine_mode_call(EcallCode code, Reg64 arg0 = 0, Reg64 arg1 = 0) {
+        register Reg64 a7 asm("a7") = (Reg64)code;
+        register Reg64 a0 asm("a0") = arg0;
+        register Reg64 a1 asm("a1") = arg1;
+
+        asm volatile (
+            "ecall \n"
+            : "+r"(a0)
+            : "r"(a1), "r"(a7)
+            : "memory"
+        );
+
+        return a0;
+    }
+
     static Log_Addr pc() { Reg r; ASM("auipc %0, 0" : "=r"(r) :); return r; }
 
     static Log_Addr sp() { Reg r; ASM("mv %0, sp" :  "=r"(r) :); return r; }
@@ -553,6 +578,24 @@ public:
 
     static Reg  a1() { Reg r; ASM("mv %0, a1" :  "=r"(r)); return r; }
     static void a1(Reg r) {   ASM("mv a1, %0" : : "r"(r) :); }
+
+    static Reg  a2() { Reg r; ASM("mv %0, a2" :  "=r"(r)); return r; }
+    static void a2(Reg r) {   ASM("mv a2, %0" : : "r"(r) :); }
+
+    static Reg  a3() { Reg r; ASM("mv %0, a3" :  "=r"(r)); return r; }
+    static void a3(Reg r) {   ASM("mv a3, %0" : : "r"(r) :); }
+
+    static Reg  a4() { Reg r; ASM("mv %0, a4" :  "=r"(r)); return r; }
+    static void a4(Reg r) {   ASM("mv a4, %0" : : "r"(r) :); }
+
+    static Reg  a5() { Reg r; ASM("mv %0, a5" :  "=r"(r)); return r; }
+    static void a5(Reg r) {   ASM("mv a5, %0" : : "r"(r) :); }
+
+    static Reg  a6() { Reg r; ASM("mv %0, a6" :  "=r"(r)); return r; }
+    static void a6(Reg r) {   ASM("mv a6, %0" : : "r"(r) :); }
+
+    static Reg  a7() { Reg r; ASM("mv %0, a7" :  "=r"(r)); return r; }
+    static void a7(Reg r) {   ASM("mv a7, %0" : : "r"(r) :); }
 
     static Reg  gp() { Reg r; ASM("mv %0, x3" :  "=r"(r)); return r; }
     static void gp(Reg r) {   ASM("mv x3, %0" : : "r"(r) :); }

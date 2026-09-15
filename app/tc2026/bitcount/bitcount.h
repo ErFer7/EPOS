@@ -31,6 +31,12 @@ class BitCount {
     int run();
 
    private:
+
+    inline void reset() {
+        bitcount_randseed = 1;
+        bitcount_n = 0;
+    }
+
     /*
      **  bitcount_1.c
      */

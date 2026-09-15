@@ -62,12 +62,12 @@ enum BenchmarkType {
     PETRINET,        // OK
     FAC,             // OK
     PRIME,           // OK
-    BITCOUNT,
-    COSF,
-    DEG2RAD,
-    MD5,
-    SHA,
-    FFT,
+    BITCOUNT,        // OK
+    COSF,            // OK
+    DEG2RAD,         // OK
+    MD5,             // OK
+    SHA,             // OK
+    FFT,             // OK
     IIR,
     LMS,
     FILTERBANK,

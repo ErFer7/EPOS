@@ -36,8 +36,6 @@ int BitCount::bitcount_bit_shifter(long int x) {
 }
 
 BitCount::BitCount() {
-    bitcount_randseed = 1;
-    bitcount_n = 0;
     bitcount_iterations = 10;
 
     bitcount_init3();
@@ -63,6 +61,8 @@ unsigned long BitCount::bitcount_random(void) {
 }
 
 int BitCount::run() {
+    reset();
+
     unsigned int i, j;
     for (i = 0; i < FUNCS; i++) {
         for (j = 0, bitcount_seed = bitcount_random(); j < bitcount_iterations; j++, bitcount_seed += 13) {

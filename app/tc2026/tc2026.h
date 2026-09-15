@@ -22,8 +22,9 @@ class BenchmarkRunner {
 
    private:
     static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 15;  // in seconds
-    static const unsigned int SELECTED_TASKSET = 1;
+    static const unsigned int SELECTED_TASKSET = 8;
     static const unsigned int SEED = 20260610;
+    static const unsigned int EPOS_MONITOR_ENABLED = true;
 
     inline static constexpr Taskset taskset = TASKSETS[SELECTED_TASKSET - 1];
     inline static constexpr unsigned int task_count = taskset.size;
@@ -58,8 +59,9 @@ class BenchmarkRunner {
     inline static void run() {
         Time_Stamp tsc0 = _get_time() + Convert::us2count<Time_Stamp, Time_Base>(TSC::frequency(), 10000);
 
-        // TODO: Check this
-        // Monitor::enable_captures();
+        if (EPOS_MONITOR_ENABLED) {
+            Monitor::enable_captures();
+        }
 
         cout << "Creating threads..." << endl;
         _init_thread<0>(10000);
@@ -72,14 +74,15 @@ class BenchmarkRunner {
 
         for (unsigned int i = 0; i < task_count; i++) {
             _threads[i]->join();
-            // Monitor::disable_captures();
             cout << "Joined task [" << i << ']' << endl;
         }
 
         _logger->join();
         cout << "Joined logger" << endl;
 
-        // Monitor::disable_captures();
+        if (EPOS_MONITOR_ENABLED) {
+            Monitor::disable_captures();
+        }
 
         Time_Stamp times = _get_time() - tsc0;
 
