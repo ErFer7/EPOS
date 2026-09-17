@@ -43,6 +43,8 @@ class Minver {
     ~Minver() = default;
 
     inline int run() {
+        reset();
+
         double eps;
         eps = 1.0e-6;
 
@@ -68,6 +70,17 @@ class Minver {
     }
 
    private:
+    inline void reset() {
+        static const double original[3][3] = {
+            {3.0, -6.0, 7.0},
+            {9.0, 0.0, -5.0},
+            {5.0, -8.0, 6.0},
+        };
+        volatile int x = 0;
+        for (int i = 0; i < 3; i++)
+            for (int j = 0; j < 3; j++) minver_a[i][j] = original[i][j] + x;
+    }
+
     double minver_fabs(double n) {
         double f;
 

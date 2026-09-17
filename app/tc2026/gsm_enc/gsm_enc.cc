@@ -1895,13 +1895,14 @@ GsmEnc::~GsmEnc() {
 }
 
 int GsmEnc::run() {
-    gsm r;
-    unsigned i;
+    reset();
+
+    volatile gsm r;
     gsm_enc_result = 0;
 
     r = gsm_enc_state_ptr;
 
-    for (i = 0; i < SAMPLES; i++) gsm_enc_encode(r, gsm_enc_pcmdata + i * 160, gsm_enc_gsmdata + i * sizeof(gsm_frame));
+    for (volatile unsigned int i = 0; i < SAMPLES; i++) gsm_enc_encode(r, gsm_enc_pcmdata + i * 160, gsm_enc_gsmdata + i * sizeof(gsm_frame));
 
     return gsm_enc_result;
 }

@@ -60,27 +60,27 @@ enum BenchmarkType {
     AUDIOBEAM,       // WARN: There are possible memory corruptions here, but OK
     ANAGRAM,         // OK
     PETRINET,        // OK
-    FAC,             // OK
-    PRIME,           // OK
+    FAC,             // WARN: OK, but way too fast
+    PRIME,           // WARN: OK, but way too fast
     BITCOUNT,        // OK
     COSF,            // OK
     DEG2RAD,         // OK
     MD5,             // OK
     SHA,             // OK
     FFT,             // OK
-    IIR,
-    LMS,
-    FILTERBANK,
-    MINVER,
-    LUDCMP,
-    MATRIX1,
-    QUICKSORT,
-    RECURSION,
-    DIJKSTRA,
-    HUFF_ENC,
-    ADPCM_ENC,  // OK
-    GSM_ENC,
-    G723_ENC,
+    IIR,             // OK
+    LMS,             // OK
+    FILTERBANK,      // OK
+    MINVER,          // OK
+    LUDCMP,          // OK
+    MATRIX1,         // OK
+    QUICKSORT,       // OK
+    RECURSION,       // OK
+    DIJKSTRA,        // OK
+    HUFF_ENC,        // OK
+    ADPCM_ENC,       // WARN: OK, but it's way too fast for now, maybe there are some weird optimizations going on
+    GSM_ENC,         // WARN: OK, but can have some dangerous optmization
+    G723_ENC,        // OK
     STATEMATE,
     NDES,
     AMMUNITION,

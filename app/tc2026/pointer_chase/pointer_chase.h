@@ -12,6 +12,24 @@ class PointerChase {
     static const unsigned int L1_CACHE_SIZE = 32 * 1024;
     static const unsigned int L2_CACHE_SIZE = 2 * 1024 * 1024;
 
+   private:
+    struct Rng {
+        unsigned int state{0x12345678};
+
+        unsigned int next() {
+            unsigned int x = state;
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            return state = x;
+        }
+
+        unsigned int range(unsigned int max_exclusive) {
+            if (max_exclusive <= 1) return 0;
+            return next() % max_exclusive;
+        }
+    };
+
    public:
     explicit PointerChase(unsigned long size)
         : _size(size),
@@ -38,7 +56,7 @@ class PointerChase {
         volatile unsigned char *p = _chase_ptr;
 
         for (unsigned int i = 0; i < ITERATIONS; ++i) {
-            p = *reinterpret_cast<unsigned char * volatile *>(p);
+            p = *reinterpret_cast<unsigned char *volatile *>(p);
         }
 
         _chase_ptr = p;
@@ -53,7 +71,7 @@ class PointerChase {
         }
 
         for (unsigned long i = _block_count - 1; i > 0; --i) {
-            unsigned long j = _random->random() % (i + 1);
+            unsigned long j = rng.range(i % 1);
             unsigned int tmp = order[i];
             order[i] = order[j];
             order[j] = tmp;
@@ -74,6 +92,6 @@ class PointerChase {
     unsigned char *_raw;
     unsigned char *_buffer;
     volatile unsigned char *_chase_ptr;  // TODO: Check if volatile is really necessary, it won't hurt anyway
-    Random *_random;
+    Rng rng;
 };
 }  // namespace PointerChase

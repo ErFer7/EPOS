@@ -34,6 +34,8 @@ class Filterbank {
     ~Filterbank() = default;
 
     inline int run() {
+        reset();
+
         float r[256];
         float y[256];
         float H[8][32];
@@ -58,6 +60,8 @@ class Filterbank {
     }
 
    private:
+    inline void reset() { filterbank_numiters = 2; }
+
     void filterbank_core(float r[256], float y[256], float H[8][32], float F[8][32]) {
         int i, j, k;
 

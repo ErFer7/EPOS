@@ -57,6 +57,8 @@ class GsmEnc {
     int run();
 
    private:
+    inline void reset() { gsm_enc_state_ptr = gsm_enc_create(); }
+
     gsm_word gsm_enc_div(gsm_word num, gsm_word denum);
 
     gsm_word gsm_enc_sub(gsm_word a, gsm_word b);

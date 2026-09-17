@@ -77,8 +77,7 @@ class HuffEnc {
     ~HuffEnc() = default;
 
     inline int run() {
-        huff_enc_input_pos = 0;
-        huff_enc_output_pos = 0;
+        reset();
 
         huff_enc_t_tree *tree;
         huff_enc_t_tree heap[514];
@@ -112,6 +111,13 @@ class HuffEnc {
     }
 
    private:
+    inline void reset() {
+        huff_enc_input_pos = 0;
+        huff_enc_output_pos = 0;
+        huff_enc_byte_nb_to_write = 0;
+        huff_enc_val_to_write = 0;
+    }
+
     /*
   Input / output functions
 */

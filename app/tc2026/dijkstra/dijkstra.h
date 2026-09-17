@@ -29,6 +29,8 @@ class Dijkstra {
     int run();
 
    private:
+    inline void reset() { dijkstra_checksum = 0; }
+
     int dijkstra_return(void);
     int dijkstra_enqueue(int node, int dist, int prev);
     void dijkstra_dequeue(int *node, int *dist, int *prev);

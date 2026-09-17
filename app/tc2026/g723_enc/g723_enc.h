@@ -116,6 +116,13 @@ class G723Enc {
     }
 
    private:
+    inline void reset() {
+        g723_enc_init_state(&g723_enc_state);
+        out_buffer = 0;
+        out_bits = 0;
+        g723_i = 0;
+    }
+
     /*
    g723_enc_fmult()
 
@@ -594,10 +601,7 @@ class G723Enc {
        Returns 1 if there is residual output, else returns 0.
     */
     int g723_enc_pack_output(unsigned char code, int bits) {
-        static unsigned int out_buffer = 0;
-        static int out_bits = 0;
         unsigned char out_byte;
-        static int i = 0;
 
         out_buffer |= (code << out_bits);
         out_bits += bits;
@@ -607,8 +611,8 @@ class G723Enc {
             out_buffer >>= 8;
             // fwrite(&out_byte, sizeof (char), 1, fp_out);
             // fwrite(&out_byte, 1, 1, fp_out);
-            g723_enc_OUTPUT[i] = out_byte;
-            i = i + 1;
+            g723_enc_OUTPUT[g723_i] = out_byte;
+            g723_i++;
         }
 
         return (out_bits > 0);
@@ -647,6 +651,10 @@ class G723Enc {
     }
 
    private:
+    unsigned int out_buffer = 0;
+    int out_bits = 0;
+    int g723_i = 0;
+
     g723_enc_state_t g723_enc_state;
 
     unsigned int g723_enc_INPUT[256] = {

@@ -98,18 +98,20 @@ static constexpr StressTask SBESC_TASKSET_OVERHEAD[] = {
     {1000000, 1000000, 200000, 3, CPU_HUNGRY, CPU_IT_DURATION},  // 10 - cpu
 };  // HP = 2
 
+// Taskset 7
 // New tasksets
 static constexpr StressTask TASKSET_1[] = {
-    {1000000, 1000000, 150000, 1, H264_DEC, SINGLE},  // 15%
-    {1000000, 1000000, 150000, 1, DIJKSTRA, SINGLE},  // 15%
+    {1000000, 1000000, 150000, 1, H264_DEC, 20.0f},     // 15%
+    {1000000, 1000000, 150000, 1, DIJKSTRA, 18750.0f},  // 15%
 
-    {1000000, 1000000, 150000, 2, HUFF_ENC, SINGLE},  // 15%
-    {1000000, 1000000, 150000, 2, FAC, SINGLE},       // 15%
+    {1000000, 1000000, 150000, 2, HUFF_ENC, 228.0f},  // 15%
+    {1000000, 1000000, 150000, 2, FAC, 0.1125f},      // 15%
 
-    {1000000, 1000000, 150000, 3, PRIME, SINGLE},      // 15%
-    {1000000, 1000000, 150000, 3, ADPCM_ENC, SINGLE},  // 15%
+    {1000000, 1000000, 150000, 3, PRIME, 0.18f},     // 15%
+    {1000000, 1000000, 150000, 3, ADPCM_ENC, 1.3f},  // 15%
 };  // HP = 1
 
+// Taskset 8
 static constexpr StressTask TASKSET_2[] = {
     {1000000, 1000000, 150000, 1, BANDWIDTH_L2, SINGLE},  // 15%
     {1000000, 1000000, 150000, 1, GSM_ENC, SINGLE},       // 15%
@@ -121,6 +123,7 @@ static constexpr StressTask TASKSET_2[] = {
     {1000000, 1000000, 150000, 3, G723_ENC, SINGLE},  // 15%
 };  // HP = 1
 
+// Taskset 9
 static constexpr StressTask TASKSET_3[] = {
     {1000000, 1000000, 150000, 1, MPEG2, SINGLE},      // 15%
     {1000000, 1000000, 150000, 1, STATEMATE, SINGLE},  // 15%
@@ -132,6 +135,7 @@ static constexpr StressTask TASKSET_3[] = {
     {1000000, 1000000, 150000, 3, AMMUNITION, SINGLE},  // 15%
 };  // HP = 1
 
+// Taskset 10
 static constexpr StressTask TASKSET_4[] = {
     {1000000, 1000000, 150000, 1, SUSAN, SINGLE},  // 15%
     {1000000, 1000000, 150000, 1, FMREF, SINGLE},  // 15%
@@ -143,6 +147,7 @@ static constexpr StressTask TASKSET_4[] = {
     {1000000, 1000000, 150000, 3, DIJKSTRA, SINGLE},      // 15%
 };  // HP = 1
 
+// Taskset 11
 static constexpr StressTask TASKSET_5[] = {
     {2000000, 2000000, 160000, 1, BANDWIDTH_L2, SINGLE},
     {2000000, 2000000, 160000, 1, PRIME, SINGLE},

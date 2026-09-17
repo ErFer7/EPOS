@@ -42,6 +42,8 @@ Dijkstra::Dijkstra() {
 }
 
 int Dijkstra::run() {
+    reset();
+
     int i, j;
 
     /* finds 20 shortest paths between nodes */

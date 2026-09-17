@@ -79,6 +79,8 @@ class Iir {
     ~Iir() = default;
 
     inline int run() {
+        reset();
+
         float w;
         int f;
         volatile float *ptr_coeff, *ptr_wi1, *ptr_wi2;
@@ -109,6 +111,10 @@ class Iir {
     }
 
    private:
+    inline void reset() {
+        for (int f = 0; f < 2 * 4; f++) iir_wi[f] = 0;
+    }
+
     inline int iir_return(void) {
         float checksum = 0.0;
         int f;

@@ -56,6 +56,8 @@ class LudCmp {
     ~LudCmp() = default;
 
     inline int run() {
+        reset();
+
         int n = 5;
         double eps = 1;
         ludcmp_chkerr = ludcmp_test(n, eps);
@@ -71,6 +73,23 @@ class LudCmp {
     }
 
    private:
+    inline void reset() {
+        int n = 5;
+        double w;
+        volatile int x = 0;
+        for (int i = 0; i <= n; i++) {
+            w = 0;
+            for (int j = 0; j <= n; j++) {
+                ludcmp_a[i][j] = (i + 1) + (j + 1);
+                if (i == j) ludcmp_a[i][j] *= 10;
+                w += ludcmp_a[i][j];
+                if (x) ludcmp_a[i][j] += x;
+            }
+            ludcmp_b[i] = w;
+            if (x) ludcmp_b[i] += x;
+        }
+    }
+
     double ludcmp_fabs(double n) {
         double f;
 
@@ -137,4 +156,4 @@ class LudCmp {
     double ludcmp_a[50][50], ludcmp_b[50], ludcmp_x[50];
     int ludcmp_chkerr;
 };
-}  // namespace LucCmp
+}  // namespace LudCmp

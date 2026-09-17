@@ -17,6 +17,8 @@ class Quicksort {
     int run();
 
    private:
+    inline void reset();
+
     void quicksort_str(char *, unsigned long, unsigned long);
     void quicksort_vec(char *, unsigned long, unsigned long);
 
