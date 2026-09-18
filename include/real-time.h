@@ -134,7 +134,7 @@ public:
     : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss), &entry, this, function, a, n) {
     // : Periodic_Thread(Configuration(p, d, c, a, n, cpu, SUSPENDED, cl, t, ss, this), &entry, this, function, a, n) {
         // TODO: REMEMBER THIS!!!
-        resume();
+        // resume();
     }
 
 private:

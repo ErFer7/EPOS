@@ -797,7 +797,7 @@ protected:
         if (channel > L2_PMU_CHANNEL_LIMIT)
             db<PMU>(ERR) << "PMU::l2pmcounter(c=" << channel<< "): Tried to read beyond the maximum offset!" << endl;
 
-        return reg_l2_pmu(L2_PMU_EVENT_CONTROL + (channel * 8));
+        return reg_l2_pmu(L2_PMU_COUNTERS + (channel * 8));
     }
 
     static volatile Reg &reg_l2_pmu(Reg o) {

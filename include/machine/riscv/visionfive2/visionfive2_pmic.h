@@ -85,7 +85,7 @@ class PMIC : public PMIC_Common {
     }
 
     // TODO: Refactor this to isolate the writing and reading behavior
-    static void shutdown(bool reboot = true) {
+    static void shutdown(bool reboot = false) {
         if (Power::shutdown_power_domain() != 0) {
             db<PMIC>(WRN) << "Shutdown failed" << endl;
         }

@@ -14,7 +14,7 @@ void Machine::reboot()
 #ifdef __visionfive2__
     if (CPU::id() == CPU::BSP) {
         CPU::int_disable();
-        PMIC::shutdown();
+        PMIC::shutdown(true);
     }
 #endif
 

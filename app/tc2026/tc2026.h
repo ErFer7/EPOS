@@ -67,6 +67,12 @@ class BenchmarkRunner {
         _init_thread<0>(10000);
         cout << "Done" << endl;
 
+        cout << "Starting threads..." << endl;
+        for (unsigned int i = 0; i < task_count; i++) {
+            _threads[i]->resume();
+        }
+        cout << "Done" << endl;
+
         cout << "Current time: " << _us(tsc0) << endl;
 
         _logger = new Thread(Thread::Configuration(Thread::READY, Thread::Criterion(1000000, 1000000, 10000, 0)),

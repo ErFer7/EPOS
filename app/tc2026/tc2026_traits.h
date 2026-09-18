@@ -18,11 +18,11 @@ template<> struct Traits<Build>: public Traits_Tokens
     // Evaluating: 600s (10 min)
     // Experimental testing (300s) (5 min)
     // Debugging (15s)
-    static const unsigned int EXPECTED_SIMULATION_TIME = 15 + 15; // s (0 => not simulated)
+    static const unsigned int EXPECTED_SIMULATION_TIME = 150 + 15; // s (0 => not simulated)
 
     // Default flags
     static const bool enabled = true;
-    static const bool monitored = false;
+    static const bool monitored = true;
     static const bool debugged = true;
     static const bool hysterically_debugged = false;
 };
@@ -109,10 +109,10 @@ template<> struct Traits<System>: public Traits<Build>
     static const unsigned long LIFE_SPAN = 1 * YEAR; // s
     static const unsigned int DUTY_CYCLE = 1000000; // ppm
 
-    static const bool reboot = true;
+    static const bool reboot = false;
 
     static const unsigned int STACK_SIZE = Traits<Machine>::STACK_SIZE;
-    static const unsigned int HEAP_SIZE = (Traits<Application>::MAX_THREADS + Traits<Build>::CPUS) * (multitask ? STACK_SIZE : Traits<Application>::STACK_SIZE);
+    static const unsigned int HEAP_SIZE = (Traits<Application>::MAX_THREADS + Traits<Build>::CPUS) * (multitask ? HEAP_SIZE : Traits<Application>::HEAP_SIZE);
 };
 
 template<> struct Traits<Task>: public Traits<Build>
@@ -226,10 +226,10 @@ template<> struct Traits<Monitor>: public Traits<Build>
                                                                             CPU_CLOCK,
                                                                             CPU_VOLTAGE
                                                                           };
-    static constexpr Hertz              SYSTEM_EVENTS_FREQUENCIES[]     = { 34,
-                                                                            34,
-                                                                            34,
-                                                                            34
+    static constexpr Hertz              SYSTEM_EVENTS_FREQUENCIES[]     = { 50,
+                                                                            50,
+                                                                            50,
+                                                                            50
                                                                           }; // in Hz
     // FIX: Temporary solution
     static constexpr unsigned long long SYSTEM_EVENTS_CORES[]        = { 0b1110,
@@ -246,25 +246,25 @@ template<> struct Traits<Monitor>: public Traits<Build>
                                                                             INSTRUCTIONS_RETIRED,
 
                                                                             L1_DATA_CACHE_WRITEBACKS,
-                                                                            ARCHITECTURE_DEPENDENT_EVENT60,
+                                                                            L1_CACHE_MISSES,
 
                                                                             // ARCHITECTURE_DEPENDENT_EVENT113,
                                                                             // ARCHITECTURE_DEPENDENT_EVENT114,
-                                                                            // ARCHITECTURE_DEPENDENT_EVENT101,
+                                                                            // ARCHITECTURE_DEPENDENT_EVENT115,
                                                                             // ARCHITECTURE_DEPENDENT_EVENT106,
                                                                             // ARCHITECTURE_DEPENDENT_EVENT109,
                                                                             // ARCHITECTURE_DEPENDENT_EVENT112
                                                                           };
-    static constexpr Hertz              PMU_EVENTS_FREQUENCIES[]        = { 34,
-                                                                            34,
-                                                                            34,
-                                                                            34,
-                                                                            // 34,
-                                                                            // 34,
-                                                                            // 34,
-                                                                            // 34,
-                                                                            // 34,
-                                                                            // 34
+    static constexpr Hertz              PMU_EVENTS_FREQUENCIES[]        = { 50,
+                                                                            50,
+                                                                            50,
+                                                                            50,
+                                                                            // 50,
+                                                                            // 50,
+                                                                            // 50,
+                                                                            // 50,
+                                                                            // 50,
+                                                                            // 50
                                                                           }; // in Hz
     // FIX: Temporary solution
     static constexpr unsigned long long PMU_EVENTS_CORES[]              = { 0b1111,

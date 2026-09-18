@@ -32,8 +32,8 @@ namespace AdpcmEnc {
 static const int SAMPLE_RATE = 11025;
 
 static const int PI = 3141;
-static const int SIZE = 3;
-static const int IN_END = 4;
+static const int SIZE = 2000;
+static const int IN_END = SIZE * 2;
 
 class AdpcmEnc {
    public:
@@ -52,8 +52,9 @@ class AdpcmEnc {
         /* XXmain_0, MAX: 2 */
         /* Since the number of times we loop in my_sin depends on the argument we
            add the fact: xxmain_0:[  ]: */
-        for (i = 0; i < SIZE; i++) {
-            adpcm_enc_test_data[i] = (int)j * adpcm_enc_cos(f * PI * i);
+        for (i = 0; i < IN_END; i++) {
+            int rad = static_cast<int>((1LL * f * PI * i) % (2 * PI));
+            adpcm_enc_test_data[i] = j * adpcm_enc_cos(rad);
 
             /* avoid constant-propagation optimizations */
             adpcm_enc_test_data[i] += x;
@@ -66,9 +67,11 @@ class AdpcmEnc {
         for (int i = 0; i < IN_END; i += 2)
             adpcm_enc_compressed[i / 2] = adpcm_enc_encode(adpcm_enc_test_data[i], adpcm_enc_test_data[i + 1]);
 
-        int check_sum = 0;
+        volatile int check_sum = 0;
 
         for (int i = 0; i < IN_END; i += 2) check_sum += adpcm_enc_compressed[i / 2];
+
+        ASM("" : : "r,m"(check_sum) : "memory");
 
         return check_sum != 385;
     }
