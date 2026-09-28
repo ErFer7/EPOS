@@ -59,11 +59,17 @@ class Ndes {
     ~Ndes() = default;
 
     inline int run() {
+        reset();
+
         ndes_des(ndes_inp, ndes_key, &ndes_newkey, ndes_isw, &ndes_out);
         return (ndes_icd.r + ndes_icd.l + (-8390656)) != 0;
     }
 
    private:
+    inline void reset() {
+        ndes_newkey = ndes_value;  // = 1, forces the kns-populating branch every run()
+    }
+
     void ndes_des(ndes_immense inp, ndes_immense key, int *newkey, int isw, ndes_immense *out) {
         const volatile char ip[65] = {0,  58, 50, 42, 34, 26, 18, 10, 2,  60, 52, 44, 36, 28, 20, 12, 4,
                                       62, 54, 46, 38, 30, 22, 14, 6,  64, 56, 48, 40, 32, 24, 16, 8,  57,

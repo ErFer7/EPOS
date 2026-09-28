@@ -88,7 +88,10 @@ class Fmref {
     }
 
    private:
-    inline void reset() { x = 0; }
+    inline void reset() {
+        x = 0;
+        fmref_numiters = 2;
+    }
 
     void fmref_fb_compact(FloatBuffer *fb) {
         int i;

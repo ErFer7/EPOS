@@ -45,42 +45,42 @@
 // TODO: Check if the benchmarks are actually runninng correctly, some of them might require a proper reset for each run
 enum BenchmarkType {
     // IsolBench like
-    BANDWIDTH_L1,      // OK
-    BANDWIDTH_L2,      // OK
-    POINTER_CHASE_L1,  // OK
-    POINTER_CHASE_L2,  // OK
+    BANDWIDTH_L1,
+    BANDWIDTH_L2,
+    POINTER_CHASE_L1,
+    POINTER_CHASE_L2,
 
     // TACLeBench
-    RIJNDAEL_ENC,    // OK
-    H264_DEC,        // OK
-    MPEG2,           // OK
-    SUSAN,           // OK
-    CJPEG_TRANSUPP,  // OK
-    CJPEG_WRBMP,     // OK
-    AUDIOBEAM,       // WARN: There are possible memory corruptions here, but OK
-    ANAGRAM,         // OK
-    PETRINET,        // OK
-    FAC,             // WARN: OK, but way too fast
-    PRIME,           // WARN: OK, but way too fast
-    BITCOUNT,        // OK
-    COSF,            // OK
-    DEG2RAD,         // OK
-    MD5,             // OK
-    SHA,             // OK
-    FFT,             // OK
-    IIR,             // OK
-    LMS,             // OK
-    FILTERBANK,      // OK
-    MINVER,          // OK
-    LUDCMP,          // OK
-    MATRIX1,         // OK
-    QUICKSORT,       // OK
-    RECURSION,       // OK
-    DIJKSTRA,        // OK
-    HUFF_ENC,        // OK
-    ADPCM_ENC,       // WARN: OK, but it's way too fast for now, maybe there are some weird optimizations going on
-    GSM_ENC,         // WARN: OK, but can have some dangerous optmization
-    G723_ENC,        // OK
+    RIJNDAEL_ENC,
+    H264_DEC,
+    MPEG2,
+    SUSAN,
+    CJPEG_TRANSUPP,
+    CJPEG_WRBMP,
+    AUDIOBEAM,  // WARN: There are possible memory corruptions here, but OK
+    ANAGRAM,
+    PETRINET,
+    FAC,    // WARN: OK, but way too fast
+    PRIME,  // WARN: OK, but way too fast
+    BITCOUNT,
+    COSF,
+    DEG2RAD,
+    MD5,
+    SHA,
+    FFT,
+    IIR,
+    LMS,
+    FILTERBANK,
+    MINVER,
+    LUDCMP,
+    MATRIX1,
+    QUICKSORT,
+    RECURSION,
+    DIJKSTRA,
+    HUFF_ENC,
+    ADPCM_ENC,  // WARN: OK, but it's way too fast for now, maybe there are some weird optimizations going on
+    GSM_ENC,    // WARN: OK, but can have some dangerous optmization
+    G723_ENC,
     STATEMATE,
     NDES,
     AMMUNITION,

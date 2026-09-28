@@ -61,6 +61,8 @@ namespace Statemate {
 class Statemate {
    public:
     Statemate() {
+        for (unsigned int i = 0; i < sizeof(*this); i++) ((char *)this)[i] = 0;
+
         statemate_tm_entered_EINSCHALTSTROM_MESSEN_BLOCK_ERKENNUNG_CTRLch_BLOCK_ERKENNUNG_CTRL__N_copy = 0;
         statemate_tm_entered_WIEDERHOLSPERRE_FH_TUERMODUL_CTRLexited_BEREIT_FH_TUERMODUL_CTRL = 0;
         statemate_tm_entered_WIEDERHOLSPERRE_FH_TUERMODUL_CTRL = 0;
