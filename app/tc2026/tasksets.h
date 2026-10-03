@@ -149,14 +149,14 @@ static constexpr StressTask TC_TASKSET_3[] = {
 
 // Taskset 10
 static constexpr StressTask TC_TASKSET_4[] = {
-    {1000000, 1000000, 200000, 1, SUSAN, SINGLE},  // Memory bound  // 20%
-    {1000000, 1000000, 200000, 1, FMREF, SINGLE},  // Mixed         // 20%
+    {1000000, 1000000, 200000, 1, SUSAN, 18600.0f},  // Memory bound  // 20%
+    {1000000, 1000000, 200000, 1, FMREF, 308.0f},    // Mixed         // 20%
 
-    {1000000, 1000000, 200000, 2, DISPARITY, SINGLE},  // Mixed      // 20%
-    {1000000, 1000000, 200000, 2, SHA, SINGLE},        // CPU bound  // 20%
+    {1000000, 1000000, 200000, 2, DISPARITY, 200000.0f},  // Mixed      // 20%
+    {1000000, 1000000, 200000, 2, SHA, 880.0f},           // CPU bound  // 20%
 
-    {1000000, 1000000, 200000, 3, RIJNDAEL_ENC, SINGLE},  // CPU bound  // 20%
-    {1000000, 1000000, 200000, 3, DIJKSTRA, SINGLE},      // Mixed      // 20%
+    {1000000, 1000000, 200000, 3, RIJNDAEL_ENC, 1.5f},  // CPU bound  // 20%
+    {1000000, 1000000, 200000, 3, DIJKSTRA, 19455.0f},   // Mixed      // 20%
 };  // HP = 1
 
 // Taskset 11
