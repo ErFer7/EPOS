@@ -22,7 +22,7 @@ class BenchmarkRunner {
 
    private:
     static const unsigned int TEST_DURATION = Traits<Build>::EXPECTED_SIMULATION_TIME - 15;  // in seconds
-    static const unsigned int SELECTED_TASKSET = 0;
+    static const unsigned int SELECTED_TASKSET = 9;
     static const unsigned int SEED = 20260610;
     static const unsigned int EPOS_MONITOR_ENABLED = true;
 
@@ -194,8 +194,7 @@ class BenchmarkRunner {
                  << endl;
 
             for (unsigned int i = 0; i < task_count; i++) {
-                cout << "   > Task [" << i << "], IWCET: " << _iteration_wcet[i] << "us; return -> " << _return[i]
-                     << endl;
+                cout << "   > Task [" << i << "]: return -> " << _return[i] << endl;
             }
 
             Delay(1000000);

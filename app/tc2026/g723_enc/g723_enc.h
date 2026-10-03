@@ -87,6 +87,8 @@ class G723Enc {
     ~G723Enc() = default;
 
     inline int run() {
+        reset();
+
         //  struct g72x_state state;
         short sample_short;  // mv
         unsigned char code;

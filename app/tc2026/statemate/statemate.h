@@ -90,6 +90,7 @@ class Statemate {
     ~Statemate() = default;
 
     inline int run() {
+        reset();
         statemate_FH_DU();
 
         unsigned long int checksum = 0;
@@ -99,6 +100,15 @@ class Statemate {
     }
 
    private:
+    // NOTE: restore the power-on state
+    void reset() {
+        volatile char *p = (volatile char *)this;
+
+        for (unsigned int i = 0; i < sizeof(*this); i++) p[i] = 0;
+
+        statemate_interface();
+    }
+
     void statemate_interface(void) {
         if (SYS_bit_get(statemate_bitlist, entered_WIEDERHOLSPERRE_FH_TUERMODUL_CTRL_IDX))
             statemate_tm_entered_WIEDERHOLSPERRE_FH_TUERMODUL_CTRL = statemate_time;
@@ -138,7 +148,7 @@ class Statemate {
       Algorithm core functions
     */
 
-    void statemate_generic_KINDERSICHERUNG_CTRL(void) {
+    __attribute__((noinline)) void statemate_generic_KINDERSICHERUNG_CTRL(void) {
         if (SYS_bit_get(statemate_bitlist, active_KINDERSICHERUNG_CTRL_IDX)) {
             switch (statemate_KINDERSICHERUNG_CTRL_KINDERSICHERUNG_CTRL_next_state) {
                 case 1: { /** state ZENTRAL in chart KINDERSICHERUNG_CTRL **/
@@ -300,7 +310,7 @@ class Statemate {
         }
     }
 
-    void statemate_generic_FH_TUERMODUL_CTRL(void) {
+    __attribute__((noinline)) void statemate_generic_FH_TUERMODUL_CTRL(void) {
         if (!SYS_bit_get(statemate_bitlist, active_FH_TUERMODUL_CTRL_IDX) &&
             SYS_bit_get(statemate_bitlist, active_FH_TUERMODUL_CTRL_old_IDX) &&
             !SYS_bit_get(statemate_bitlist, active_FH_TUERMODUL_CTRL_copy_IDX)) {
@@ -687,7 +697,7 @@ class Statemate {
         }
     }
 
-    void statemate_generic_EINKLEMMSCHUTZ_CTRL(void) {
+    __attribute__((noinline)) void statemate_generic_EINKLEMMSCHUTZ_CTRL(void) {
         if (SYS_bit_get(statemate_bitlist, active_EINKLEMMSCHUTZ_CTRL_IDX)) {
             switch (statemate_EINKLEMMSCHUTZ_CTRL_EINKLEMMSCHUTZ_CTRL_next_state) {
                 case 1: { /** state NORMALBETRIEB in chart EINKLEMMSCHUTZ_CTRL **/
@@ -721,7 +731,7 @@ class Statemate {
         }
     }
 
-    void statemate_generic_BLOCK_ERKENNUNG_CTRL(void) {
+    __attribute__((noinline)) void statemate_generic_BLOCK_ERKENNUNG_CTRL(void) {
         if (!SYS_bit_get(statemate_bitlist, active_BLOCK_ERKENNUNG_CTRL_IDX) &&
             SYS_bit_get(statemate_bitlist, active_BLOCK_ERKENNUNG_CTRL_old_IDX) &&
             !SYS_bit_get(statemate_bitlist, active_BLOCK_ERKENNUNG_CTRL_copy_IDX))
@@ -811,7 +821,7 @@ class Statemate {
         }
     }
 
-    void statemate_FH_DU(void) {
+    __attribute__((noinline)) void statemate_FH_DU(void) {
         statemate_time = 1; /**SYS_get_clock()**/
         statemate_stable = 0;
         statemate_step = 0;
@@ -917,8 +927,10 @@ class Statemate {
                         active_KINDERSICHERUNG_CTRL_IDX,
                         statemate_bitlist,
                         active_KINDERSICHERUNG_CTRL_old_IDX);
-            SYS_bit_cpy(
-                statemate_bitlist, active_FH_TUERMODUL_CTRL_IDX, statemate_bitlist, active_FH_TUERMODUL_CTRL_old_IDX);
+            SYS_bit_cpy(statemate_bitlist,
+                        active_FH_TUERMODUL_CTRL_IDX,
+                        statemate_bitlist,
+                        active_FH_TUERMODUL_CTRL_old_IDX);
             SYS_bit_cpy(statemate_bitlist,
                         active_EINKLEMMSCHUTZ_CTRL_IDX,
                         statemate_bitlist,
@@ -1011,8 +1023,10 @@ class Statemate {
                         active_KINDERSICHERUNG_CTRL_copy_IDX,
                         statemate_bitlist,
                         active_KINDERSICHERUNG_CTRL_IDX);
-            SYS_bit_cpy(
-                statemate_bitlist, active_FH_TUERMODUL_CTRL_copy_IDX, statemate_bitlist, active_FH_TUERMODUL_CTRL_IDX);
+            SYS_bit_cpy(statemate_bitlist,
+                        active_FH_TUERMODUL_CTRL_copy_IDX,
+                        statemate_bitlist,
+                        active_FH_TUERMODUL_CTRL_IDX);
             SYS_bit_cpy(statemate_bitlist,
                         active_EINKLEMMSCHUTZ_CTRL_copy_IDX,
                         statemate_bitlist,

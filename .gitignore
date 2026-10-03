@@ -27,5 +27,4 @@ img/*
 .project
 .cache
 build
-.clang-format
 compile_commands.json

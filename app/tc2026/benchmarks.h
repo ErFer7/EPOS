@@ -79,8 +79,8 @@ enum BenchmarkType {
     RECURSION,
     DIJKSTRA,
     HUFF_ENC,
-    ADPCM_ENC,  // WARN: OK, but it's way too fast for now, maybe there are some weird optimizations going on
-    GSM_ENC,    // WARN: OK, but can have some dangerous optmization
+    ADPCM_ENC,
+    GSM_ENC,  // WARN: OK, but can have some dangerous optmization
     G723_ENC,
     STATEMATE,
     NDES,
